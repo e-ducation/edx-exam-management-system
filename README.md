@@ -11,13 +11,13 @@
 
 We use GitHub Issues for our issue tracker.
 
-If you’re filing a bug, we’d appreciate it if you would follow [our guidelines for filing high-quality, actionable issues](https://openedx.atlassian.net/wiki/display/SUST/How+to+File+a+Quality+Bug+Report). 
+If you’re filing a bug, we’d appreciate it if you would follow [our guidelines for filing high-quality, actionable issues](https://github.com/e-ducation/edx-exam-management-system/blob/master/SUBMITTING_AN_ISSUE.md). 
 
 Thanks!
 
 
 ## How to Contribute
-TODO: Add details here or separate CONTRIBUTING file to the root of the repo
+Visit the [Contributor Guidelines](https://github.com/e-ducation/edx-exam-management-system/blob/master/CONTRIBUTING.md) for details on how to contribute as well as the [Open Code of Conduct]() for details on how to participate.
 
 
 ## Reporting Security Issues
