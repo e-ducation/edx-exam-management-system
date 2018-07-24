@@ -7,8 +7,13 @@
 
 ## Getting Help
 
-
 ## Issue Tracker
+
+We use GitHub Issues for our issue tracker.
+
+If you’re filing a bug, we’d appreciate it if you would follow [our guidelines for filing high-quality, actionable issues](https://openedx.atlassian.net/wiki/display/SUST/How+to+File+a+Quality+Bug+Report). 
+
+Thanks!
 
 
 ## How to Contribute
