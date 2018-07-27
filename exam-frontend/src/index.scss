@@ -1,21 +1,6 @@
-
-
-$blue: #0692e1;
-$red: #f5222d;
-$border: #E6E9ED;
-$font: #656D78;
-$title: #2E313C;
-$note: #AAB2BD;
-$blue_hover: #1da6f3;
-$blue_active: #1da6f3;
-
+@import './default.scss';
 @import './libs/antd.min.scss';
 @import "./libs/common.scss";
-/*
-$shallowblue: #e6f4fc;
-$grey: #101010;
-$shallowgrey: #eaeaea;
-*/
 
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
@@ -135,21 +120,15 @@ body {
 }
 
 // 3. icon
-.dropboxfile{
-  .icon-blue, .icon-red{
-    position: relative;
-    top: 2px;
-  }
-}
 .icon-blue, .icon-red{
-  color: $title;
+  color: $font;
 }
 .icon-blue:hover{
-  color: $blue;
+  color: $blue !important;
   cursor: pointer;
 }
 .icon-red:hover{
-  color: #f5222d;
+  color: #f5222d !important;
   cursor: pointer;
 }
 .icon-table-grey{
@@ -229,6 +208,11 @@ body {
 .ant-table-tbody > tr.ant-table-row-hover > td, .ant-table-tbody > tr:hover > td, .ant-table-thead > tr.ant-table-row-hover > td, .ant-table-thead > tr:hover > td{
   color: $title
 }
+.ant-table-tbody > tr:hover{
+  .icon-blue, .icon-red, .text-link{
+    color:$title
+  }
+}
 
 // 6. progress进度条
 .ant-progress-status-success .ant-progress-outer .ant-progress-bg{
@@ -280,34 +264,41 @@ body {
 
 // @import "./select.scss";
 //题库
-$blue: #0692e1;
-$red: #f5222d;
-$border: #E6E9ED;
-$font: #656D78;
-$title: #2E313C;
-$note: #AAB2BD;
-$blue_hover: #1da6f3;
-$blue_active: #1da6f3;
-.edit-paper{ 
+.edit-paper{
   font-size: 16px;
   color: $title;
   padding-bottom: 8px;
   border-bottom: 1px solid $border;
 }
 
-.edit-box{ 
+.edit-box{
   margin-top: 38px;
-  .label-box{  
+  .label-box{
     margin-bottom: 18px;
     display: -webkit-flex;
     display: flex;
-    >div:first-child{ 
+    >div:first-child{
       width: 110px;
       text-align: left;
       line-height: 32px;
     }
-    >div:last-child{  
+    >div:last-child{
       flex: 1;
     }
   }
-}  
+}
+
+
+.displayFlx{
+  width:100%;
+  display:flex;
+  display:-webkit-flex;
+}
+.text-link{
+  color: $font;
+  cursor: pointer;
+}
+.text-link:hover, .text-link:focus{
+  color: $blue !important;
+  text-decoration: none;
+}

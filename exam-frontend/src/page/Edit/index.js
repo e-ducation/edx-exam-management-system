@@ -222,9 +222,9 @@ class EditContainer extends React.Component {
     paperpass:60
   }
 
-  // constructor(props) {
-  //   super(props);
-  // }
+  constructor(props) {
+    super(props);
+  }
 
   componentDidMount() {
   }

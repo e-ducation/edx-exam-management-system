@@ -1,18 +1,10 @@
-// 首页
-$blue: #0692e1;
-$red: #f5222d;
-$border: #E6E9ED;
-$font: #656D78;
-$title: #2E313C;
-$note: #AAB2BD;
-$blue_hover: #1da6f3;
-$blue_active: #1da6f3;
+@import '../../default.scss';
 // 预览试卷
 .preview-block{
-  padding: 25px;
+  padding: 20px 25px;
   border: 1px solid $border;
   line-height: 1.5;
-  margin: 20px 0;
+  margin: 10px 0;
   .preview-title{
     margin-bottom: 20px;
     color: $title;
@@ -28,7 +20,7 @@ $blue_active: #1da6f3;
   border-radius: 40px;
   position: fixed;
   bottom: 40px;
-  right: 40px; 
+  right: 40px;
   background: $border;
   color: $font;
   text-align: center;

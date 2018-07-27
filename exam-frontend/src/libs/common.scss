@@ -51,7 +51,7 @@ html,body{
     line-height: 60px;
     font-size: 20px;
     padding: 0 15px;
-    
+
   }
   .header-logo{
     display:inline-block;
@@ -108,38 +108,38 @@ html,body{
   position: absolute;
   bottom:0 ;
 }
-.text-link{
-  color: $title;
-}
-.text-link:hover, .text-link:focus{
-  color: $blue;
-  text-decoration: none;
-}
-//浮动
-.text-left{ 
+
+// sidebar
+.text-left{
   width: 152px;
-  .tags-box{ 
+  .tags-box{
     width: 120px;
     margin-right: 32px;
-    li{ 
+    li{
       height: 32px;
       line-height: 32px;
-      text-align: center;
-      color: $font;
-      background:#faf5fa;
-      border-radius: 4px;
-      margin-bottom: 4px;
+      background:#faf7fa;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      padding-left:10px;
       cursor: pointer;
+
+      a{
+        color:$title;
+      }
     }
-    li.tag-current{ 
+    li.tag-current{
       color: #fff;
       background: $blue;
+      a{
+        color: #fff;
+      }
     }
   }
 }
 .text-right-left{
   flex:1;
-  .ant-breadcrumb{ 
-    margin-top: 0;       
+  .ant-breadcrumb{
+    margin-top: 0;
   }
 }
