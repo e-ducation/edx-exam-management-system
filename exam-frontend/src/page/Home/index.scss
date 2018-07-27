@@ -1,0 +1,71 @@
+// 首页
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+.home{
+    color: $font;
+    .home-create{
+      display: inline-block;
+      width:150px;
+      height:110px;
+      background: #f8fcff;
+      border: 1px solid #cbe8f8;
+      text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+    .home-icon{
+      font-size: 45px;
+      margin: 10px 0;
+    }
+    .home-header{
+      margin: 50px 0 30px;
+      border-bottom: 1px solid $border;
+      padding-bottom: 15px;
+    }
+    .home-process{
+      display: inline-block;
+      .home-process-index{
+        font-size: 26px;
+        color: $note;
+        margin-right: 20px;
+      }
+      .home-process-sign{
+        margin:0 23px;
+      }
+    }
+    .home-guide{
+      display: inline-block;
+      width: 22%;
+      height: 250px;
+      margin-right:3%;
+      padding: 30px 25px;
+      border: 1px solid $border;
+      border-radius: 5px;
+      text-align: center;
+      vertical-align: text-top;
+      span{
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 30px;
+        color:#fff;
+        background:$blue;
+        line-height: 30px;
+      }
+      h3{
+        font-size: 16px;
+        margin: 20px 0;
+      }
+      p{
+        text-align: left;
+        line-height: 1.5;
+      }
+    }
+  }

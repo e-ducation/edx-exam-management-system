@@ -1,0 +1,145 @@
+html,body{
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,"Helvetica Neue", Helvetica,Tahoma，Arial, "PingFang SC", "Hiragino Sans GB",
+"Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei",SimHei，sans-serif;
+}
+
+@font-face {
+  font-family: 'iconfont';  /* project id 683888 */
+  src: url('/font/iconfont.eot'),
+  url('/font/iconfont.woff') format('woff'),
+  url('/font/iconfont.ttf') format('truetype'),
+  url('/font/iconfont.svg') format('svg');
+}
+
+.iconfont{
+  font-family:"iconfont" !important;
+  font-size:16px;font-style:normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-stroke-width: 0.2px;
+  -moz-osx-font-smoothing: grayscale;
+}
+.icon {
+  width: 1em; height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+.header{
+  border-bottom: 1px solid $border;
+  width: 100%;
+  height: 60px;
+  position: relative;
+}
+.center{
+  text-align: center;
+}
+.header{
+  // fixbug?
+  height: 64px;
+  .header-wrap{
+    width: 100%;
+    position: fixed;
+    top: 0;
+    border-bottom: 1px solid $border;
+    z-index: 999;
+    background-color: rgba(256,256,256,0.9);
+  }
+  .header-content{
+    width: 100%;
+    max-width: 1180px;
+    margin: 0 auto;
+    line-height: 60px;
+    font-size: 20px;
+    padding: 0 15px;
+    
+  }
+  .header-logo{
+    display:inline-block;
+    vertical-align: middle;
+    height: 32px;
+    width: 32px;
+    background: $blue;
+    border-radius: 32px;
+    padding: 6px;
+    margin-right:15px;
+    line-height: 20px;
+  }
+  .logo-text{
+    display: inline-block;
+    font-size: 20px;
+    vertical-align: middle;
+    color: $title;
+  }
+  .link-menu{
+    height: 60px;
+    float: right;
+    font-size: 14px;
+    color: $title;
+    cursor: pointer;
+  }
+}
+.container{
+  width: 100%;
+  max-width: 1180px;
+  min-width: 992px;
+  margin: 20px auto;
+  padding: 0 15px;
+  display: -webkit-flex;
+  display: flex;
+  .ant-breadcrumb{
+    margin: 20px 0;
+  }
+}
+
+.footer{
+  height: 80px;
+  width: 100%;
+  background-color: #fff;
+  border-top: 1px solid $border;
+}
+.copyright{
+  color: $font;
+  font-size: 14px;
+  text-align: center;
+  margin-top: 28px;
+  line-height: 20px;
+}
+.fixbottom{
+  position: absolute;
+  bottom:0 ;
+}
+.text-link{
+  color: $title;
+}
+.text-link:hover, .text-link:focus{
+  color: $blue;
+  text-decoration: none;
+}
+//浮动
+.text-left{ 
+  width: 152px;
+  .tags-box{ 
+    width: 120px;
+    margin-right: 32px;
+    li{ 
+      height: 32px;
+      line-height: 32px;
+      text-align: center;
+      color: $font;
+      background:#faf5fa;
+      border-radius: 4px;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+    li.tag-current{ 
+      color: #fff;
+      background: $blue;
+    }
+  }
+}
+.text-right-left{
+  flex:1;
+  .ant-breadcrumb{ 
+    margin-top: 0;       
+  }
+}

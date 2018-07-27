@@ -1,0 +1,35 @@
+// 首页
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+// 试卷管理
+.displayFlx{
+  width:100%;
+  display:flex;
+  display:-webkit-flex;
+}
+.chooseType{
+  display: inline-block;
+  width: 50%;
+  vertical-align: text-top;
+  text-align: center;
+  padding: 20px;
+  div{
+    width:90px;
+    height:90px;
+    border-radius: 45px;
+    background: #f5f7fa;
+    text-align: center;
+    line-height: 100px;
+    margin: 0 auto 20px;
+  }
+  h3{
+    font-size:16px;
+    margin-bottom: 5px;
+  }
+}

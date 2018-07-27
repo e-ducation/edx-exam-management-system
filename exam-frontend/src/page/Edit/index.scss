@@ -1,0 +1,122 @@
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+.edit-paper{
+  font-size: 16px;
+  color: $title;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border;
+}
+
+.edit-box{
+  margin-top: 38px;
+  .label-box{
+    margin-bottom: 18px;
+    display: -webkit-flex;
+    display: flex;
+    >div:first-child{
+      width: 110px;
+      text-align: left;
+      line-height: 32px;
+    }
+    >div:last-child{
+      flex: 1;
+    }
+  }
+}
+
+.pass-per{
+  border-top: 1px solid $border;
+  height: 40px;
+  line-height: 40px;
+  padding-left: 20px;
+  div{
+    >span{
+      margin-right: 18px;
+      display: inline-block;
+    }
+    >span:nth-of-type(3){
+      width: 150px;
+    }
+  }
+
+}
+
+.total {
+  border: 1px solid #e5e9ed;
+  border-radius: 4px;
+  margin-top: 12px;
+  .total-block {
+    height: 38px;
+    display: flex;
+    .first-span {
+      width: 100px;
+      flex-grow: 0;
+      border-right: 1px solid #e5e9ed;
+    }
+    span {
+      flex-grow: 1;
+      display: inline-block;
+      height: 38px;
+      text-align: center;
+      line-height: 38px;
+    }
+    .number {
+      color: #0692e1;
+    }
+  }
+  .total-top {
+    border-bottom: 1px solid #e5e9ed;
+  }
+}
+
+.inputBox{
+  width: 68px;
+  height: 32px;
+  line-height: 32px;
+  float: right;
+  .inputLeft{
+    float: left;
+    margin-top: 3px;
+    input{
+      width: 48px;
+      border-radius: 4px 0 0 4px;
+      border-right:none;
+    }
+  }
+  .inputRight{
+    float: right;
+    margin-top: 3px;
+    div{
+      display: block;
+      border-radius: 0;
+      width: 20px;
+      height: 16px;
+      border: 1px solid $border;
+      line-height: 16px;
+      text-align: center;
+      cursor: pointer;
+    }
+    div:first-child{
+      border-radius:0 4px 0 0;
+    }
+    div:last-child{
+      border-radius:0 0 4px 0;
+    }
+  }
+}
+
+.ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th{
+  text-align: center;
+}
+
+.displayFlx{
+  width:100%;
+  display:flex;
+  display:-webkit-flex;
+}
