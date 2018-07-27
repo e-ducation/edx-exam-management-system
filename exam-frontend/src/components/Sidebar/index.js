@@ -4,9 +4,9 @@ export default class Sidebar extends Component {
     return (
       <div className="text-left">
         <ul className="tags-box">
-          <li className={this.props.active === 'home' ? 'tag-current' : ''}>首页</li>
-          <li className={this.props.active === 'manage' ? 'tag-current' : ''}>试卷管理</li>
-          <li>考试任务</li>
+          <li className={this.props.active === 'home' ? 'tag-current' : ''}><a href="/#/">首页</a></li>
+          <li className={this.props.active === 'manage' ? 'tag-current' : ''}><a href="/#/manage">试卷管理</a></li>
+          <li><a>考试任务</a></li>
         </ul>
       </div>
     );

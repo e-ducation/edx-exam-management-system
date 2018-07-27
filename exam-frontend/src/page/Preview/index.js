@@ -4,20 +4,20 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import './index.scss';
 import $ from "jquery";
-class PreviewContainer extends Component{
+class PreviewContainer extends React.Component{
 
   state = {
     title: '商务知识管理',
     count: 20,
     total_grade: 100,
     pass_grade: 60,
-    description: '试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明',
+    description: 'kdsfskdsfsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjskdsfsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjskdsfsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjskdsfsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjskdsfsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjsldfksdfsdlfksdjflksdfskldfjsldfksdsldfksdlfkdsjflksdfsjdlkfldsfjs',
     question: [
       {
         type: 'radio',
-        title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
+        title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
         grade: 5,
-        options: ['时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
+        options: ['时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
       },
       {
         type: 'multiple',
@@ -28,7 +28,7 @@ class PreviewContainer extends Component{
       {
         type: 'fill',
         title: '都是咖啡连锁店分离式打卡_______斯柯达发牢骚',
-        input: 2,
+        input: ['',''],
         grade: 12,
       },{
         type: 'radio',
@@ -78,18 +78,18 @@ class PreviewContainer extends Component{
       $('.footer').show();
       $('.print-btn').show();
     }
-
+    
   }
 
   backToTop() {
-    // $("html,body").animate({scrollTop:0},500)
+    $("html,body").animate({scrollTop:0},500)
   }
 
   render() {
     return (
-      <div style={{width:'100%'}}>
+      <div style={{width:'100%', wordBreak:'break-word'}}>
         <div className="print-btn">
-          <div style={{ textAlign: 'right'}}>
+          <div style={{ textAlign: 'right', marginBottom: '20px'}}>
             <Button onClick={this.setPrinting.bind(this, true)}>打印试卷</Button>
           </div>
           {
@@ -112,7 +112,7 @@ class PreviewContainer extends Component{
               <div className="preview-block" key={index}>
                 <div>
                   <p className="preview-title">
-                    {index + 1}.
+                    {index + 1}. 
                     <span className="preview-type">
                       {
                         (() => {
@@ -127,7 +127,7 @@ class PreviewContainer extends Component{
                               return '[判断题]';
                             default:
                               return null;
-                          }
+                          } 
                         })()
                       }
                     </span>
@@ -142,39 +142,45 @@ class PreviewContainer extends Component{
                             return <Radio.Group style={{display:'block'}} defaultValue={null}>
                                 {
                                   item.options.map((item, index) => {
-                                    return <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} key={index} value={index}>{item}</Radio>
+                                    return <Radio style={{display:'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0'}} key={index} value={index}>{item}</Radio>
                                   })
                                 }
                               </Radio.Group>;
-
+                              
                           case 'multiple':
                             return <Checkbox.Group defaultValue={null}>
                               {
                                 item.options.map((item, index) => {
-                                  return <Checkbox style={{display:'block', height: '30px', lineHeight: '30px', marginLeft: '0'}} key={index} value={index}>{item}</Checkbox>
+                                  return <Checkbox style={{display:'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0'}} key={index} value={index}>{item}</Checkbox>
                                 })
                               }
                             </Checkbox.Group>;
 
                           case 'fill':
                             return <div>
-                              <span>请填写答案</span>
-                              <Input.TextArea
-                                placeholder="答案"
-                                autosize={{ minRows: 1, maxRows: 6 }}
-                                style={{ width: '400px', display:'inline-block', verticalAlign: 'middle', marginLeft: '15px'}}
-                              />
-                            </div>;
+                              {
+                                item.input.map((answer, index) => {
+                                  return <div style={(index !== item.input.length - 1) ? { marginBottom: '20px'} : {} }>
+                                    <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
+                                    <Input.TextArea
+                                      autosize={{ minRows: 1, maxRows: 6 }}
+                                      style={{ width: '400px', display:'inline-block', verticalAlign: 'middle', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                    />
+                                  </div>
+                                })
+                              }
+                            </div>
+
 
                           case 'judge':
                             return <Radio.Group style={{display:'block'}} defaultValue={null}>
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={true}>正确</Radio>
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={false}>错误</Radio>
                             </Radio.Group>;
-
+                          
                           default:
                               return null;
-                        }
+                        } 
                       })()
                     }
                   </div>
@@ -187,7 +193,7 @@ class PreviewContainer extends Component{
     )
   }
 }
-
+ 
 
 export default class Preview extends React.Component {
   state = {
@@ -202,9 +208,9 @@ export default class Preview extends React.Component {
       that.setState({ height })
     })
 
-    $(window).scroll(() => {
+    $(document.body).scroll(() => {
       this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
+        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
       })
     })
   }
