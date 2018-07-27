@@ -1,0 +1,313 @@
+
+
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+
+@import './libs/antd.min.scss';
+@import "./libs/common.scss";
+/*
+$shallowblue: #e6f4fc;
+$grey: #101010;
+$shallowgrey: #eaeaea;
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline; }
+
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+  display: block; }
+
+body {
+  line-height: 1; }
+
+ol, ul {
+  list-style: none; }
+
+blockquote, q {
+  quotes: none; }
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none; }
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0; }
+
+div,p,span,a{
+  font-size:14px;
+}
+
+// 处理scroll
+html {
+  overflow-y: scroll;
+}
+
+:root {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+:root body {
+  position: absolute;
+}
+
+body {
+  width: 100vw;
+  overflow: auto;
+}
+
+
+// antd 组件样式修改
+// 1. 红色确认框
+.confirm-red {
+  .ant-confirm-body>.anticon{
+    color: $red;
+  }
+  .ant-btn-primary {
+    color: $red;
+    background: #f5f5f5;
+    border-color: #d9d9d9;
+  }
+  .ant-btn-primary:hover{
+    color: #fff;
+    background-color: #ff4d4f;
+    border-color: #ff4d4f;
+  }
+}
+
+// 2. 页码
+.page{
+  margin: 20px 0;
+  position: relative;
+}
+.page{
+  .page-num{
+    text-align: right;
+    padding-right: 160px;
+  }
+  .page-size{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    text-align: right;
+  }
+  .ant-pagination-item-active{
+    background: $blue;
+  }
+  .ant-pagination-item-active a{
+    color: #fff;
+  }
+  .ant-pagination.mini .ant-pagination-item{
+    min-width: 22px;
+    height: 22px;
+    line-height: 20px;
+    margin: 0 5px;
+  }
+}
+
+// 3. icon
+.dropboxfile{
+  .icon-blue, .icon-red{
+    position: relative;
+    top: 2px;
+  }
+}
+.icon-blue, .icon-red{
+  color: $title;
+}
+.icon-blue:hover{
+  color: $blue;
+  cursor: pointer;
+}
+.icon-red:hover{
+  color: #f5222d;
+  cursor: pointer;
+}
+.icon-table-grey{
+  color: #abb3be;
+  cursor: pointer;
+}
+.icon-table-grey:hover{
+  color: $blue;
+}
+.icon-table-blue{
+  color: $blue;
+  cursor: pointer;
+}
+
+//表格兼容问题
+.ant-table-row-indent{
+  position: absolute;
+}
+
+.ant-table-tbody > tr > td.ant-table-selection-column, .ant-table-thead > tr > th.ant-table-selection-column{
+  vertical-align: middle;
+}
+//表格问题
+.ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-fixed-left > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-fixed-left > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-fixed-left > .ant-table-header > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-fixed-left > .ant-table-header > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-fixed-right > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-fixed-right > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-fixed-right > .ant-table-header > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-fixed-right > .ant-table-header > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-header > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-header > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-scroll > .ant-table-body > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-scroll > .ant-table-body > table > .ant-table-thead > tr > th, .ant-table-small > .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-tbody > tr > td, .ant-table-small > .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-thead > tr > th5{
+  word-break:break-all;
+}
+.ant-btn{
+  line-height: 1.6;
+}
+// 4. breadcrumb
+.ant-breadcrumb-link:hover{
+  color: $blue;
+  cursor: pointer;
+}
+.ant-breadcrumb-link{
+  display: inline-block;
+  max-width: 120px;
+  overflow: hidden;
+  vertical-align: middle;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ant-breadcrumb-separator{
+  vertical-align: middle;
+}
+.ant-breadcrumb > span:last-child{
+  color: #2e313c;
+}
+.ant-breadcrumb>span{
+  color:#656d78;
+}
+// 5. table-small
+.ant-table-small>.ant-table-content>.ant-table-body>table{
+  padding: 0;
+}
+.ant-table-small{
+  border-radius: 0;
+}
+.ant-table-title{
+  border-radius: 0;
+}
+.ant-table.ant-table-bordered .ant-table-title{
+  padding-left: 8px
+}
+.ant-table-small.ant-table-bordered .ant-table-placeholder{
+  border-right: none;
+}
+.ant-table-small>.ant-table-content>.ant-table-body>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-body>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-fixed-left>.ant-table-body-outer>.ant-table-body-inner>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-fixed-left>.ant-table-body-outer>.ant-table-body-inner>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-fixed-left>.ant-table-header>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-fixed-left>.ant-table-header>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-fixed-right>.ant-table-body-outer>.ant-table-body-inner>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-fixed-right>.ant-table-body-outer>.ant-table-body-inner>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-fixed-right>.ant-table-header>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-fixed-right>.ant-table-header>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-header>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-header>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-scroll>.ant-table-body>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-scroll>.ant-table-body>table>.ant-table-thead>tr>th, .ant-table-small>.ant-table-content>.ant-table-scroll>.ant-table-header>table>.ant-table-tbody>tr>td, .ant-table-small>.ant-table-content>.ant-table-scroll>.ant-table-header>table>.ant-table-thead>tr>th{
+  padding-left: 15px;
+}
+.ant-table-small>.ant-table-content>.ant-table-body>table>.ant-table-tbody .ant-table-selection-column,
+.ant-table-small>.ant-table-content>.ant-table-body>table>.ant-table-thead .ant-table-selection-column
+{
+  padding-left: 8px;
+}
+
+.ant-table-tbody > tr.ant-table-row-hover > td, .ant-table-tbody > tr:hover > td, .ant-table-thead > tr.ant-table-row-hover > td, .ant-table-thead > tr:hover > td{
+  color: $title
+}
+
+// 6. progress进度条
+.ant-progress-status-success .ant-progress-outer .ant-progress-bg{
+  background-color:$blue;
+}
+
+
+
+// 8. tree
+.ant-tree-title{
+  width: 200px;
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/*滚动条样式*/
+::-webkit-scrollbar {/*滚动条整体样式*/
+    width: 6px;     /*高宽分别对应横竖滚动条的尺寸*/
+    height: 6px;
+}
+::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.2);
+}
+.group-current{
+  border-radius: 2px;
+  color: $title;
+}
+.group-current .iconfont.iconfont-edit{
+  color: $note;
+  line-height: 18px;
+  font-size:18px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.group-current .iconfont.iconfont-edit:hover{
+  color: $blue;
+}
+
+// 9. dropdown
+.ant-dropdown-menu{
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+
+// @import "./select.scss";
+//题库
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+.edit-paper{ 
+  font-size: 16px;
+  color: $title;
+  padding-bottom: 8px;
+  border-bottom: 1px solid $border;
+}
+
+.edit-box{ 
+  margin-top: 38px;
+  .label-box{  
+    margin-bottom: 18px;
+    display: -webkit-flex;
+    display: flex;
+    >div:first-child{ 
+      width: 110px;
+      text-align: left;
+      line-height: 32px;
+    }
+    >div:last-child{  
+      flex: 1;
+    }
+  }
+}  
