@@ -156,22 +156,9 @@ const columns = [
 
 class DragSortingTable extends React.Component {
   state = {
-    data: [{
-      key: '1',
-      index: '序号',
-      subjectdec: 32,
-      type: '1',
-    }, {
-      key: '2',
-      index: 'Jim Green',
-      subjectdec: 42,
-      type: '1',
-    }, {
-      key: '3',
-      index: 'Joe Black',
-      subjectdec: 32,
-      type: '1',
-    }],
+    data: [
+      // {index:'01',subjectdec:'你好',type:'选择题'}
+    ],
   }
 
   components = {
@@ -195,18 +182,40 @@ class DragSortingTable extends React.Component {
 
   render() {
     return (
-      <Table
-        columns={columns}
-        dataSource={this.state.data}
-        components={this.components}
-        pagination={false}
-        bordered
-        size="small"
-        onRow={(record, index) => ({
-          index,
-          moveRow: this.moveRow,
-        })}
-      />
+      <div>
+        <div style={{marginBottom:'10px'}}>
+          <Button type="primary">添加试题</Button>
+          {
+            this.state.data.length === 0 ?
+              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
+            :
+              <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
+          }
+        </div>
+        {
+          this.state.data.length === 0 ?
+            <div className="examnodata">
+              <image src="" />
+              <p>暂无数据</p>
+            </div>
+          :
+
+            <Table
+              columns={columns}
+              dataSource={this.state.data}
+              components={this.components}
+              pagination={false}
+              bordered
+              className="editExam"
+              size="small"
+              onRow={(record, index) => ({
+                index,
+                moveRow: this.moveRow,
+              })}
+            />
+
+        }
+      </div>
     );
   }
 }
@@ -329,10 +338,7 @@ class EditContainer extends React.Component {
             <div className="label-box">
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
-                <div style={{marginBottom:'10px'}}>
-                  <Button type="primary">添加试题</Button>
-                  <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
-                </div>
+
                 <MoveTable />
 
                 <div>
