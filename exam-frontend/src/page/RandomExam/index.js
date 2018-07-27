@@ -1,231 +1,16 @@
 import React from 'react';
 import { Input,Button,Table,Breadcrumb,Tooltip,Icon} from 'antd';
-import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
-import none from "../../assets/images/none.png";
+
 
 const { TextArea } = Input;
 
 
-function dragDirection(
-  dragIndex,
-  hoverIndex,
-  initialClientOffset,
-  clientOffset,
-  sourceClientOffset,
-) {
-  const hoverMiddleY = (initialClientOffset.y - sourceClientOffset.y) / 2;
-  const hoverClientY = clientOffset.y - sourceClientOffset.y;
-  if (dragIndex < hoverIndex && hoverClientY > hoverMiddleY) {
-    return 'downward';
-  }
-  if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
-    return 'upward';
-  }
-}
-
-class BodyRow extends React.Component {
-  render() {
-    const {
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      moveRow,
-      dragRow,
-      clientOffset,
-      sourceClientOffset,
-      initialClientOffset,
-      ...restProps
-    } = this.props;
-    const style = { ...restProps.style, cursor: 'move' };
-
-    let className = restProps.className;
-    if (isOver && initialClientOffset) {
-      const direction = dragDirection(
-        dragRow.index,
-        restProps.index,
-        initialClientOffset,
-        clientOffset,
-        sourceClientOffset
-      );
-      if (direction === 'downward') {
-        className += ' drop-over-downward';
-      }
-      if (direction === 'upward') {
-        className += ' drop-over-upward';
-      }
-    }
-
-    return connectDragSource(
-      connectDropTarget(
-        <tr
-          {...restProps}
-          className={className}
-          style={style}
-        />
-      )
-    );
-  }
-}
-
-const rowSource = {
-  beginDrag(props) {
-    return {
-      index: props.index,
-    };
-  },
-};
-
-const rowTarget = {
-  drop(props, monitor) {
-    const dragIndex = monitor.getItem().index;
-    const hoverIndex = props.index;
-
-    // Don't replace items with themselves
-    if (dragIndex === hoverIndex) {
-      return;
-    }
-
-    // Time to actually perform the action
-    props.moveRow(dragIndex, hoverIndex);
-
-    // Note: we're mutating the monitor item here!
-    // Generally it's better to avoid mutations,
-    // but it's good here for the sake of performance
-    // to avoid expensive index searches.
-    monitor.getItem().index = hoverIndex;
-  },
-};
-
-const DragableBodyRow = DropTarget('row', rowTarget, (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  sourceClientOffset: monitor.getSourceClientOffset(),
-}))(
-  DragSource('row', rowSource, (connect, monitor) => ({
-    connectDragSource: connect.dragSource(),
-    dragRow: monitor.getItem(),
-    clientOffset: monitor.getClientOffset(),
-    initialClientOffset: monitor.getInitialClientOffset(),
-  }))(BodyRow)
-);
-
-const columns = [
-  {
-    width:'8.2%',
-    title: '序号',
-    dataIndex: 'index'
-  },{
-    width:'67.4%',
-    title: '试题',
-    dataIndex: 'subjectdec'
-  },{
-    width:'8.2%',
-    title: '题型',
-    dataIndex: 'type'
-  },{
-    width:'8.6%',
-    title: '分值',
-    dataIndex: 'score',
-    render:(record)=>(
-      <div className="inputBox">
-        <div className="inputLeft">
-          <Input type="text" />
-        </div>
-        <div className="inputRight">
-          <div><Icon type="up" /></div>
-          <div><Icon type="down" /></div>
-        </div>
-      </div>
-    )
-  },{
-    width:'7.6%',
-    title: '操作',
-    dataIndex: 'operate',
-    render:(record)=>(
-      <Tooltip title="删除">
-        <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
-      </Tooltip>
-    )
-  }
-];
-
-class DragSortingTable extends React.Component {
-  state = {
-    data: [
-      // {index:'01',subjectdec:'你好',type:'选择题'}
-    ],
-  }
-
-  components = {
-    body: {
-      row: DragableBodyRow,
-    },
-  }
-
-  moveRow = (dragIndex, hoverIndex) => {
-    const { data } = this.state;
-    const dragRow = data[dragIndex];
-
-    this.setState(
-      update(this.state, {
-        data: {
-          $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
-        },
-      }),
-    );
-  }
-
-  render() {
-    return (
-      <div>
-        <div style={{marginBottom:'10px'}}>
-          <Button type="primary">添加试题</Button>
-          {
-            this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
-            :
-              <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
-          }
-        </div>
-        {
-          this.state.data.length === 0 ?
-            <div className="examnodata">
-              <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
-              <p style={{textAlign:'center'}}>暂无数据</p>
-            </div>
-          :
-
-            <Table
-              columns={columns}
-              dataSource={this.state.data}
-              components={this.components}
-              pagination={false}
-              bordered
-              className="editExam"
-              size="small"
-              onRow={(record, index) => ({
-                index,
-                moveRow: this.moveRow,
-              })}
-            />
-
-        }
-      </div>
-    );
-  }
-}
-
-const MoveTable = DragDropContext(HTML5Backend)(DragSortingTable);
-
-
-class EditContainer extends React.Component {
+class RandomExamContainer extends React.Component {
   state={
     paperName:"这是试卷名称",
     paperIns:"这是试卷说明",
@@ -341,7 +126,32 @@ class EditContainer extends React.Component {
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
 
-                <MoveTable />
+
+
+                <div class="random-exam">
+                  <div className="courseName">
+                    <span class="examtype-name">母婴产品进阶课程</span>
+                    <Tooltip title="删除" className="delete-right">
+                      <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
+                    </Tooltip>
+                  </div>
+                  <ul className="question-type">
+                    <li className="type">选择题</li>
+                    <li className="question-addnumber">2</li>
+                    <li className="question-number">3</li>
+                    <li className="question-score">4</li>
+                  </ul>
+                </div>
+
+
+
+
+
+
+
+
+
+
 
                 <div>
                   <div className="total">
@@ -412,7 +222,7 @@ class EditContainer extends React.Component {
 }
 
 
-export default class Edit extends React.Component {
+export default class RandomExam extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
@@ -439,7 +249,7 @@ export default class Edit extends React.Component {
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <EditContainer />
+          <RandomExamContainer />
         </div>
         <Footer />
       </div>

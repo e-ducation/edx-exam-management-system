@@ -1,0 +1,49 @@
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+.random-exam{
+  border: 1px solid $border;
+  border-radius:4px;
+  .courseName{
+    overflow: hidden;
+    height: 40px;
+    background: rgba(6, 145, 225,.1);
+    width: 100%;
+  }
+  .examtype-name{
+    float: left;
+    margin-left: 20px;
+    line-height: 40px;
+  }
+  .delete-right{
+    line-height: 40px;
+    float: right;
+    margin-right:20px;
+  }
+  .question-type{
+    height: 40px;
+    line-height: 40px;
+    overflow: hidden;
+    li{
+      float: left;
+      text-align: center;
+    }
+    .type{
+      width: 9.3%;
+    }
+    .question-addnumber{
+      width: 25.5%;
+    }
+    .question-number{
+      width: 33.3%;
+    }
+    .question-score{
+      width: 31.9%;
+    }
+  }
+}
