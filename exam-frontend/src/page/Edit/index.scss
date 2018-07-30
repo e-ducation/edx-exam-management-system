@@ -125,3 +125,13 @@ $blue_active: #1da6f3;
   display:flex;
   display:-webkit-flex;
 }
+.editbtn{
+  width: 170px;
+  margin: 24px auto;
+  button:first-child{
+    float: left;
+  }
+  button:last-child{
+    float: right;
+  }
+}
