@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import $ from 'jquery';
 export default class Header extends React.Component {
   render() {

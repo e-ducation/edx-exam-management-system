@@ -35,13 +35,10 @@ $blue_active: #1da6f3;
   height: 40px;
   line-height: 40px;
   padding-left: 20px;
-  div{
+  >div{
     >span{
       margin-right: 18px;
       display: inline-block;
-    }
-    >span:nth-of-type(3){
-      width: 150px;
     }
   }
 
