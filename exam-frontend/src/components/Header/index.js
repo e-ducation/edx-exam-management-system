@@ -3,7 +3,7 @@ import $ from 'jquery';
 export default class Header extends React.Component {
   render() {
     const { share } = this.props;
-    const width = $(window).width() + 6 + 'px';
+    const width = $(document).width() + 6 + 'px';
     return (
       <div className="header">
         <div className="header-wrap" style={this.props.showShadow ? {boxShadow: '0px -1px 7px 0px rgba(0,0,0,.5)', width, borderBottom: 'none'} : {width}}>
