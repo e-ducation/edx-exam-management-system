@@ -50,7 +50,6 @@ div,p,span,a{
   font-size:14px;
 }
 
-// 处理scroll
 html {
   overflow-y: scroll;
 }
@@ -59,17 +58,15 @@ html {
   overflow-y: auto;
   overflow-x: hidden;
 }
-/*
+
 :root body {
   position: absolute;
 }
 
 body {
   width: 100vw;
-  overflow: auto;
+  overflow: hidden;
 }
-*/
-
 
 // antd 组件样式修改
 // 1. 红色确认框

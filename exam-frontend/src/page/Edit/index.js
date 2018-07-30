@@ -426,9 +426,9 @@ export default class Edit extends React.Component {
       that.setState({ height })
     })
 
-    $(document.body).scroll(() => {
+    $(document).scroll(() => {
       this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
+        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
       })
     })
   }
