@@ -78,7 +78,7 @@ class PreviewContainer extends React.Component{
       $('.footer').show();
       $('.print-btn').show();
     }
-    
+
   }
 
   backToTop() {
@@ -112,7 +112,7 @@ class PreviewContainer extends React.Component{
               <div className="preview-block" key={index}>
                 <div>
                   <p className="preview-title">
-                    {index + 1}. 
+                    {index + 1}.
                     <span className="preview-type">
                       {
                         (() => {
@@ -127,7 +127,7 @@ class PreviewContainer extends React.Component{
                               return '[判断题]';
                             default:
                               return null;
-                          } 
+                          }
                         })()
                       }
                     </span>
@@ -146,7 +146,7 @@ class PreviewContainer extends React.Component{
                                   })
                                 }
                               </Radio.Group>;
-                              
+
                           case 'multiple':
                             return <Checkbox.Group defaultValue={null}>
                               {
@@ -177,10 +177,10 @@ class PreviewContainer extends React.Component{
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={true}>正确</Radio>
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={false}>错误</Radio>
                             </Radio.Group>;
-                          
+
                           default:
                               return null;
-                        } 
+                        }
                       })()
                     }
                   </div>
@@ -193,7 +193,7 @@ class PreviewContainer extends React.Component{
     )
   }
 }
- 
+
 
 export default class Preview extends React.Component {
   state = {

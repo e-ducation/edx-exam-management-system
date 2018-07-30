@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input,Button,Table,Breadcrumb,Tooltip,Icon} from 'antd';
+import { Input,Button,Table,Breadcrumb,Tooltip,Icon,InputNumber,Modal,Radio} from 'antd';
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
@@ -9,7 +9,7 @@ import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
 import none from "../../assets/images/none.png";
-
+const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
 
@@ -161,12 +161,38 @@ class DragSortingTable extends React.Component {
     data: [
       // {index:'01',subjectdec:'你好',type:'选择题'}
     ],
+    settingScoreVisible: true,
   }
 
   components = {
     body: {
       row: DragableBodyRow,
     },
+  }
+
+  //设置分数
+  showModal = () => {
+    this.setState({
+      settingScoreVisible: false,
+    });
+  }
+
+  onChange=(value)=>{
+    console.log('changed', value);
+  }
+
+  settingHandleOk = (e) => {
+    console.log(e);
+    this.setState({
+      settingScoreVisible: false,
+    });
+  }
+
+  settingHandleCancel = (e) => {
+    console.log(e);
+    this.setState({
+      settingScoreVisible: false,
+    });
   }
 
   moveRow = (dragIndex, hoverIndex) => {
@@ -185,11 +211,58 @@ class DragSortingTable extends React.Component {
   render() {
     return (
       <div>
+        <div>
+          <Modal
+            title="批量设置分值"
+            visible={this.state.settingScoreVisible}
+            onOk={this.settingHandleOk}
+            onCancel={this.settingHandleCancel}
+          >
+            <p>批量设置的分值将覆盖掉之前设置的分值，请谨慎操作。</p>
+            <RadioGroup onChange={this.settingOnChange} value={this.state.value} style={{marginTop:'10px'}}>
+              <Radio value={1}>统一分数</Radio>
+              <div style={{margin:'6px 0px 6px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <Radio value={2}>按题型</Radio>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>单选题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>多选题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>判断题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 6px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>填空题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+            </RadioGroup>
+
+          </Modal>
+        </div>
+
+
         <div style={{marginBottom:'10px'}}>
           <Button type="primary">添加试题</Button>
           {
             this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
+              <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModa}>批量设置分值</Button>
             :
               <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
           }
@@ -363,20 +436,12 @@ class EditContainer extends React.Component {
                       <div>
                         <span>总题型：{this.state.paper.length}</span>
                         <span>总分：{this.state.paper.length}</span>
-                        <span>及格线*：
-                          <span style={{float: 'right'}}>%</span>
-                          <div className="inputBox">
-                            <div className="inputLeft">
+                        <span>
+                          <span style={{marginRight:'6px'}}>及格线*</span>
+                          <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                          <span style={{marginLeft:'6px'}}>%</span>
 
-                              <Input value={this.state.paperpass} type="text" onKeyUp={this.inputNumberPass} onChange={this.onChangePass}/>
-                            </div>
-                            <div className="inputRight">
-                              <div onClick={this.paperpassAdd.bind(this,this.state.paperpass)}><Icon type="up" /></div>
-                              <div onClick={this.paperpassReduce.bind(this,this.state.paperpass)}><Icon type="down" /></div>
-                            </div>
-                          </div>
                         </span>
-
                         <span>（及格分60=总分100分*及格线60%）</span>
                       </div>
                     </div>

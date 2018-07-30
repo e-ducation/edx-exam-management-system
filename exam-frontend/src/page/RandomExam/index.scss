@@ -29,9 +29,15 @@ $blue_active: #1da6f3;
     height: 40px;
     line-height: 40px;
     overflow: hidden;
-    li{
+    border-top:1px solid $border;
+    >li{
       float: left;
       text-align: center;
+      border-right: 1px solid $border;
+      a{
+        color:$blue;
+        cursor: inherit;
+      }
     }
     .type{
       width: 9.3%;
@@ -44,6 +50,48 @@ $blue_active: #1da6f3;
     }
     .question-score{
       width: 31.9%;
+      border-right: none;
     }
   }
+}
+.inputBox{
+  width: 68px;
+  height: 32px;
+  line-height: 32px;
+  float: right;
+  .inputLeft{
+    float: left;
+    margin-top: 3px;
+    input{
+      width: 48px;
+      border-radius: 4px 0 0 4px;
+      border-right:none;
+    }
+  }
+  .inputRight{
+    float: right;
+    margin-top: 3px;
+    div{
+      display: block;
+      border-radius: 0;
+      width: 20px;
+      height: 16px;
+      border: 1px solid $border;
+      line-height: 16px;
+      text-align: center;
+      cursor: pointer;
+    }
+    div:first-child{
+      border-radius:0 4px 0 0;
+    }
+    div:last-child{
+      border-radius:0 0 4px 0;
+    }
+  }
+}
+.ant-input-number-handler-wrap{
+  opacity: 1;
+}
+.ant-input-number{
+  width: 58px;
 }
