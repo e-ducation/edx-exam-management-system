@@ -83,69 +83,6 @@ class ManageContainer extends React.Component {
         pass_grade: 70,
         creator: '张伟',
         is_creator: true,
-      },{
-        id: 4,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 5,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: false,
-      },{
-        id: 1,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 2,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 3,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 4,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 5,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: false,
       }
     ],
     pageCurrent: 1,
@@ -155,6 +92,23 @@ class ManageContainer extends React.Component {
 
 
   componentDidMount() {
+    const timer = setInterval(() => {
+      let { list } = this.state;
+      if (list.length > 30){
+        clearInterval(timer)
+      }
+      list.push({
+        id: 1,
+        name: '第一张测试试卷',
+        type: '固定试题',
+        count: 70,
+        total_grade: 100,
+        pass_grade: 70,
+        creator: '张伟',
+        is_creator: true,
+      })
+      this.setState({list})
+    }, 200)
   }
 
   // 1.1 试卷列表
@@ -344,7 +298,7 @@ export default class Manage extends React.Component {
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
         <Header showShadow={this.state.showShadow} />

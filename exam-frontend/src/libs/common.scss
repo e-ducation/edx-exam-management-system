@@ -126,6 +126,9 @@ html,body{
 
       a{
         color:$title;
+        display: inline-block;
+        width: 100%;
+        height: 100%;
       }
     }
     li.tag-current{

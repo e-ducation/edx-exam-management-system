@@ -106,7 +106,7 @@ export default class Home extends React.Component {
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
         <Header showShadow={this.state.showShadow} />

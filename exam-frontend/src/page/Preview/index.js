@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Icon, Radio, Checkbox, Input, Button } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
@@ -30,6 +30,16 @@ class PreviewContainer extends React.Component{
         title: '都是咖啡连锁店分离式打卡_______斯柯达发牢骚',
         input: ['',''],
         grade: 12,
+      },{
+        type: 'radio',
+        title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
+        grade: 5,
+        options: ['时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
+      },{
+        type: 'radio',
+        title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
+        grade: 5,
+        options: ['时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
       },{
         type: 'radio',
         title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
@@ -78,7 +88,7 @@ class PreviewContainer extends React.Component{
       $('.footer').show();
       $('.print-btn').show();
     }
-    
+
   }
 
   backToTop() {
@@ -112,7 +122,7 @@ class PreviewContainer extends React.Component{
               <div className="preview-block" key={index}>
                 <div>
                   <p className="preview-title">
-                    {index + 1}. 
+                    {index + 1}.
                     <span className="preview-type">
                       {
                         (() => {
@@ -127,7 +137,7 @@ class PreviewContainer extends React.Component{
                               return '[判断题]';
                             default:
                               return null;
-                          } 
+                          }
                         })()
                       }
                     </span>
@@ -146,7 +156,7 @@ class PreviewContainer extends React.Component{
                                   })
                                 }
                               </Radio.Group>;
-                              
+
                           case 'multiple':
                             return <Checkbox.Group defaultValue={null}>
                               {
@@ -164,7 +174,7 @@ class PreviewContainer extends React.Component{
                                     <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
                                     <Input.TextArea
                                       autosize={{ minRows: 1, maxRows: 6 }}
-                                      style={{ width: '400px', display:'inline-block', verticalAlign: 'middle', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                      style={{ width: '400px', display:'inline-block', marginLeft: '15px', verticalAlign: 'text-top'}}
                                     />
                                   </div>
                                 })
@@ -177,10 +187,10 @@ class PreviewContainer extends React.Component{
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={true}>正确</Radio>
                               <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={false}>错误</Radio>
                             </Radio.Group>;
-                          
+
                           default:
                               return null;
-                        } 
+                        }
                       })()
                     }
                   </div>
@@ -193,7 +203,7 @@ class PreviewContainer extends React.Component{
     )
   }
 }
- 
+
 
 export default class Preview extends React.Component {
   state = {
@@ -216,7 +226,7 @@ export default class Preview extends React.Component {
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px', minWidth: '649px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px', minWidth: '649px'}
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
