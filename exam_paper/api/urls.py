@@ -14,19 +14,19 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-
 from __future__ import unicode_literals
 
-from django.conf.urls import url, include
-from django.contrib import admin
+from rest_framework import routers
 
-from django.conf.urls import url
-from rest_framework_swagger.views import get_swagger_view
+from exam_paper.api.views import (
+    ExamPaperListViewSet,
+    ExamPaperFixedCreateViewSet,
+    ExamPaperRandomCreateViewSet,
+)
 
-schema_view = get_swagger_view(title='Exam Management System API')
 
-urlpatterns = [
-    url(r'^$', schema_view),
-    url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('exam_paper.api.urls')),
-]
+router = routers.SimpleRouter()
+router.register(r'exampaper/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
+router.register(r'exampaper/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
+router.register(r'exampaper', ExamPaperListViewSet, 'exampaper')
+urlpatterns = router.urls

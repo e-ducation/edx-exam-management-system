@@ -41,14 +41,16 @@ class ExamPaper(TimeStampedModel):
 
 
 class ExamPaperProblems(TimeStampedModel):
+
+    exam_paper = models.ForeignKey(ExamPaper, related_name='problems')
     sequence = models.IntegerField(default=1)
-    problem_id = models.CharField(max_length=255, db_index=True, unique=True)
+    problem_id = models.CharField(max_length=255, db_index=True)
     grade = models.DecimalField(max_digits=5, decimal_places=2,
                                 validators=[MinValueValidator(0.01), MaxValueValidator(100.00)])
-    exam_paper = models.ForeignKey(ExamPaper, related_name='problems')
 
 
 class ExamPaperCreateRule(TimeStampedModel):
+
     exam_paper = models.ForeignKey(ExamPaper, related_name='rules')
     problem_section_id = models.CharField(max_length=255, null=True, blank=True)
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE)
