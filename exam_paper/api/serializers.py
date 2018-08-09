@@ -83,6 +83,19 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
         return exam_paper
 
+    def update(self, exam_paper, validated_data):
+        problems_data = validated_data.pop('problems')
+        with transaction.atomic():
+            exam_paper.__dict__.update(**validated_data)
+            exam_paper.save()
+            exam_paper.problems.all().delete()
+            for problem_data in problems_data:
+                if problem_data.get('id'):
+                    problem_data.pop('id')
+                ExamPaperProblems.objects.create(exam_paper=exam_paper, **problem_data)
+
+        return exam_paper
+
 
 class ExamPaperRandomSerializer(serializers.ModelSerializer):
     rules = ExamPaperCreateRuleSerializer(many=True)
@@ -100,5 +113,19 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
                 ExamPaperCreateRule.objects.create(exam_paper=exam_paper, **rule_data)
 
         return exam_paper
+
+    def update(self, exam_paper, validated_data):
+        rules_data = validated_data.pop('rules')
+        with transaction.atomic():
+            exam_paper.__dict__.update(**validated_data)
+            exam_paper.save()
+            exam_paper.problems.all().delete()
+            for rule_data in rules_data:
+                if rule_data.get('id'):
+                    rule_data.pop('id')
+                ExamPaperProblems.objects.create(exam_paper=exam_paper, **rule_data)
+
+        return exam_paper
+
 
 
