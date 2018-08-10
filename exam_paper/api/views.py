@@ -35,20 +35,21 @@ DUPLICATE_SUFFIX = '(copy)'
 
 class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin, GenericViewSet):
     """
-    - 试卷列表接口
-        * 分页，单页 10 条记录
-        * 排序，按创建时间、降序排序
-        * 搜索，按「试卷名称」搜索
-        * 权限
-            - 老师看到自己的试卷
-            - 企业管理员看到所有的试卷
+    retrieve: 试卷详情接口
 
-    - 删除试卷接口
-        * 权限，只能删除自己的试卷
+    list: 试卷列表接口
+    * 分页，默认单页 10 条记录
+    * 排序，默认按创建时间、降序排序， /api/exampaper?ordering=created
+    * 搜索，按「试卷名称」搜索，/api/exampaper?ordering=created?search=<exam paper title>
+    * 权限，只能看到自己的试卷
 
-    - 复制试卷接口
-        * 「试卷名称」后面追加——(副本)
-        * 权限，只能复制自己的试卷
+    destroy: 删除试卷接口
+    * 权限，只能删除自己的试卷
+
+    duplicate: 复制试卷接口
+    - 「试卷名称」后面追加「(副本)」
+    - 权限，只能复制自己的试卷
+
     """
     authentication_classes = (
         BasicAuthentication,
@@ -126,23 +127,26 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
                                   GenericViewSet):
     """
-    - 新增试卷接口
+    create: 新增试卷接口（固定试题）
+    **Example Requests**
+    POST /api/exampaper/fixed/
     ```
     {
       "problems": [
-        {"grade": 5, "problem_id": 1, "sequence": 1},
-        {"grade": 5, "problem_id": 2, "sequence": 2},
-        {"grade": 5, "problem_id": 3, "sequence": 3}
+        {"grade": 5, "problem_id": "hogwarts+101+201801+type@problem+block@9dd60b8e2d874ac19ccf4dc51315c8c5", "sequence": 1},
+        {"grade": 5, "problem_id": "hogwarts+101+201801+type@problem+block@15328fcdccca433498ed0311603b60b3", "sequence": 2},
       ],
       "name": "Middle Test",
       "description": "Everyone Calm Down"
     }
     ```
 
-    - 试卷详情接口
+    update: 编辑试卷接口（固定试题）
+    - 权限，只能编辑自己创建的试卷
 
-    - 编辑试卷接口
-        * 权限，只能编辑自己创建的试卷
+    partial_update: 编辑试卷接口（固定试题）
+    - 权限，只能编辑自己创建的试卷
+
     """
     authentication_classes = (
         BasicAuthentication,
@@ -166,25 +170,36 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
 
 class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
     """
-    - 新增试卷接口（随机抽题）
+    create: 新增试卷接口（随机抽题）
+
+    **Example Requests**
+    POST /api/exampaper/random/
     ```
     {
       "rules": [
-        {"problem_section_id": 5, "problem_type": "sc", "problem_num": 1, "grade": 5},
-        {"problem_section_id": 5, "problem_type": "mc", "problem_num": 1, "grade": 5},
-        {"problem_section_id": 5, "problem_type": "fi", "problem_num": 1, "grade": 5},
-        {"problem_section_id": 5, "problem_type": "tof", "problem_num": 1, "grade": 5}
+        {
+            "problem_section_id": "hogwarts+101+201801+type@sequential+block@0f6d6d4b762342218cc30cfe14b7e587",
+            "problem_type": "choiceresponse",
+            "problem_num": 1,
+            "grade": 5
+        },
+        {
+            "problem_section_id": "hogwarts+101+201801+type@sequential+block@0f6d6d4b762342218cc30cfe14b7e587",
+            "problem_type": "multiplechoiceresponse",
+            "problem_num": 1,
+            "grade": 5
+        }
       ],
       "name": "期中考试 random",
       "description": "大家冷静一下"
     }
     ```
 
-    - 试卷详情接口
+    update: 编辑试卷接口（随机抽题）
+    - 权限，只能编辑自己创建的试卷
 
-    - 编辑试卷接口
-        * 权限，只能编辑自己创建的试卷
-
+    partial_update: 编辑试卷接口（随机抽题）
+    - 权限，只能编辑自己创建的试卷
     """
     authentication_classes = (
         BasicAuthentication,
