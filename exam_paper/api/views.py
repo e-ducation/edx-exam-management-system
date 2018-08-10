@@ -27,7 +27,7 @@ from exam_paper.api.serializers import (
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
 )
-from exam_paper.models import ExamPaper, PROBLEM_TYPE
+from exam_paper.models import ExamPaper
 
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -87,7 +87,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
             section_ids = exam_paper.rules.all().values_list(flat=True)
             post_data = {
                 'sections': list(section_ids),
-                'types': PROBLEM_TYPE
+                'types':    ['multiplechoiceresponse', 'choiceresponse', 'stringresponse']
             }
             url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PRBLEMS']
             rep = requests.post(url, json=post_data)
