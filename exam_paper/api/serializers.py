@@ -36,11 +36,7 @@ class ExamPaperCreateRuleSerializer(serializers.ModelSerializer):
 
 
 class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
-    problems = serializers.SlugRelatedField(
-        many=True,
-        read_only=True,
-        slug_field='problem_id'
-    )
+    problems = serializers.SlugRelatedField(many=True, read_only=True, slug_field='problem_id')
     total_problem_num = serializers.SerializerMethodField()
     total_grade = serializers.SerializerMethodField()
     passing_grade = serializers.SerializerMethodField()

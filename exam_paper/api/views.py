@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 import random
+import requests
+from django.conf import settings
 
 from django.db import transaction
 from rest_framework import filters
@@ -25,7 +27,7 @@ from exam_paper.api.serializers import (
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
 )
-from exam_paper.models import ExamPaper
+from exam_paper.models import ExamPaper, PROBLEM_TYPE
 
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -67,21 +69,13 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
     def generate_random_problem(self, rules, section_problems):
         """
-        rules = [{'id': 1, 'problem_type': 'sc', 'problem_num': 10}]
-        section_problems = {
-            '1': {
-                'sc': [1, 2, 3, 4],
-            },
-            '2': {
-                'sc': [1, 2, 3, 4],
-            },
-        }
+        use generated rule to get random problems from section problems
         """
         all_problem = []
         for rule in rules:
-            problem_data = section_problems[str(rule['id'])]
-            problems = problem_data[rule['problem_type']]
-            all_problem += random.sample(problems, rule['problem_num'])
+            problem_data = section_problems[rule.problem_section_id]
+            problems = problem_data[rule.problem_type]
+            all_problem += random.sample(problems, rule.problem_num)
         return all_problem
 
     def retrieve(self, request, *args, **kwargs):
@@ -90,12 +84,14 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
         if exam_paper.create_type == 'random':
             section_ids = exam_paper.rules.all().values_list(flat=True)
+            post_data = {
+                'sections': list(section_ids),
+                'types': PROBLEM_TYPE
+            }
+            url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PRBLEMS']
+            rep = requests.post(url, json=post_data)
 
-            # 题目数据
-            section_problems = request.post('url', data={'section_ids': section_ids})
-
-            rules = exam_paper.rules.all()
-            all_problems = self.generate_random_problem(rules, section_problems)
+            all_problems = self.generate_random_problem(exam_paper.rules.all(), rep.json())
 
             serializer.data['problems'] = all_problems
             return Response(serializer.data)

@@ -126,3 +126,11 @@ STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
 }
+
+
+# open edX setttings
+
+EDX_API = {
+    'HOST': 'http://0.0.0.0:8001',
+    'SECTION_PROBLEM': '/exam/section/problems',
+}

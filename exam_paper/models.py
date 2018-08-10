@@ -14,10 +14,9 @@ PAPER_CREATE_TYPE = (
 )
 
 PROBLEM_TYPE = (
-    ('sc', 'single_choice'),
-    ('mc', 'multi_choice'),
-    ('fi', 'fill_in'),
-    ('tof', 'true_or_false'),
+    ('multiplechoiceresponse', 'single_choice'),
+    ('choiceresponse', 'multi_choice'),
+    ('stringresponse', 'fill_in'),
 )
 
 
