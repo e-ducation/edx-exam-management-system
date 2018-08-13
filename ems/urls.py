@@ -22,10 +22,11 @@ from django.contrib import admin
 
 from django.conf.urls import url
 from rest_framework_swagger.views import get_swagger_view
+from auth_backends.urls import auth_urlpatterns
 
 schema_view = get_swagger_view(title='Exam Management System API')
 
-urlpatterns = [
+urlpatterns = auth_urlpatterns + [
     url(r'^$', schema_view),
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include('exam_paper.api.urls')),

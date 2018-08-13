@@ -8,7 +8,7 @@ from django.conf import settings
 
 from django.db import transaction
 from rest_framework import filters
-from rest_framework.authentication import BasicAuthentication
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -28,7 +28,6 @@ from exam_paper.api.serializers import (
     ExamPaperRandomSerializer,
 )
 from exam_paper.models import ExamPaper
-
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -52,7 +51,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
     """
     authentication_classes = (
-        BasicAuthentication,
+        BasicAuthentication, SessionAuthentication
     )
     permission_classes = (
         IsAuthenticated,
@@ -60,9 +59,9 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
     serializer_class = ExamPaperListSerializer
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('name', )
-    ordering_fields = ('created', )
-    ordering = ('created', )
+    search_fields = ('name',)
+    ordering_fields = ('created',)
+    ordering = ('created',)
 
     def get_queryset(self):
         user = self.request.user
@@ -87,7 +86,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
             section_ids = exam_paper.rules.all().values_list(flat=True)
             post_data = {
                 'sections': list(section_ids),
-                'types':    ['multiplechoiceresponse', 'choiceresponse', 'stringresponse']
+                'types': ['multiplechoiceresponse', 'choiceresponse', 'stringresponse']
             }
             url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PRBLEMS']
             rep = requests.post(url, json=post_data)
@@ -149,7 +148,7 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
 
     """
     authentication_classes = (
-        BasicAuthentication,
+        BasicAuthentication, SessionAuthentication
     )
     permission_classes = (
         IsAuthenticated,
@@ -202,7 +201,7 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
     - 权限，只能编辑自己创建的试卷
     """
     authentication_classes = (
-        BasicAuthentication,
+        BasicAuthentication, SessionAuthentication
     )
     permission_classes = (
         IsAuthenticated,
@@ -219,6 +218,3 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
 
         response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
         return response
-
-
-

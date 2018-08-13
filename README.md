@@ -23,8 +23,29 @@ EDX_API = {
     # api to get section's problems
     'SECTION_PROBLEM': '/exam/section/problems',
 }
-```
 
+SOCIAL_AUTH_EDX_OIDC_KEY = ''  #Client key
+SOCIAL_AUTH_EDX_OIDC_SECRET = ''  #Client secret
+SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'http://lms/oauth2' #Provider root (e.g. https://courses.stage.edx.org/oauth2)
+SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = ''   #Identity token decryption key (same value as the client secret for edX OpenID Connect)
+SOCIAL_AUTH_EDX_OIDC_ISSUER = 'http://lms/oauth2'  #OAuth/OpenID Connect provider ID token issuer (e.g. https://courses.stage.edx.org/oauth2)
+```
+Your Edx-platform must make the following configuration for logging:
+1. Configure the following environment variables to lms.env.json or devstack_docker.py(When using the Docker-based devstack)
+```python
+"FEATURES: {
+    ...
+    "ENABLE_OAUTH2_PROVIDER": true,
+    "OAUTH_ENFORCE_SECURE": false,
+    ...
+}
+"JWT_ISSUER": "http://LMS/oauth2",
+"OAUTH_OIDC_ISSUER": "http://LMS/oauth2",
+"OAUTH_ENFORCE_SECURE": false,
+...
+```
+2. Then log in to http://lms/admin/ as an administrator and join the corresponding client at http://lms/admin/oauth2/client/.The Client id and Client secret are the SEA_AUTH_EDX_OIDC_KEY and SOCIAL_AUTH_EDX_OIDC_SECRET just configured.
+3. On the http://lms/admin/ page, add the newly joined client to the Trusted clients.
 ## Getting Help
 
 ## Issue Tracker
