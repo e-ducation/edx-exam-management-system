@@ -35,7 +35,8 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'exam_paper'
+    'exam_paper',
+    'social_django',
 ]
 
 THIRD_PART_APPS = [
@@ -134,3 +135,15 @@ EDX_API = {
     'HOST': 'http://0.0.0.0:8001',
     'SECTION_PROBLEM': '/exam/section/problems',
 }
+
+#social-setting
+AUTHENTICATION_BACKENDS = (
+    'auth_backends.backends.EdXOpenIdConnect',
+)
+
+SOCIAL_AUTH_EDX_OIDC_KEY = ''
+SOCIAL_AUTH_EDX_OIDC_SECRET = ''
+SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'http://lms/oauth2'
+SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = '' #	Identity token decryption key (same value as the client secret for edX OpenID Connect)
+SOCIAL_AUTH_EDX_OIDC_ISSUER = 'http://lms/oauth2'
+LOGIN_REDIRECT_URL = '/api/exampaper/random'
