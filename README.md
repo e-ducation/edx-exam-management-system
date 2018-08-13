@@ -8,7 +8,14 @@
 make install
 ```
 
-2. Run the server
+2. Setup DB
+```
+make dev.makemigrations:
+
+make dev.migrate:
+```
+
+3. Run the server
 ```bash
 make dev.run
 ```

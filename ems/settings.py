@@ -1,3 +1,4 @@
+# -*- coding:utf-8 -*-
 """
 Django settings for ems project.
 
@@ -36,12 +37,12 @@ DJANGO_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'exam_paper',
-    'social_django',
 ]
 
 THIRD_PART_APPS = [
     'rest_framework',
     'rest_framework_swagger',
+    'social_django',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PART_APPS
@@ -136,7 +137,7 @@ EDX_API = {
     'SECTION_PROBLEM': '/exam/section/problems',
 }
 
-#social-setting
+# SSO
 AUTHENTICATION_BACKENDS = (
     'auth_backends.backends.EdXOpenIdConnect',
 )

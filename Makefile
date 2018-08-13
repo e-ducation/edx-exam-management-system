@@ -6,8 +6,12 @@ help: ## display help message
 
 install: ## Install Python requirements
 	pip install -r requirements.txt
+
+dev.makemigrations: ## Generate migrations
 	python manage.py makemigrations
+
+dev.migrate: ## Execute migrate
 	python manage.py migrate
 
-dev.run: ## run develop server
+dev.run: ## Run develop server
 	python manage.py runserver 0.0.0.0:8111
