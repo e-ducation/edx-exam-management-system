@@ -111,10 +111,15 @@ $blue_active: #1da6f3;
   }
 }
 
-.ant-table-bordered .ant-table-tbody > tr > td, .ant-table-bordered .ant-table-thead > tr > th{
+.examnodata{
+  height: 242px;
+  width: 100%;
+  border: 1px solid $border;
+  border-radius: 4px;
+}
+.editExam .ant-table-bordered .ant-table-tbody > tr > td, .editExam .ant-table-bordered .ant-table-thead > tr > th{
   text-align: center;
 }
-
 .displayFlx{
   width:100%;
   display:flex;
