@@ -83,18 +83,21 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
         serializer = ExamPaperSerializer(exam_paper)
 
         if exam_paper.create_type == 'random':
-            section_ids = exam_paper.rules.all().values_list(flat=True)
+            section_ids = exam_paper.rules.values_list('problem_section_id', flat=True)
             post_data = {
                 'sections': list(section_ids),
                 'types': ['multiplechoiceresponse', 'choiceresponse', 'stringresponse']
             }
-            url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PRBLEMS']
-            rep = requests.post(url, json=post_data)
+
+            token = request.user.social_auth.first().extra_data[u'access_token']
+            url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PROBLEMS']
+            rep = requests.post(url, json=post_data, headers={'Authorization': 'Bearer ' + token})
 
             all_problems = self.generate_random_problem(exam_paper.rules.all(), rep.json())
 
-            serializer.data['problems'] = all_problems
-            return Response(serializer.data)
+            res_data = serializer.data
+            res_data['problems'] = all_problems
+            return Response(res_data)
 
         return Response(serializer.data)
 
