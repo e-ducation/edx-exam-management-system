@@ -133,8 +133,13 @@ REST_FRAMEWORK = {
 # open edX setttings
 
 EDX_API = {
-    'HOST': 'http://0.0.0.0:8001',
+    'HOST': 'http://0.0.0.0:18010',
+    'COURSES': '/exam/courses',
+    'COURSE_PROBLEMS': '/exam/problems',
+    'COURSE_SECTIONS': '/exam/sections',
     'SECTION_PROBLEMS': '/exam/section/problems',
+    'PROBLEM_DETAIL': '/exam/problems/detail',
+    'PROBLEM_TYPES': '/exam/problem/types',
 }
 
 # SSO

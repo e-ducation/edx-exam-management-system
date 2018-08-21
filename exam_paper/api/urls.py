@@ -16,17 +16,32 @@ Including another URLconf
 """
 from __future__ import unicode_literals
 
+from django.conf.urls import url
 from rest_framework import routers
 
 from exam_paper.api.views import (
     ExamPaperListViewSet,
     ExamPaperFixedCreateViewSet,
     ExamPaperRandomCreateViewSet,
+    CoursesListAPIView,
+    CourseProblemsListAPIView,
+    CourseSectionsListAPIView,
+    SectionsProblemsListAPIView,
+    ProblemsDetailAPIView,
+    ProblemsTypesAPIView,
 )
 
+urlpatterns = [
+    url(r'^courses/$', CoursesListAPIView.as_view()),
+    url(r'^courses/problems/$', CourseProblemsListAPIView.as_view()),
+    url(r'^sections/$', CourseSectionsListAPIView.as_view()),
+    url(r'^sections/problems/$', SectionsProblemsListAPIView.as_view()),
+    url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
+    url(r'^problems/types/$', ProblemsTypesAPIView.as_view()),
+]
 
 router = routers.SimpleRouter()
 router.register(r'exampaper/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
 router.register(r'exampaper/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
 router.register(r'exampaper', ExamPaperListViewSet, 'exampaper')
-urlpatterns = router.urls
+urlpatterns += router.urls

@@ -8,11 +8,12 @@ from django.conf import settings
 
 from django.db import transaction
 from rest_framework import filters
-from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.views import APIView
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin,
@@ -51,7 +52,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
     """
     authentication_classes = (
-        BasicAuthentication, SessionAuthentication
+        SessionAuthentication,
     )
     permission_classes = (
         IsAuthenticated,
@@ -151,7 +152,7 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
 
     """
     authentication_classes = (
-        BasicAuthentication, SessionAuthentication
+        SessionAuthentication,
     )
     permission_classes = (
         IsAuthenticated,
@@ -204,7 +205,7 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
     - 权限，只能编辑自己创建的试卷
     """
     authentication_classes = (
-        BasicAuthentication, SessionAuthentication
+        SessionAuthentication,
     )
     permission_classes = (
         IsAuthenticated,
@@ -221,3 +222,122 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
 
         response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
         return response
+
+
+class CoursesListAPIView(APIView):
+    """
+    获取用户的课程列表
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['COURSES']
+        rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
+        print rep.text
+        return Response('hello')
+
+
+class CourseSectionsListAPIView(APIView):
+    """
+    获取课程的章节列表
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_SECTIONS']
+        payload = {
+           'course_id': 'course_id'
+        }
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params=payload
+        )
+        return Response(rep.json())
+
+
+class CourseProblemsListAPIView(APIView):
+    """
+    通过课程 ID 获取题目列表
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_PROBLEMS']
+        payload = {
+            'course_id': request.params.get('course_id'),
+            'block_id': request.params.get('block_id'),
+            'text': request.params.get('text'),
+            'page': request.params.get('page'),
+            'page_size': request.params.get('page_size'),
+        }
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params=payload
+        )
+        return Response(rep.json())
+
+
+class SectionsProblemsListAPIView(APIView):
+    """
+    获取课程章节的题目列表
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PROBLEMS']
+        post_data = {
+            'sections': request.data.get('sections'),
+            'types': request.data.get('types')
+        }
+        rep = requests.post(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            json=post_data
+        )
+        return Response(rep.json())
+
+
+class ProblemsDetailAPIView(APIView):
+    """
+    获取题目内容
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def post(self, request, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_DETAIL']
+        post_data = {
+            'problems': request.data.get('problems')
+        }
+        rep = requests.post(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            json=post_data
+        )
+        return Response(rep.json())
+
+
+class ProblemsTypesAPIView(APIView):
+    """
+    获取题目类型
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_TYPES']
+        rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
+        return Response(rep.json())
