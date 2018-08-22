@@ -153,3 +153,32 @@ SOCIAL_AUTH_EDX_OIDC_URL_ROOT = 'http://lms/oauth2'
 SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = '' #	Identity token decryption key (same value as the client secret for edX OpenID Connect)
 SOCIAL_AUTH_EDX_OIDC_ISSUER = 'http://lms/oauth2'
 LOGIN_REDIRECT_URL = '/'
+
+# cross domain
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    '*'
+)
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Pragma',
+)
