@@ -43,12 +43,14 @@ THIRD_PART_APPS = [
     'rest_framework',
     'rest_framework_swagger',
     'social_django',
+    'corsheaders',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PART_APPS
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -160,15 +162,15 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
     '*'
 )
+
 CORS_ALLOW_METHODS = (
     'DELETE',
     'GET',
-    'OPTIONS',
     'PATCH',
     'POST',
     'PUT',
-    'VIEW',
 )
+
 CORS_ALLOW_HEADERS = (
     'XMLHttpRequest',
     'X_FILENAME',
