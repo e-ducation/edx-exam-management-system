@@ -41,9 +41,9 @@ DJANGO_APPS = [
 
 THIRD_PART_APPS = [
     'rest_framework',
-    'rest_framework_swagger',
     'social_django',
     'corsheaders',
+    'drf_yasg',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PART_APPS
@@ -126,13 +126,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Third Part App
 
-REST_FRAMEWORK = {
-}
-
-
-# open edX setttings
+# Open edX setttings
 
 EDX_API = {
     'HOST': 'http://0.0.0.0:18010',
@@ -184,3 +179,9 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
     'Pragma',
 )
+
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/login',
+    'LOGOUT_URL': '/logout',
+
+}

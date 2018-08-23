@@ -21,7 +21,8 @@ make dev.run
 ```
 
 4. View api document
-Just access `http://0.0.0.0:8111/`, you have to login to view all api document.
+Just access `http://0.0.0.0:8111/swagger`
+Ps: you have to login to view all api document.
 
 ## Configuration
 ```

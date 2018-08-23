@@ -7,11 +7,14 @@ import requests
 from django.conf import settings
 
 from django.db import transaction
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.views import APIView
 from rest_framework.mixins import (
@@ -31,6 +34,51 @@ from exam_paper.api.serializers import (
 from exam_paper.models import ExamPaper
 
 DUPLICATE_SUFFIX = '(copy)'
+
+page = openapi.Parameter(
+    'page',
+    openapi.IN_QUERY,
+    description="page number",
+    type=openapi.TYPE_INTEGER
+)
+page_size = openapi.Parameter(
+    'page_size',
+    openapi.IN_QUERY,
+    description="page size",
+    type=openapi.TYPE_INTEGER
+)
+search = openapi.Parameter(
+    'search',
+    openapi.IN_QUERY,
+    description="search text",
+    type=openapi.TYPE_INTEGER
+)
+section_id = openapi.Parameter(
+    'section_id',
+    openapi.IN_QUERY,
+    description="section id",
+    type=openapi.TYPE_STRING
+)
+
+fix_exampaper = openapi.Schema(
+    title='name',
+    type=openapi.TYPE_OBJECT,
+    properties={
+        'name': openapi.Schema(type=openapi.TYPE_STRING, example="Middle Exam"),
+        'description': openapi.Schema(type=openapi.TYPE_STRING, example="Middle Exam"),
+        'problems': openapi.Schema(
+            type=openapi.TYPE_ARRAY,
+            items=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
+                    'sequence': openapi.Schema(type=openapi.TYPE_INTEGER, example=5)
+                }
+            )
+        )
+    },
+)
 
 
 class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin, GenericViewSet):
@@ -102,6 +150,11 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
         return Response(serializer.data)
 
+    @swagger_auto_schema(manual_parameters=[page, page_size])
+    def list(self, request, *args, **kwargs):
+        return super(ExamPaperListViewSet, self).list(request, args, kwargs)
+
+    @swagger_auto_schema(request_body=Serializer)
     @action(methods=['POST'], detail=True)
     def duplicate(self, request, pk, *args, **kwargs):
         exam_paper = self.get_object()
@@ -131,18 +184,6 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
                                   GenericViewSet):
     """
     create: 新增试卷接口（固定试题）
-    **Example Requests**
-    POST /api/exampaper/fixed/
-    ```
-    {
-      "problems": [
-        {"grade": 5, "problem_id": "hogwarts+101+201801+type@problem+block@9dd60b8e2d874ac19ccf4dc51315c8c5", "sequence": 1},
-        {"grade": 5, "problem_id": "hogwarts+101+201801+type@problem+block@15328fcdccca433498ed0311603b60b3", "sequence": 2},
-      ],
-      "name": "Middle Test",
-      "description": "Everyone Calm Down"
-    }
-    ```
 
     update: 编辑试卷接口（固定试题）
     - 权限，只能编辑自己创建的试卷
@@ -150,6 +191,22 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
     partial_update: 编辑试卷接口（固定试题）
     - 权限，只能编辑自己创建的试卷
 
+    ```
+    {
+      "name": "Middle Exam",
+      "description": "Middle Exam",
+      "create_type": "fixed",
+      "creator": 2,
+      "passing_ratio": 60,
+      "problems": [
+        {
+          "sequence": 5,
+          "problem_id": "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
+          "grade": "5.00"
+        }
+      ]
+    }
+    ```
     """
     authentication_classes = (
         SessionAuthentication,
@@ -163,12 +220,21 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
         user = self.request.user
         return ExamPaper.objects.filter(creator=user)
 
+    @swagger_auto_schema(request_body=fix_exampaper)
     def create(self, request, *args, **kwargs):
         request.data['create_type'] = "fixed"
         request.data['creator'] = request.user.id
 
         response = super(ExamPaperFixedCreateViewSet, self).create(request, args, kwargs)
         return response
+
+    @swagger_auto_schema(request_body=fix_exampaper)
+    def update(self, request, *args, **kwargs):
+        return super(ExamPaperFixedCreateViewSet, self).update(request, args, kwargs)
+
+    @swagger_auto_schema(request_body=fix_exampaper)
+    def partial_update(self, request, *args, **kwargs):
+        return super(ExamPaperFixedCreateViewSet, self).partial_update(request, args, kwargs)
 
 
 class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
@@ -225,18 +291,34 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
 
 
 class CoursesListAPIView(APIView):
-    """
-    获取用户的课程列表
-    """
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
+    @swagger_auto_schema(
+        operation_description='get courses list',
+        responses={
+            200: openapi.Schema(
+                title='response',
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example='course-v1:edX+E2E-101+course'),
+                        'display_name': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example='E2E Test Course'),
+                    }
+                )
+            ),
+        }
+    )
     def get(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSES']
         rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
-        print rep.text
-        return Response('hello')
+        return Response(rep.json())
 
 
 class CourseSectionsListAPIView(APIView):
@@ -246,11 +328,31 @@ class CourseSectionsListAPIView(APIView):
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description='get course sections list',
+        responses={
+            200: openapi.Schema(
+                title='response',
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'id': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example='hello+hello+20180101+type@chapter+block@9a1eca362d3443ef8e0332f0cb857e7c'),
+                        'name': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            example='CH01 引言'),
+                    }
+                )
+            ),
+        }
+    )
+    def get(self, request, course_id, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_SECTIONS']
         payload = {
-           'course_id': 'course_id'
+           'course_id': course_id
         }
         rep = requests.get(
             url,
@@ -262,48 +364,61 @@ class CourseSectionsListAPIView(APIView):
 
 class CourseProblemsListAPIView(APIView):
     """
-    通过课程 ID 获取题目列表
+    获取课程的题目列表
     """
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
-    def get(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description='get courses problem list',
+        manual_parameters=[page, page_size, section_id, search],
+        responses={
+            200: openapi.Schema(
+                title='response',
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'next': openapi.Schema(type=openapi.TYPE_STRING),
+                    'previous': openapi.Schema(type=openapi.TYPE_STRING),
+                    'results': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    example='Valhalla+CS101+20180830+type@problem+block@e4a7309d41584357b2269a56fbb23cef'),
+                                'name': openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    example='Checkboxes'),
+                                'type': openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    example='choiceresponse'),
+                                'markdown': openapi.Schema(
+                                    type=openapi.TYPE_STRING,
+                                    example='E2E Test Course'),
+                            }
+                        )
+                    ),
+                }
+            ),
+        }
+    )
+    def get(self, request, course_id, *args, **kwargs):
 
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_PROBLEMS']
         payload = {
-            'course_id': request.params.get('course_id'),
-            'block_id': request.params.get('block_id'),
-            'text': request.params.get('text'),
-            'page': request.params.get('page'),
-            'page_size': request.params.get('page_size'),
+            'course_id': course_id,
+            'block_id': request.query_params.get('block_id'),
+            'text': request.query_params.get('search', ''),
+            'page': request.query_params.get('page'),
+            'page_size': request.query_params.get('page_size'),
         }
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},
             params=payload
-        )
-        return Response(rep.json())
-
-
-class SectionsProblemsListAPIView(APIView):
-    """
-    获取课程章节的题目列表
-    """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
-
-    def get(self, request, *args, **kwargs):
-        token = request.user.social_auth.first().extra_data['access_token']
-        url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PROBLEMS']
-        post_data = {
-            'sections': request.data.get('sections'),
-            'types': request.data.get('types')
-        }
-        rep = requests.post(
-            url,
-            headers={'Authorization': 'Bearer ' + token},
-            json=post_data
         )
         return Response(rep.json())
 
@@ -315,6 +430,30 @@ class ProblemsDetailAPIView(APIView):
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
+    @swagger_auto_schema(
+        operation_id='problem_content',
+        operation_description='get problem content',
+        request_body=openapi.Schema(
+            title='body',
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'problems': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'
+                    )
+                )
+            }
+        ),
+        responses={
+            200: openapi.Schema(
+                title='response',
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING)
+            ),
+        }
+    )
     def post(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_DETAIL']
@@ -336,6 +475,18 @@ class ProblemsTypesAPIView(APIView):
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
+    @swagger_auto_schema(
+        operation_description='get problem type',
+        responses={
+            200: openapi.Schema(
+                title='response',
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                )
+            ),
+        }
+    )
     def get(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_TYPES']

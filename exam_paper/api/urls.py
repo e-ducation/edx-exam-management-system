@@ -26,16 +26,16 @@ from exam_paper.api.views import (
     CoursesListAPIView,
     CourseProblemsListAPIView,
     CourseSectionsListAPIView,
-    SectionsProblemsListAPIView,
     ProblemsDetailAPIView,
     ProblemsTypesAPIView,
 )
 
 urlpatterns = [
     url(r'^courses/$', CoursesListAPIView.as_view()),
-    url(r'^courses/problems/$', CourseProblemsListAPIView.as_view()),
-    url(r'^sections/$', CourseSectionsListAPIView.as_view()),
-    url(r'^sections/problems/$', SectionsProblemsListAPIView.as_view()),
+    url(r'^courses/(?P<course_id>.+)/problems/$',
+        CourseProblemsListAPIView.as_view()),
+    url(r'^courses/(?P<course_id>.+)/sections/$',
+        CourseSectionsListAPIView.as_view()),
     url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
     url(r'^problems/types/$', ProblemsTypesAPIView.as_view()),
 ]
