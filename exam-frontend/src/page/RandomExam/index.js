@@ -1,10 +1,11 @@
 import React from 'react';
-import { Input,Button,Table,Breadcrumb,Tooltip,Icon} from 'antd';
+import { Input,Button,Breadcrumb,Tooltip,Icon,Modal,Radio,InputNumber} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
+const RadioGroup = Radio.Group;
 
 
 const { TextArea } = Input;
@@ -15,7 +16,9 @@ class RandomExamContainer extends React.Component {
     paperName:"这是试卷名称",
     paperIns:"这是试卷说明",
     paper:[],
-    paperpass:60
+    paperpass:60,
+    settingScoreVisible: true,
+    value: 1,
   }
 
   constructor(props) {
@@ -74,6 +77,30 @@ class RandomExamContainer extends React.Component {
     }
   }
 
+  //设置分数
+  showModal = () => {
+    this.setState({
+      settingScoreVisible: true,
+    });
+  }
+
+  onChange=(value)=>{
+    console.log('changed', value);
+  }
+
+  settingHandleOk = (e) => {
+    console.log(e);
+    this.setState({
+      settingScoreVisible: false,
+    });
+  }
+
+  settingHandleCancel = (e) => {
+    console.log(e);
+    this.setState({
+      settingScoreVisible: false,
+    });
+  }
 
 
   render() {
@@ -83,6 +110,55 @@ class RandomExamContainer extends React.Component {
 
     return (
       <div className="displayFlx">
+        <div>
+          <Modal
+            title="批量设置分值"
+            visible={this.state.settingScoreVisible}
+            onOk={this.settingHandleOk}
+            onCancel={this.settingHandleCancel}
+          >
+            <p>批量设置的分值将覆盖掉之前设置的分值，请谨慎操作。</p>
+            <RadioGroup onChange={this.settingOnChange} value={this.state.value} style={{marginTop:'10px'}}>
+              <Radio value={1}>统一分数</Radio>
+              <div style={{margin:'6px 0px 6px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <Radio value={2}>按题型</Radio>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>单选题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>多选题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 12px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>判断题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+              <div style={{margin:'6px 0px 6px 23px'}}>
+                <span style={{width:'80px',display:'inline-block'}}>填空题</span>
+                <span style={{marginRight:'6px'}}>每题</span>
+                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <span style={{marginLeft:'6px'}}>分</span>
+              </div>
+            </RadioGroup>
+
+          </Modal>
+        </div>
+
+
+
+
         <Sidebar/>
         <div className="text-right-left">
 
@@ -125,19 +201,50 @@ class RandomExamContainer extends React.Component {
             <div className="label-box">
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
-
+              <div style={{marginBottom:'10px'}}>
+                <Button type="primary">添加 </Button>
+                <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+              </div>
 
 
                 <div class="random-exam">
                   <div className="courseName">
-                    <span class="examtype-name">母婴产品进阶课程</span>
+                    <span className="examtype-name">母婴产品进阶课程</span>
                     <Tooltip title="删除" className="delete-right">
                       <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
                     </Tooltip>
                   </div>
                   <ul className="question-type">
                     <li className="type">选择题</li>
-                    <li className="question-addnumber">2</li>
+                    <li className="question-addnumber">共<a>120</a>题</li>
+                    <li className="question-number">
+                      <div>
+                        <span style={{marginRight:'30px'}}>抽题数目</span>
+                        <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                      </div>
+                    </li>
+                    <li className="question-score">
+                      <div>
+                        <span style={{marginRight:'30px'}}>单题分数</span>
+                        <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                      </div>
+                    </li>
+                  </ul>
+                  <ul className="question-type">
+                    <li className="type">多选题</li>
+                    <li className="question-addnumber">共<span>120</span>题</li>
+                    <li className="question-number">3</li>
+                    <li className="question-score">4</li>
+                  </ul>
+                  <ul className="question-type">
+                    <li className="type">判断题</li>
+                    <li className="question-addnumber">共<span>120</span>题</li>
+                    <li className="question-number">3</li>
+                    <li className="question-score">4</li>
+                  </ul>
+                  <ul className="question-type">
+                    <li className="type">填空题</li>
+                    <li className="question-addnumber">共<span>120</span>题</li>
                     <li className="question-number">3</li>
                     <li className="question-score">4</li>
                   </ul>
@@ -173,18 +280,11 @@ class RandomExamContainer extends React.Component {
                       <div>
                         <span>总题型：{this.state.paper.length}</span>
                         <span>总分：{this.state.paper.length}</span>
-                        <span>及格线*：
-                          <span style={{float: 'right'}}>%</span>
-                          <div className="inputBox">
-                            <div className="inputLeft">
+                        <span>
+                          <span style={{marginRight:'6px'}}>及格线*</span>
+                          <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                          <span style={{marginLeft:'6px'}}>%</span>
 
-                              <Input value={this.state.paperpass} type="text" onKeyUp={this.inputNumberPass} onChange={this.onChangePass}/>
-                            </div>
-                            <div className="inputRight">
-                              <div onClick={this.paperpassAdd.bind(this,this.state.paperpass)}><Icon type="up" /></div>
-                              <div onClick={this.paperpassReduce.bind(this,this.state.paperpass)}><Icon type="down" /></div>
-                            </div>
-                          </div>
                         </span>
 
                         <span>（及格分60=总分100分*及格线60%）</span>
@@ -201,18 +301,11 @@ class RandomExamContainer extends React.Component {
 
 
               </div>
-
-
-
-
-
-
-
-
             </div>
           </div>
 
         </div>
+
       </div>
     );
   }
@@ -236,9 +329,9 @@ export default class RandomExam extends React.Component {
       that.setState({ height })
     })
 
-    $(document.body).scroll(() => {
+    $(document).scroll(() => {
       this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
+        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
       })
     })
   }
