@@ -15,7 +15,7 @@ class ManageContainer extends React.Component {
   }
 
   state={
-    loading: false,
+    loading: true,
     visible: false,
     list: [],
     pageCurrent: 1,
@@ -39,30 +39,40 @@ class ManageContainer extends React.Component {
       this.searchAjax();
     }
 
-    axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
-      cancelToken: new CancelToken(function executor(c) {
-        // An executor function receives a cancel function as a parameter
-        that.searchAjax = c
-      })
-    }).then(function (response) {
-        if (response.status === 200){
-          // 给list添加key
-          let list = response.data.results;
-          for (let i = 0; i < list.length; i++){
-            list[i].key = i;
+    this.setState({
+      loading: true,
+    }, () => {
+      axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
+      }).then(function (response) {
+          if (response.status === 200){
+            // 给list添加key
+            let list = response.data.results;
+            for (let i = 0; i < list.length; i++){
+              list[i].key = i;
+            }
+            that.setState({
+              list,
+              pageTotal: response.data.count,
+              loading: false,
+            })
+          } else {
+            message.error('请求失败')
+            that.setState({
+              loading: false,
+            })
           }
-          console.log(response)
+        })
+        .catch(function (error) {
           that.setState({
-            list,
-            pageTotal: response.data.count,
+            loading: false,
           })
-        } else {
-          message.error('请求失败')
-        }
-      })
-      .catch(function (error) {
-        message.error('请求失败')
-      });
+          // message.error('请求失败')
+        });
+    })
 
   }
 
@@ -202,7 +212,7 @@ class ManageContainer extends React.Component {
         width: '13%',
       }, {
         title: '操作',
-        dataIndex: 'is_creator',
+        dataIndex: 'id',
         width: '14%',
         render: (text, record, index) => (
           <span>
@@ -213,13 +223,13 @@ class ManageContainer extends React.Component {
               true ?
                 <span>
                   <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.key)} />
+                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
                   </Tooltip>
                   <Tooltip title="复制">
-                    <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.key)} />
+                    <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
                   </Tooltip>
                   <Tooltip title="删除">
-                    <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.key)} />
+                    <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
                   </Tooltip>
                 </span>
               :

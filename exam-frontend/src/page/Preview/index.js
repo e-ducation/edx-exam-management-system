@@ -1,7 +1,8 @@
 import React from 'react';
-import { Icon, Radio, Checkbox, Input, Button } from 'antd';
+import { Icon, Radio, Checkbox, Input, Button, message } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
 class PreviewContainer extends React.Component{
@@ -79,57 +80,83 @@ class PreviewContainer extends React.Component{
 
   componentDidMount() {
     // 获取试卷id
+
     // 获取编辑的试卷信息及题目ids
+    const id = 12;
+    axios.get('/api/exampaper/' + id)
+      .then(function (response) {
+        if (response.status === 200){
+          console.log(response);
+          // 获取题目详情
+          axios.post('/api/problems/detail/', {
+              problems: response.data.problems
+            })
+            .then(function(res) {
+              /*
+              question: [
+                {
+                  type: 'radio',
+                  title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
+                  grade: 5,
+                  options: ['时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
+                }
+              */
+              // 解析xml
+              console.log(res)
+              const results = res.data;
+              let xmlDoc = null;
+              let arr = [];
 
-    /*
-    question: [
-      {
-        type: 'radio',
-        title: '要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡要坚持看电视来减肥开始的法律是开发商的垃圾分类是的借款发生了地方看电视了______上课了的分解落实到焚枯食淡',
-        grade: 5,
-        options: ['时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是时空裂缝但是', '是否考虑的时刻', '上刊登了丰盛的', '放得开酸辣粉']
-      }
-    */
-    // 解析xml
-    const { results } = this.state;
-    let xmlDoc = null;
-    let arr = [];
+              const domParser = new DOMParser();
+              for (let i = 0; i < results.length; i++){
 
-    const domParser = new DOMParser();
-    for (let i = 0; i < results.length; i++){
+                xmlDoc = domParser.parseFromString(results[i], 'text/xml');
+                console.log(xmlDoc)
+                const list = xmlDoc.childNodes[0].childNodes;
+                for (let j = 0; j < list.length; j++){
 
-      xmlDoc = domParser.parseFromString(results[i].markdown, 'text/xml');
-      const list = xmlDoc.childNodes[0].childNodes;
-      for (let j = 0; j < list.length; j++){
+                  if (list[j].nodeName === 'multiplechoiceresponse' || list[j].nodeName === 'choiceresponse'){
 
-        if (list[j].nodeName === 'multiplechoiceresponse' || list[j].nodeName === 'choiceresponse'){
+                    // 确定题目
+                    arr.push({
+                      title: list[j].childNodes[1].getAttribute('label'),
+                      type: results[i].type || 'multiplechoiceresponse',
+                      grade: 5,
+                      options:[],
+                    });
+                    // arr[arr.length - 1].title = list[j].childNodes[1].getAttribute('label');
+                    // console.log(list[j])
+                    // console.log(list[j].childNodes[1].childNodes);
 
-          // 确定题目
-          arr.push({
-            title: list[j].childNodes[1].getAttribute('label'),
-            type: results[i].type,
-            grade: 5,
-            options:[],
-          });
-          // arr[arr.length - 1].title = list[j].childNodes[1].getAttribute('label');
-          // console.log(list[j])
-          // console.log(list[j].childNodes[1].childNodes);
+                    // 确定选项
+                    const optionsElem = list[j].childNodes[1].childNodes;
+                    for (let k = 0; k < optionsElem.length; k++){
+                      if (optionsElem[k].nodeName === 'choice') {
+                        console.log(optionsElem[k].innerHTML)
+                        arr[arr.length - 1].options.push(optionsElem[k].innerHTML)
+                      }
+                    }
+                  }
+                }
+              }
+              console.log(arr)
+              that.setState({
+                question: arr,
+              })
 
-          // 确定选项
-          const optionsElem = list[j].childNodes[1].childNodes;
-          for (let k = 0; k < optionsElem.length; k++){
-            if (optionsElem[k].nodeName === 'choice') {
-              console.log(optionsElem[k].innerHTML)
-              arr[arr.length - 1].options.push(optionsElem[k].innerHTML)
-            }
-          }
+            })
+            .catch(function (error) {
+              message.error('请求失败');
+            })
+        } else {
+          message.error('请求失败');
         }
-      }
-    }
-    console.log(arr)
-    this.setState({
-      question: arr,
-    })
+
+      })
+      .catch(function (error) {
+        message.error('请求失败')
+      });
+
 
 
     // 监听打印机事件
