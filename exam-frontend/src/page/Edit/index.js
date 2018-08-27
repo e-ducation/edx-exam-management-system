@@ -1,5 +1,5 @@
 import React from 'react';
-import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,Radio} from 'antd';
+import { Input,Button,Breadcrumb,Icon,InputNumber,Modal} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
@@ -13,7 +13,7 @@ import MoveTable from './moveTable'
 
 
 
-const RadioGroup = Radio.Group;
+// const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
 
@@ -282,7 +282,7 @@ export default class Edit extends React.Component {
   }
 
   setShow=(isShow)=>{
-
+    console.log(123);
     this.setState({
       isShow,
     })
@@ -312,7 +312,11 @@ export default class Edit extends React.Component {
     const {isShow} = this.state;
 
     const display = {
-      display:isShow ? 'none':'block'
+      display:isShow ? 'none':'flex'
+    }
+
+    const selectdispaly = {
+      display:isShow ? 'block':'none'
     }
     return (
       <div>
@@ -323,9 +327,10 @@ export default class Edit extends React.Component {
 
           <SelectQuestion
             selectQuestionList={this.state.selectQuestionList}
+            setShow={this.setShow}
             setFixedList={this.setFixedList}
             paperType="fixed" // random || fixed
-            style={display}
+            style={selectdispaly}
           />
 
         </div>

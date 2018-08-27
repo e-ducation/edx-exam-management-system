@@ -132,3 +132,12 @@ $blue_active: #1da6f3;
     float: right;
   }
 }
+
+.editExam .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-tbody > tr > td{
+  vertical-align: middle;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.editExam .ant-table-small{
+  border-radius: 4px
+}
