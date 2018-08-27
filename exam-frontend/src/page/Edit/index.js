@@ -9,6 +9,9 @@ import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
 import none from "../../assets/images/none.png";
+import axios from 'axios';
+
+import SelectQuestion from '../SelectQuestion'
 const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
@@ -116,52 +119,27 @@ const DragableBodyRow = DropTarget('row', rowTarget, (connect, monitor) => ({
   }))(BodyRow)
 );
 
-const columns = [
-  {
-    width:'8.2%',
-    title: '序号',
-    dataIndex: 'index'
-  },{
-    width:'67.4%',
-    title: '试题',
-    dataIndex: 'subjectdec'
-  },{
-    width:'8.2%',
-    title: '题型',
-    dataIndex: 'type'
-  },{
-    width:'8.6%',
-    title: '分值',
-    dataIndex: 'score',
-    render:(record)=>(
-      <div className="inputBox">
-        <div className="inputLeft">
-          <Input type="text" />
-        </div>
-        <div className="inputRight">
-          <div><Icon type="up" /></div>
-          <div><Icon type="down" /></div>
-        </div>
-      </div>
-    )
-  },{
-    width:'7.6%',
-    title: '操作',
-    dataIndex: 'operate',
-    render:(record)=>(
-      <Tooltip title="删除">
-        <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
-      </Tooltip>
-    )
-  }
-];
 
 class DragSortingTable extends React.Component {
+
+  constructor(props) {
+    super(props);
+  }
+
+  componentDidMount() {
+    this.numberList();
+  }
+
+
   state = {
     data: [
-      // {index:'01',subjectdec:'你好',type:'选择题'}
+      {subjectdec:'你好1',type:'选择题'},
+      {subjectdec:'你好2',type:'选择题'}
     ],
-    settingScoreVisible: true,
+    settingScoreVisible: false,
+    selectQuestionList: [],
+    paperType: '',
+    selectSectionList: [],
   }
 
   components = {
@@ -170,10 +148,30 @@ class DragSortingTable extends React.Component {
     },
   }
 
+  //序列号
+  numberList = ()=>{
+    let arr=[]
+    this.state.data.forEach((item,index)=>{
+
+      item = {
+        ...item,
+        // number: index+1<10 ? 0+index:index
+        number:index+1<10 ? '0'+(index+1):index
+      }
+      arr.push(item)
+    })
+
+    this.setState({
+      data:arr
+    })
+
+    console.log(this.state.data)
+  }
+
   //设置分数
   showModal = () => {
     this.setState({
-      settingScoreVisible: false,
+      settingScoreVisible: true,
     });
   }
 
@@ -206,9 +204,72 @@ class DragSortingTable extends React.Component {
         },
       }),
     );
+    this.numberList();
+  }
+
+  //承海部分
+  setQuestionList = (selectQuestionList) => {
+    this.setState({
+        selectQuestionList,
+    })
+  }
+  setSectionList = (selectSectionList) => {
+    this.setState({
+        selectSectionList,
+    })
+  }
+
+  //删除题目
+  deleteSubject=(index)=>{
+    console.log(index);
   }
 
   render() {
+
+    const columns = [
+      {
+        width:'8.2%',
+        title: '序号',
+        dataIndex:'number'
+      },{
+        width:'67.4%',
+        title: '试题',
+        dataIndex: 'subjectdec'
+      },{
+        width:'8.2%',
+        title: '题型',
+        dataIndex: 'type'
+      },{
+        width:'8.6%',
+        title: '分值',
+        dataIndex: 'score',
+        render:(record)=>(
+          <div className="inputBox">
+            <div className="inputLeft">
+              <Input type="text" />
+            </div>
+            <div className="inputRight">
+              <div><Icon type="up" /></div>
+              <div><Icon type="down" /></div>
+            </div>
+          </div>
+        )
+      },{
+        width:'7.6%',
+        title: '操作',
+        dataIndex: 'operate',
+        render:(record,index)=>(
+          <Tooltip title="删除">
+            <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deleteSubject.bind(this.index)} />
+          </Tooltip>
+        )
+      }
+    ];
+
+
+
+
+
     return (
       <div>
         <div>
@@ -259,15 +320,16 @@ class DragSortingTable extends React.Component {
 
 
         <div style={{marginBottom:'10px'}}>
-          <Button type="primary">添加试题</Button>
-          {
+          <Button type="primary" href="/#/question">添加试题</Button>
+          {/* {
             this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModa}>批量设置分值</Button>
+              <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
             :
               <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
-          }
+          } */}
+          <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
         </div>
-        {
+        {/* {
           this.state.data.length === 0 ?
             <div className="examnodata">
               <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
@@ -289,7 +351,29 @@ class DragSortingTable extends React.Component {
               })}
             />
 
-        }
+        } */}
+
+        <Table
+              columns={columns}
+              dataSource={this.state.data}
+              components={this.components}
+              pagination={false}
+              bordered
+              className="editExam"
+              size="small"
+              onRow={(record, index) => ({
+                index,
+                moveRow: this.moveRow,
+              })}
+            />
+
+        <SelectQuestion
+            selectQuestionList={this.state.selectQuestionList}
+            setFixedList={this.setFixedList}
+            paperType="fixed" // random || fixed
+        />
+
+
       </div>
     );
   }
@@ -303,7 +387,9 @@ class EditContainer extends React.Component {
     paperName:"这是试卷名称",
     paperIns:"这是试卷说明",
     paper:[],
-    paperpass:60
+    paperpass:60,
+    paperInsLength:0,
+    saveVisible:false
   }
 
   constructor(props) {
@@ -323,7 +409,8 @@ class EditContainer extends React.Component {
   //修改试卷说明
   onChangePaperIns=(e)=>{
     this.setState({
-      paperIns:e.target.value
+      paperIns:e.target.value,
+      paperInsLength:e.target.value.length
     })
   }
   //修改及格线数值
@@ -362,12 +449,75 @@ class EditContainer extends React.Component {
     }
   }
 
+  //保存固定试题
+  saveFixExam=()=>{
+
+    let {paperName,paperIns} = this.state
+
+    if(paperName===""){
+      this.warning();
+    }
+    else{
+
+      //设置按钮不可点击
+      this.setState({
+        saveVisible:true
+      })
+
+      axios({
+        method:"POST",
+        url:'/api/exampaper/fixed/',
+        data:{
+          problems: [
+            {
+              "grade": 5,
+              "problem_id": "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
+              "sequence": 5
+            }
+          ],
+          name: "Middle Exam",
+          description:paperIns
+        }
+      }).then(res=>{
+        console.log(res);
+
+        //按钮可点击
+        this.setState({
+          saveVisible:true
+        })
+      })
+      .catch(error=>{
+         //按钮可点击
+         this.setState({
+          saveVisible:true
+        })
+        console.log(error);
+      })
+    }
+
+
+
+
+  }
+
+  warning=()=>{
+    Modal.warning({
+      title: 'This is a warning message',
+      content: 'some messages...some messages...',
+    });
+  }
+
+
 
 
   render() {
     const inputStyle={
       width:'468px'
     }
+
+    const Length = (
+      <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
+    )
 
     return (
       <div className="displayFlx">
@@ -398,16 +548,22 @@ class EditContainer extends React.Component {
                 <Input placeholder="请输入1-50个字符的名称"
                 onChange={this.onChangePaperName}
                 value={this.state.paperName}
-                style={inputStyle}/>
+                style={inputStyle}
+                maxLength="50"
+                />
               </div>
             </div>
             <div className="label-box">
               <div style={{lineHeight:'14px'}}>试卷名称*</div>
               <div>
-                <TextArea placeholder="请输入试卷说明"
-                autosize={{ minRows: 4, maxRows: 6 }}
-                onChange={this.onChangePaperIns}
-                style={inputStyle}/>
+                <div style={{position:"relative",width:'468px'}}>
+                  <TextArea placeholder="请输入试卷说明"
+                  autosize={{ minRows: 3, maxRows: 6 }}
+                  onChange={this.onChangePaperIns}
+                  style={{ width:'468px',paddingBottom:'20px'}}
+                  maxLength="500"/>
+                  { Length }
+                </div>
               </div>
             </div>
             <div className="label-box">
@@ -451,7 +607,7 @@ class EditContainer extends React.Component {
 
                 <div className="editbtn">
                   <Button>预览试卷</Button>
-                  <Button type="primary">保存</Button>
+                  <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
                 </div>
 
 
