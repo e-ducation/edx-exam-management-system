@@ -57,9 +57,6 @@ export default class RandomBlock extends Component {
           size="small"
           rowKey="id"
         />
-        <Button onClick={this.confirm}>
-          确定
-        </Button>
       </div>
     )
   }
