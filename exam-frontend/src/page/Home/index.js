@@ -4,6 +4,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import ChoosePaperType from '../../components/ChoosePaperType';
+import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
 class HomeContainer extends React.Component {
@@ -12,6 +13,7 @@ class HomeContainer extends React.Component {
   }
 
   componentDidMount() {
+
   }
 
   showModal = () => {

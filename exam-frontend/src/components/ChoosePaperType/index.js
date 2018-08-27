@@ -7,12 +7,12 @@ export default class choosePaperType extends Component {
 
   createFixPaper = () => {
     console.log('createfixpaper')
-    window.location.href = "/#/edit"
+    window.location.href = "/#/new/fix"
   }
 
   createRandomPaper = () => {
     console.log('createrandompaper')
-    window.location.href = "/#/edit"
+    window.location.href = "/#/new/random"
   }
 
   render() {
@@ -25,14 +25,14 @@ export default class choosePaperType extends Component {
         footer={null}
         width="600px"
       >
-        <div className="block-fix" onClick={this.createFixPapaer}>
+        <div className="block-fix" onClick={this.createFixPaper}>
           <div>
             <Icon type="edit" className="icon"/>
           </div>
           <h3>固定试题</h3>
           <p>所有考生的试题相同，试题的顺序可以固定，也可以打乱</p>
         </div>
-        <div className="block-random" onClick={this.createRandomPapaer}>
+        <div className="block-random" onClick={this.createRandomPaper}>
           <div>
             <Icon type="edit" className="icon" />
           </div>
