@@ -12,6 +12,7 @@ class HomeContainer extends React.Component {
   }
 
   componentDidMount() {
+
   }
 
   showModal = () => {

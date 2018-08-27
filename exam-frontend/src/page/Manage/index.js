@@ -1,126 +1,109 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select } from 'antd';
+import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import ChoosePaperType from '../../components/ChoosePaperType';
+import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
+import none from "../../assets/images/none.png";
 class ManageContainer extends React.Component {
+  constructor(props){
+    super(props);
+    this.searchAjax = null;
+  }
+
   state={
-    loading: false,
+    loading: true,
     visible: false,
-    list: [
-      {
-        id: 1,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 2,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 3,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 4,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 5,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: false,
-      },{
-        id: 1,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 2,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      },{
-        id: 3,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      }
-    ],
+    list: [],
     pageCurrent: 1,
-    pageTotal: 50,
+    pageTotal: 0,
     pageSize: 10,
+    search: '',
   }
 
 
   componentDidMount() {
-    const timer = setInterval(() => {
-      let { list } = this.state;
-      if (list.length > 30){
-        clearInterval(timer)
-      }
-      list.push({
-        id: 1,
-        name: '第一张测试试卷',
-        type: '固定试题',
-        count: 70,
-        total_grade: 100,
-        pass_grade: 70,
-        creator: '张伟',
-        is_creator: true,
-      })
-      this.setState({list})
-    }, 200)
+    this.getList();
+
   }
 
   // 1.1 试卷列表
+  getList = () => {
+    const { pageCurrent, pageSize, search } = this.state;
+    const that = this;
+    const CancelToken = axios.CancelToken;
+    if (this.searchAjax){
+      this.searchAjax();
+    }
 
-  // 1.2 试卷列表页码变更
-  handlePageChange = () => {
+    this.setState({
+      loading: true,
+    }, () => {
+      axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
+      }).then(function (response) {
+          if (response.status === 200){
+            // 给list添加key
+            let list = response.data.results;
+            for (let i = 0; i < list.length; i++){
+              list[i].key = i;
+            }
+            that.setState({
+              list,
+              pageTotal: response.data.count,
+              loading: false,
+            })
+          } else {
+            message.error('请求失败')
+            that.setState({
+              loading: false,
+            })
+          }
+        })
+        .catch(function (error) {
+          that.setState({
+            loading: false,
+          })
+          // message.error('请求失败')
+        });
+    })
 
   }
 
-  // 1.3 试卷列表每页显示变更
-  handlePageSizeChange = () =>{
+  // 1.2 试卷列表页码变更
+  handlePageChange = (e) => {
+    this.setState({
+      pageCurrent: e,
+    }, () => {
+      this.getList();
+    })
+  }
 
+  // 1.3 试卷列表每页显示变更
+  handlePageSizeChange = (e) =>{
+    this.setState({
+      pageSize: e,
+      pageCurrent: 1,
+    }, () => {
+      this.getList();
+    })
+  }
+
+  // 1.4 搜索试卷
+  onChangeSearch = (e) => {
+    this.setState({
+      pageSize: this.state.pageSize,
+      pageCurrent: 1,
+      search: e.target.value,
+    }, () => {
+      this.getList();
+    })
   }
 
   // 2.1 新建试卷
@@ -144,12 +127,53 @@ class ManageContainer extends React.Component {
 
   // 4. 复制试卷
   copyPaper = (id) => {
-    console.log(id)
+    const that = this;
+    axios.post('/api/exampaper/' + id + '/duplicate/')
+      .then(function (response) {
+        if (response.status === 200){
+          that.getList();
+        } else {
+          message.error('复制失败');
+        }
+
+      })
+      .catch(function (error) {
+        message.error('复制失败')
+      });
   }
 
   // 5. 删除试卷
   deletePaper = (id) => {
-    console.log(id)
+    const that = this;
+    Modal.confirm({
+      iconType: 'exclamation-circle',
+      className: 'confirm-red',
+      title: '提示',
+      content: '确定删除此试卷？',
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        // 删除试卷
+        axios.delete('/api/exampaper/' + id + '/')
+        .then(function (response) {
+          if (response.status === 200){
+            message.error('删除成功');
+            that.getList();
+          } else {
+            message.error('删除失败');
+          }
+
+        })
+        .catch(function (error) {
+          message.error('删除失败')
+        });
+      }
+    });
+  }
+
+  // 6. 编辑试卷
+  editPaper = (id) => {
+    window.location.href = '/#/edit/' + id;
   }
 
 
@@ -160,16 +184,19 @@ class ManageContainer extends React.Component {
         title: '试卷名称',
         dataIndex: 'name',
         width: '29%',
-        render: (text, record, index) => (
+        render: (text, record) => (
           <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
         )
       }, {
         title: '选题方式',
-        dataIndex: 'type',
+        dataIndex: 'create_type',
         width: '14%',
+        render: (text) => (
+          <span>{ text === 'fixed' ? '固定试题' : '随机试题'}</span>
+        )
       }, {
         title: '试题数',
-        dataIndex: 'count',
+        dataIndex: 'total_problem_num',
         width: '10%',
       }, {
         title: '总分',
@@ -177,7 +204,7 @@ class ManageContainer extends React.Component {
         width: '10%',
       }, {
         title: '及格分',
-        dataIndex: 'pass_grade',
+        dataIndex: 'passing_grade',
         width: '10%',
       }, {
         title: '创建人',
@@ -185,15 +212,18 @@ class ManageContainer extends React.Component {
         width: '13%',
       }, {
         title: '操作',
-        dataIndex: 'is_creator',
+        dataIndex: 'id',
         width: '14%',
         render: (text, record, index) => (
           <span>
             {
-              record.is_creator ?
+              record.is_creator
+            }
+            {
+              true ?
                 <span>
                   <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} />
+                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
                   </Tooltip>
                   <Tooltip title="复制">
                     <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
@@ -243,10 +273,11 @@ class ManageContainer extends React.Component {
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
                   placeholder="请输入关键字"
                   style={{width:'200px', marginLeft: '10px', position:'relative', top: '1px'}}
+                  onChange={this.onChangeSearch}
                 />
               </div>
             }
-            locale={{ emptyText: 'No files.' }}
+            locale={{ emptyText: <div style={{marginBottom: '150px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>No files.</div></div> }}
           />
           <div className="page">
             <Pagination
