@@ -316,7 +316,8 @@ export default class Edit extends React.Component {
     }
 
     const selectdispaly = {
-      display:isShow ? 'block':'none'
+      display:isShow ? 'block':'none',
+      width: '100%',
     }
     return (
       <div>

@@ -185,8 +185,6 @@ export default class SelectQuestion extends Component {
     console.log(courseList)
     return (
       <div style={this.props.style}>
-        <Header />
-
         <div className="qs-container">
           <Breadcrumb style={{ margin: '20px 0' }}>
             <Breadcrumb.Item>
@@ -264,11 +262,8 @@ export default class SelectQuestion extends Component {
                 选好了
               </Button>
             }
-            </div>
-
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
