@@ -47,7 +47,7 @@ class ManageContainer extends React.Component {
     }).then(function (response) {
         if (response.status === 200){
           // 给list添加key
-          let list = response.data;
+          let list = response.data.results;
           for (let i = 0; i < list.length; i++){
             list[i].key = i;
           }
