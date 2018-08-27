@@ -178,12 +178,13 @@ export default class SelectQuestion extends Component {
     // const { callback } = this.props;
     // const { selectedRowKeys,totalAcount } = this.state;
   }
+
   render() {
     const {courseList, activeCourse, sectionList, questionList, } = this.state;
     const { paperType } = this.props ;
     console.log(courseList)
     return (
-      <div>
+      <div style={this.props.style}>
         <Header />
 
         <div className="qs-container">
@@ -253,16 +254,15 @@ export default class SelectQuestion extends Component {
                 </div>
               </div>
             </div>
-            <div >
-              {
-                paperType == 'fixed' ?
-                <Button onClick={() => this.fixed.confirm()}>
-                  选好了
-                </Button>
-                :
-                <Button onClick={() => { this.random.confirm()}}>
-                  选好了
-                </Button>
+            {
+              paperType == 'fixed' ?
+              <Button onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                选好了
+              </Button>
+              :
+              <Button onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                选好了
+              </Button>
             }
             </div>
 
