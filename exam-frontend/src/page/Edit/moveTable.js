@@ -133,10 +133,7 @@ class DragSortingTable extends React.Component {
       {subjectdec:'你好1',type:'选择题'},
       {subjectdec:'你好2',type:'选择题'}
     ],
-    settingScoreVisible: false,
-    selectQuestionList: [],
-    paperType: '',
-    selectSectionList: [],
+    settingScoreVisible: false
   }
 
   components = {
@@ -204,17 +201,7 @@ class DragSortingTable extends React.Component {
     this.numberList();
   }
 
-  //承海部分
-  setQuestionList = (selectQuestionList) => {
-    this.setState({
-        selectQuestionList,
-    })
-  }
-  setSectionList = (selectSectionList) => {
-    this.setState({
-        selectSectionList,
-    })
-  }
+
 
 
 
@@ -316,7 +303,7 @@ class DragSortingTable extends React.Component {
 
 
         <div style={{marginBottom:'10px'}}>
-          <Button type="primary" href="/#/question">添加试题</Button>
+          <Button type="primary" onClick={() => {this.props.setShow(true)}}>添加试题</Button>
           {
             this.state.data.length === 0 ?
               <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
@@ -348,13 +335,6 @@ class DragSortingTable extends React.Component {
             />
 
         }
-
-
-        <SelectQuestion
-            selectQuestionList={this.state.selectQuestionList}
-            setFixedList={this.setFixedList}
-            paperType="fixed" // random || fixed
-        />
 
 
       </div>
