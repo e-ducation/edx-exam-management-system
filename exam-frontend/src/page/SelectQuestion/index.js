@@ -20,11 +20,50 @@ export default class SelectQuestion extends Component {
     activeChapter: '全部章节',
     activeCourse: '',
     activeQuestionType: '全部题型',
-    selectType: 'immobilization'// immobilization|stochastic
+    selectType: 'immobilization',// immobilization|stochastic
+    tableList: new Map(),
   }
   componentDidMount() {
     this.getCourses();
     this.random = {}
+  }
+  initData = () => {
+    const { selectQuestionList, selectedRowKeys } = this.state;
+    axios.post('/api/problems/detail/', {
+        problems:selectedRowKeys,
+      }).then(res => {
+      console.log(res.data)
+      const { tableList } = this.state;
+      const fetchData = new Map();
+      const list = res.data.data;
+      list.map(item => {
+        fetchData.set(item.id, item);// 初始化数据结构
+      })
+      if (tableList.size == 0){
+        this.setState({
+          tableList: fetchData
+        })
+      } else {
+        this.resetData(fetchData)
+      }
+    }).catch(error => {
+      console.log(error)
+    })
+  }
+  resetData = (fetchData) => {
+    const { list, tableList } = this.state;
+    list.map(id => {
+      for (let key of tableList.keys()){
+        if (key === id){
+          fetchData.set(key, tableList.get(id));
+        }
+      }
+      tableList.map(item => {
+        if (id === item.id ){
+          // newTable.push(item);
+        }
+      })
+    })
   }
   fixedInit = () => {
     // const { data } = this.props;
@@ -38,15 +77,18 @@ export default class SelectQuestion extends Component {
   // 获取课程列表
   getCourses = () => {
     axios.get('/api/courses/')
-      .then( ({data}) => {
-        if (data.length > 0) {
-          this.setState({
-            courseList: data,
-            activeCourse: data[0].id,
-          })
-          this.getList(data[0].id);
-        } else {
+      .then( (res) => {
+        if (res.data.status == 200) {
+          const { data }  = res.data;
+          if (data.length > 0) {
+            this.setState({
+              courseList: data,
+              activeCourse: data[0].id,
+            })
+            this.getList(data[0].id);
+          } else {
 
+          }
         }
       })
       .catch(function (error) {
@@ -57,7 +99,8 @@ export default class SelectQuestion extends Component {
   getList = (course) => {
     this.getSection(course);
     axios.get(`/api/courses/${course}/problems/`)
-      .then( ({data}) => {
+      .then( (res) => {
+        const { data } = res.data
         this.setState({
           questionList: data,
         })
@@ -69,7 +112,8 @@ export default class SelectQuestion extends Component {
   // 获取章节列表
   getSection = (id) => {
     axios.get(`/api/courses/${id}/sections/`)
-      .then( ({data}) => {
+      .then( (res) => {
+        const { data } = res.data
         this.setState({
           sectionList: data,
         })
@@ -82,6 +126,9 @@ export default class SelectQuestion extends Component {
   onSelect = (selectedRowKeys) => {
     this.setState({
       selectedRowKeys,
+    }, () => {
+      console.log(1231231)
+      this.initData()
     });
   }
   sectionSelect = (selectedRowKeys) => {
@@ -115,7 +162,8 @@ export default class SelectQuestion extends Component {
     axios.get(`/api/courses/${activeCourse}/problems/`, {
         params,
       })
-      .then( ({data}) => {
+      .then( (res) => {
+        const { data } = res.data;
         this.setState({
           questionList: data,
         })
@@ -129,7 +177,8 @@ export default class SelectQuestion extends Component {
   }
   render() {
     const {courseList, activeCourse, sectionList, questionList, } = this.state;
-    const type = false;
+    const { paperType } = this.props ;
+    console.log(this.state.tableList)
     return (
       <div>
         <Header />
@@ -163,7 +212,7 @@ export default class SelectQuestion extends Component {
           <div className="main">
             <div className="course-name">大数据分析</div>
             {
-              type ?
+              paperType == 'fixed' ?
               // 固定出题
               <FixedQuestion
                 ref={node => this.fixed = node}
@@ -202,8 +251,8 @@ export default class SelectQuestion extends Component {
               </div>
             </div>
             {
-              type ?
-              <Button onClick={this.fixed.confirm.bind(this)}>
+              paperType == 'fixed' ?
+              <Button onClick={() => this.fixed.confirm()}>
                 选好了
               </Button>
               :
