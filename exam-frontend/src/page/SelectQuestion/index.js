@@ -58,11 +58,9 @@ export default class SelectQuestion extends Component {
           fetchData.set(key, tableList.get(id));
         }
       }
-      tableList.map(item => {
-        if (id === item.id ){
-          // newTable.push(item);
-        }
-      })
+    })
+    this.setState({
+      tableList: fetchData,
     })
   }
   fixedInit = () => {
