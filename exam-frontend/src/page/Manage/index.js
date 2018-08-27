@@ -19,7 +19,7 @@ class ManageContainer extends React.Component {
     visible: false,
     list: [],
     pageCurrent: 1,
-    pageTotal: 50,
+    pageTotal: 0,
     pageSize: 10,
     search: '',
   }
@@ -51,8 +51,10 @@ class ManageContainer extends React.Component {
           for (let i = 0; i < list.length; i++){
             list[i].key = i;
           }
+          console.log(response)
           that.setState({
             list,
+            pageTotal: response.data.count,
           })
         } else {
           message.error('请求失败')
