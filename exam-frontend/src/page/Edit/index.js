@@ -25,7 +25,10 @@ class EditContainer extends React.Component {
     paper:[],
     paperpass:60,
     paperInsLength:0,
-    saveVisible:false
+    saveVisible:false,
+    selectQuestionList: [],
+    paperType: '',
+    selectSectionList: []
   }
 
   constructor(props) {
@@ -33,6 +36,7 @@ class EditContainer extends React.Component {
   }
 
   componentDidMount() {
+
   }
 
   //修改试卷名称
@@ -130,10 +134,18 @@ class EditContainer extends React.Component {
         console.log(error);
       })
     }
+  }
 
-
-
-
+  //承海部分
+  setQuestionList = (selectQuestionList) => {
+    this.setState({
+        selectQuestionList,
+    })
+  }
+  setSectionList = (selectSectionList) => {
+    this.setState({
+        selectSectionList,
+    })
   }
 
   warning=()=>{
@@ -143,8 +155,11 @@ class EditContainer extends React.Component {
     });
   }
 
+  isShow = (isShow) => {
 
+    this.props.isShow(isShow)
 
+  }
 
   render() {
     const inputStyle={
@@ -156,7 +171,7 @@ class EditContainer extends React.Component {
     )
 
     return (
-      <div className="displayFlx">
+      <div style={this.props.style} className="displayFlx">
         <Sidebar/>
         <div className="text-right-left">
 
@@ -206,7 +221,7 @@ class EditContainer extends React.Component {
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
 
-                <MoveTable />
+                <MoveTable setShow={this.props.setShow}/>
 
                 <div>
                   <div className="total">
@@ -256,9 +271,6 @@ class EditContainer extends React.Component {
       </div>
     );
   }
-
-
-
 }
 
 
@@ -266,7 +278,17 @@ export default class Edit extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
+    isShow:false,
   }
+
+  setShow=(isShow)=>{
+
+    this.setState({
+      isShow,
+    })
+
+  }
+
 
   componentDidMount(){
     const that = this;
@@ -283,13 +305,29 @@ export default class Edit extends React.Component {
     })
   }
 
+
+
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const {isShow} = this.state;
+
+    const display = {
+      display:isShow ? 'none':'block'
+    }
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <EditContainer />
+
+          <EditContainer style={display} setShow={this.setShow} isShow={isShow}/>
+
+          <SelectQuestion
+            selectQuestionList={this.state.selectQuestionList}
+            setFixedList={this.setFixedList}
+            paperType="fixed" // random || fixed
+            style={display}
+          />
+
         </div>
         <Footer />
       </div>
