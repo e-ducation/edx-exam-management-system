@@ -1,89 +1,97 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Breadcrumb, Dropdown, Menu, Button } from 'antd';
+import { Input, Icon, Breadcrumb, Button } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
-import axios from 'axios';
 import './index.scss';
+import axios from 'axios';
+import FixedQuestion from './fixed';
+import RandomQuestion from './random';
 export default class SelectQuestion extends Component {
   state = {
-    course: [1, 2, 3, 4, 5],
-    chapters: ['a', 'b', 'c'],
+    courseList: [],
+    sectionList: [],
     courseSearch: '',
     keySearch: '',
     questionList: [],
     selectedList: [],
-    selectedRowKeys: [5,6,7],
+    selectedRowKeys: [],
+    selectedRowData: {},
     activeChapter: '全部章节',
-    activeCourse: '1',
+    activeCourse: '',
     activeQuestionType: '全部题型',
     selectType: 'immobilization'// immobilization|stochastic
-
   }
   componentDidMount() {
-    this.getList('a');
-    axios.get('/user?ID=12345')
-      .then(function (response) {
-        console.log(response);
+    this.getCourses();
+    this.random = {}
+  }
+  fixedInit = () => {
+    // const { data } = this.props;
+    // const selectedRowKeys = Object.keys(data).map(key => {
+    //   return data.id
+    // });
+    // this.setState({
+
+    // })
+  }
+  // 获取课程列表
+  getCourses = () => {
+    axios.get('/api/courses/')
+      .then( ({data}) => {
+        if (data.length > 0) {
+          this.setState({
+            courseList: data,
+            activeCourse: data[0].id,
+          })
+          this.getList(data[0].id);
+        } else {
+
+        }
       })
       .catch(function (error) {
         console.log(error);
       });
   }
-  getList = (chapter) => {
-    let tmp = new Array(10).fill(0);
-    const questionList = tmp.map((t, i) => {
-      let chapter = '';
-      if (i < 3) {
-        chapter = 'a';
-      } else if (i < 6) {
-        chapter = 'b'
-      } else {
-        chapter = 'c';
-      }
-      return {
-        id: i,
-        name: `${i}`,
-        chapter,
-        key: i,
-        // name: 'John Brown',
-        radio: 32,
-        multiple: 'New York No. 1 Lake Park',
-        checking: 32,
-        completion: 32,
-      }
-    })
-    this.setState({
-      questionList: questionList.filter(x => x.chapter === chapter),
-    })
+  // 课程名称获取题目列表
+  getList = (course) => {
+    this.getSection(course);
+    axios.get(`/api/courses/${course}/problems/`)
+      .then( ({data}) => {
+        this.setState({
+          questionList: data,
+        })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
-  onChange = (value) => {
-    this.setState({
-      selectedRowKeys: value,
-    })
-    // const { questionList, activeChapter, active } = this.state;
-    // let activeData = active.filter((x) => x.chapter != activeChapter);
-    // const addData = value.map((data) => {
-    //     let qs = undefined;
-    //     questionList.map((item) => {
-    //         if (item.id  == data ) {
-    //             qs = item;
-    //         }
-    //     })
-    //     return qs;
-    // }).filter((x) => x != undefined)
-    // this.setState({
-    //     active:[
-    //         ...activeData,
-    //         ...addData,
-    //     ]
-    // })
-    // console.log(value,activeData,addData,questionList)
+  // 获取章节列表
+  getSection = (id) => {
+    axios.get(`/api/courses/${id}/sections/`)
+      .then( ({data}) => {
+        this.setState({
+          sectionList: data,
+        })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   }
-  changeChapter = (chapter) => {
-    this.getList(chapter)
+  // 回调设置勾选的题目
+  onSelect = (selectedRowKeys) => {
     this.setState({
-
+      selectedRowKeys,
+    });
+  }
+  sectionSelect = (selectedRowKeys) => {
+    // this.setSta
+  }
+  // 切换课程
+  changeCourse = (course) => {
+    this.getList(course)
+    this.setState({
+      activeCourse: course,
     })
   }
   outputData = () => {
@@ -98,148 +106,30 @@ export default class SelectQuestion extends Component {
     // }]
   }
   // 题目列表数据更新
-  getQuestionData = () => {
+  getQuestionData = (params) => {
     const { activeCourse, activeChapter, activeQuestionType, keySearch } = this.state;
     console.log('activeCourse',activeCourse)
     console.log('activeChapter',activeChapter)
     console.log('activeQuestionType',activeQuestionType)
     console.log('keySearch',keySearch)
+    axios.get(`/api/courses/${activeCourse}/problems/`, {
+        params,
+      })
+      .then( ({data}) => {
+        this.setState({
+          questionList: data,
+        })
+        console.log(data)
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     // const { callback } = this.props;
     // const { selectedRowKeys,totalAcount } = this.state;
   }
-  // 题型选择
-  handleMenuClick = (v) => {
-    console.log(v);
-    this.setState({
-      activeQuestionType: v.key,
-    }, () => {
-      this.getQuestionData();
-    });
-  }
-  // 章节选择
-  handleCMenuClick = (v) => {
-    console.log(v)
-    this.setState({
-      activeChapter: v.key
-    }, () => {
-      this.getQuestionData();
-    });
-  }
-  handleSearch = (e) => {
-    console.log(e.target.value);
-    this.setState({
-      keySearch: e.target.value,
-    }, () => {
-      this.getQuestionData()
-    })
-  }
   render() {
-    const { questionList, selectedRowKeys, activeChapter } = this.state;
-    // const CheckboxGroup = Checkbox.Group;
-    let plainOptions = questionList.map((data) => {
-      if (data.chapter === activeChapter) {
-        return {
-          label: data.name, value: data.id
-        }
-      } else {
-        return null;
-      }
-    })
-    plainOptions = plainOptions.filter(x => x != null);
-    console.log(plainOptions)
-    const columns = [{
-        title: '全选本页',
-        dataIndex: 'name',
-        // eslint-disable-next-line
-        render: text => <a href="javascript:;">{text}</a>,
-      }, {
-        title: '单选题',
-        dataIndex: 'radio',
-      },
-      {
-        title: '多选题',
-        dataIndex: 'multiple',
-      },
-      {
-        title: '判断题',
-        dataIndex: 'checking',
-      },
-      {
-        title: '填空题',
-        dataIndex: 'completion',
-      },
-    ];
-    const stochasticRowSelection = {
-      selectedRowKeys,
-      onChange: (selectedRowKeys, selectedRows) => {
-        this.setState({
-          selectedRowKeys,
-        })
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      },
-      getCheckboxProps: record => ({
-        disabled: record.name === 'Disabled User', // Column configuration not to be checked
-        name: record.name,
-      }),
-    };
-    const stochasticColumns = [{
-        title: '题目',
-        dataIndex: 'name',
-        width: '80%',
-        // eslint-disable-next-line
-        render: text => <a href="javascript:;">{text}</a>,
-      }, {
-        title: '类型',
-        dataIndex: 'radio',
-      }
-    ];
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: (selectedRowKeys, selectedRows) => {
-        this.setState({
-          selectedRowKeys,
-        })
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      },
-      getCheckboxProps: record => ({
-        disabled: record.name === 'Disabled User', // Column configuration not to be checked
-        name: record.name,
-      }),
-    };
-    const cmenu = (
-      <Menu onClick={this.handleCMenuClick}>
-        <Menu.Item key="a">a</Menu.Item>
-        <Menu.Item key="b">b</Menu.Item>
-        <Menu.Item key="c">c</Menu.Item>
-      </Menu>
-    );
-    const menu = (
-      <Menu onClick={this.handleMenuClick}>
-        <Menu.Item key="单选题">单选题</Menu.Item>
-        <Menu.Item key="多选题">多选题</Menu.Item>
-        <Menu.Item key="判断题">判断题</Menu.Item>
-        <Menu.Item key="填空题">填空题</Menu.Item>
-      </Menu>
-    );
-    const TableHeader = () => {
-      return (
-        <div>
-           <Dropdown overlay={menu}>
-            <Button>
-              {this.state.activeQuestionType} <Icon type="down" />
-            </Button>
-          </Dropdown>
-          <Dropdown overlay={cmenu}>
-            <Button style={{marginLeft:'4px'}}>
-              {this.state.activeChapter} <Icon type="down" />
-            </Button>
-          </Dropdown>
-          <div style={{ textAlign: 'center',display:'inline-block',marginLeft: '35px',marginTop:'-1px'}}>
-            <Input onChange={this.handleSearch} prefix={<Icon  type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
-          </div>
-        </div>
-      )
-    }
+    const {courseList, activeCourse, sectionList, questionList, } = this.state;
+    const type = false;
     return (
       <div>
         <Header />
@@ -258,51 +148,38 @@ export default class SelectQuestion extends Component {
 
           <div className="select-scope">选择范围</div>
           <div className="sidebar">
-            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+            <div style={{ textAlign: 'center', margin: '8px 0' }}>
               <Input prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
             </div>
             <ul className="course-list">
-              <li onClick={this.changeChapter.bind(this, 'a')}>全球信息化管理</li>
-              <li onClick={this.changeChapter.bind(this, 'b')} className="active">大数据分析</li>
-              <li onClick={this.changeChapter.bind(this, 'c')}>vue学习教程</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
+              {
+                 // 课程列表
+                courseList.map(data => {
+                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.display_name}</li>
+                })
+              }
             </ul>
           </div>
           <div className="main">
             <div className="course-name">大数据分析</div>
             {
-              false &&
-              <Table
-                onHeaderRow={(column) => {
-                  return {
-                    onClick: () => { },        // 点击表头行
-                    style: { backgroundColor: '#fff' },
-                  };
-                }}
-                bordered={true}
-                rowSelection={rowSelection}
-                columns={columns}
-                dataSource={questionList}
-                size="small"
-              />
-            }
-            {
-              <Table
-                title= {
-                  TableHeader
-                }
-                bordered={true}
-                rowSelection={stochasticRowSelection}
-                columns={stochasticColumns}
-                dataSource={questionList}
-                size="small"
+              type ?
+              // 固定出题
+              <FixedQuestion
+                ref={node => this.fixed = node}
+                getList={this.getQuestionData} // 列表数据获取回调函数
+                activeCourse={activeCourse} // 选中的课程ID
+                sectionList={sectionList}   // 章节列表
+                questionList={questionList} // 问题
+                callback={this.onSelect}    // 回调函数
+                />
+              :
+              <RandomQuestion
+                ref={node => this.random = node}
+                activeCourse={activeCourse} // 选中的课程ID
+                sectionList={sectionList}   // 章节列表
+                questionList={questionList} // 问题
+                callback={this.sectionSelect}
               />
             }
             <div>
@@ -324,6 +201,16 @@ export default class SelectQuestion extends Component {
                 </div>
               </div>
             </div>
+            {
+              type ?
+              <Button onClick={this.fixed.confirm.bind(this)}>
+                选好了
+              </Button>
+              :
+              <Button onClick={() => { this.random.confirm()}}>
+                选好了
+              </Button>
+            }
           </div>
         </div>
         <Footer />

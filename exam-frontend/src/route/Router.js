@@ -17,8 +17,9 @@ export default class Main extends Component {
         <Route exact path='/' component={Home} />
         <Route path='/roster' component={Roster} />
         <Route path='/question' component={SelectQuestion} />
-        <Route path='/edit' component={Edit} />
-        <Route path='/randomexam' component={RandomExam} />
+        <Route path='/edit/:id' component={Edit} />
+        <Route path='/new/fix' component={Edit} />
+        <Route path='/new/random' component={RandomExam} />
         <Route path='/manage' component={Manage} />
         <Route path='/preview' component={Preview} />
       </Switch>
