@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
@@ -32,6 +32,7 @@ from exam_paper.api.serializers import (
     ExamPaperRandomSerializer,
 )
 from exam_paper.models import ExamPaper
+from exam_paper.utils import response_format
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -81,7 +82,8 @@ fix_exampaper = openapi.Schema(
 )
 
 
-class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin, GenericViewSet):
+class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
+                           DestroyModelMixin, GenericViewSet):
     """
     retrieve: 试卷详情接口
 
@@ -146,13 +148,19 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
 
             res_data = serializer.data
             res_data['problems'] = all_problems
-            return Response(res_data)
 
-        return Response(serializer.data)
+            return Response(response_format(res_data))
+
+        return Response(response_format(serializer.data))
 
     @swagger_auto_schema(manual_parameters=[page, page_size])
     def list(self, request, *args, **kwargs):
         return super(ExamPaperListViewSet, self).list(request, args, kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(response_format())
 
     @swagger_auto_schema(request_body=Serializer)
     @action(methods=['POST'], detail=True)
@@ -177,7 +185,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin, DestroyModelMixin
                 rule.exam_paper = exam_paper
                 rule.save()
 
-        return Response('success')
+        return Response(response_format())
 
 
 class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
@@ -225,19 +233,34 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
         request.data['create_type'] = "fixed"
         request.data['creator'] = request.user.id
 
-        response = super(ExamPaperFixedCreateViewSet, self).create(request, args, kwargs)
-        return response
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @swagger_auto_schema(request_body=fix_exampaper)
     def update(self, request, *args, **kwargs):
-        return super(ExamPaperFixedCreateViewSet, self).update(request, args, kwargs)
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(response_format(serializer.data))
 
     @swagger_auto_schema(request_body=fix_exampaper)
     def partial_update(self, request, *args, **kwargs):
         return super(ExamPaperFixedCreateViewSet, self).partial_update(request, args, kwargs)
 
 
-class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericViewSet):
+class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin,
+                                   GenericViewSet):
     """
     create: 新增试卷接口（随机抽题）
 
@@ -286,8 +309,30 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin, GenericVi
         request.data['create_type'] = "random"
         request.data['creator'] = request.user.id
 
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(response_format(serializer.data),
+                        status=status.HTTP_201_CREATED,
+                        headers=headers)
+
         response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
         return response
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(response_format(serializer.data))
 
 
 class CoursesListAPIView(APIView):
@@ -318,7 +363,7 @@ class CoursesListAPIView(APIView):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSES']
         rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
-        return Response(rep.json())
+        return Response(response_format(rep.json()))
 
 
 class CourseSectionsListAPIView(APIView):
@@ -359,7 +404,7 @@ class CourseSectionsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(rep.json())
+        return Response(response_format(rep.json()))
 
 
 class CourseProblemsListAPIView(APIView):
@@ -420,7 +465,7 @@ class CourseProblemsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(rep.json())
+        return Response(response_format(rep.json()))
 
 
 class ProblemsDetailAPIView(APIView):
@@ -465,7 +510,7 @@ class ProblemsDetailAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             json=post_data
         )
-        return Response(rep.json())
+        return Response(response_format(rep.json()))
 
 
 class ProblemsTypesAPIView(APIView):
@@ -491,4 +536,4 @@ class ProblemsTypesAPIView(APIView):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_TYPES']
         rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
-        return Response(rep.json())
+        return Response(response_format(rep.json()))

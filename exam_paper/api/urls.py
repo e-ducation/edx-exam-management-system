@@ -41,7 +41,7 @@ urlpatterns = [
 ]
 
 router = routers.SimpleRouter()
-router.register(r'exampaper/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
-router.register(r'exampaper/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
-router.register(r'exampaper', ExamPaperListViewSet, 'exampaper')
+router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
+router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
+router.register(r'exampapers', ExamPaperListViewSet, 'exampaper')
 urlpatterns += router.urls

@@ -185,3 +185,9 @@ SWAGGER_SETTINGS = {
     'LOGOUT_URL': '/logout',
 
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS':
+        'exam_paper.pageinations.FormatPageNumberPagination',
+    'PAGE_SIZE': 10
+}
