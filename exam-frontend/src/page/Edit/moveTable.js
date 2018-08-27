@@ -230,15 +230,7 @@ class DragSortingTable extends React.Component {
         title: '分值',
         dataIndex: 'score',
         render:(record)=>(
-          <div className="inputBox">
-            <div className="inputLeft">
-              <Input type="text" />
-            </div>
-            <div className="inputRight">
-              <div><Icon type="up" /></div>
-              <div><Icon type="down" /></div>
-            </div>
-          </div>
+          <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
         )
       },{
         width:'7.6%',
