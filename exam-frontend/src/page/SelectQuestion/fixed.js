@@ -1,7 +1,6 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Breadcrumb, Dropdown, Menu, Button } from 'antd';
-import axios from 'axios';
+import { Table, Input, Icon, Dropdown, Menu, Button } from 'antd';
 
 export default class FixedQustion extends Component{
   state = {
@@ -59,7 +58,7 @@ export default class FixedQustion extends Component{
   }
   render(){
     const { questionList, sectionList} = this.props;
-    const { activeChapter, activeQuestionType, page, selectedRowKeys } = this.state;
+    const { activeChapter, activeQuestionType, selectedRowKeys } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: (selectedRowKeys, selectedRows) => {

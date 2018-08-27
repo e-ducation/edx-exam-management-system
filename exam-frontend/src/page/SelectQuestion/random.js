@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Input, Icon, Breadcrumb, Dropdown, Menu, Button } from 'antd';
-import axios from 'axios';
+import { Table, Button } from 'antd';
 export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],

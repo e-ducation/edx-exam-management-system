@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Breadcrumb, Dropdown, Menu, Button } from 'antd';
+import { Input, Icon, Breadcrumb, Button } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import './index.scss';
@@ -21,7 +21,6 @@ export default class SelectQuestion extends Component {
     activeCourse: '',
     activeQuestionType: '全部题型',
     selectType: 'immobilization'// immobilization|stochastic
-
   }
   componentDidMount() {
     this.getCourses();
@@ -156,7 +155,7 @@ export default class SelectQuestion extends Component {
               {
                  // 课程列表
                 courseList.map(data => {
-                  return <li key={data.id} className={activeCourse == data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.display_name}</li>
+                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.display_name}</li>
                 })
               }
             </ul>
