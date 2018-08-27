@@ -3,6 +3,8 @@
 from __future__ import unicode_literals
 
 import random
+from itertools import groupby
+
 import requests
 from django.conf import settings
 
@@ -188,7 +190,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
         return Response(response_format())
 
 
-class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
+class ExamPaperFixedCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateModelMixin,
                                   GenericViewSet):
     """
     create: 新增试卷接口（固定试题）
@@ -237,7 +239,12 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_format(serializer.data), status=status.HTTP_201_CREATED, headers=headers)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(response_format(serializer.data))
 
     @swagger_auto_schema(request_body=fix_exampaper)
     def update(self, request, *args, **kwargs):
@@ -259,7 +266,7 @@ class ExamPaperFixedCreateViewSet(CreateModelMixin, UpdateModelMixin,
         return super(ExamPaperFixedCreateViewSet, self).partial_update(request, args, kwargs)
 
 
-class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin,
+class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateModelMixin,
                                    GenericViewSet):
     """
     create: 新增试卷接口（随机抽题）
@@ -319,6 +326,15 @@ class ExamPaperRandomCreateViewSet(CreateModelMixin, UpdateModelMixin,
 
         response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
         return response
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        rules = serializer.data['rules']
+
+        data = serializer.data
+        data['rules'] = [(name, list(group)) for name, group in groupby(rules, lambda x: x['section_name'])]
+        return Response(response_format(data))
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -407,7 +423,7 @@ class CourseSectionsListAPIView(APIView):
         return Response(response_format(rep.json()))
 
 
-class CourseProblemsListAPIView(APIView):
+class BlocksProblemsListAPIView(APIView):
     """
     获取课程的题目列表
     """
@@ -449,13 +465,12 @@ class CourseProblemsListAPIView(APIView):
             ),
         }
     )
-    def get(self, request, course_id, *args, **kwargs):
+    def get(self, request, block_id, *args, **kwargs):
 
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_PROBLEMS']
         payload = {
-            'course_id': course_id,
-            'block_id': request.query_params.get('block_id'),
+            'block_id': block_id,
             'text': request.query_params.get('search', ''),
             'page': request.query_params.get('page'),
             'page_size': request.query_params.get('page_size'),

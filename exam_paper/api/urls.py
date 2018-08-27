@@ -20,11 +20,11 @@ from django.conf.urls import url
 from rest_framework import routers
 
 from exam_paper.api.views import (
+    BlocksProblemsListAPIView,
     ExamPaperListViewSet,
     ExamPaperFixedCreateViewSet,
     ExamPaperRandomCreateViewSet,
     CoursesListAPIView,
-    CourseProblemsListAPIView,
     CourseSectionsListAPIView,
     ProblemsDetailAPIView,
     ProblemsTypesAPIView,
@@ -32,12 +32,11 @@ from exam_paper.api.views import (
 
 urlpatterns = [
     url(r'^courses/$', CoursesListAPIView.as_view()),
-    url(r'^courses/(?P<course_id>.+)/problems/$',
-        CourseProblemsListAPIView.as_view()),
     url(r'^courses/(?P<course_id>.+)/sections/$',
         CourseSectionsListAPIView.as_view()),
     url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
     url(r'^problems/types/$', ProblemsTypesAPIView.as_view()),
+    url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
 ]
 
 router = routers.SimpleRouter()

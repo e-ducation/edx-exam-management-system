@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 
-def response_format(data, msg='success', status='200'):
+def response_format(data=None, msg='success', status=0):
     """
     :param data: reponse data
     :param msg: reponse message

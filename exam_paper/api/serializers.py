@@ -25,18 +25,19 @@ class ExamPaperProblemsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExamPaperProblems
-        fields = ('sequence', 'problem_id', 'grade')
+        fields = ('sequence', 'problem_id', 'grade', 'markdown', 'problem_type')
 
 
 class ExamPaperCreateRuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExamPaperCreateRule
-        fields = ('problem_section_id', 'problem_type', 'problem_num', 'grade')
+        fields = ('section_name', 'problem_section_id', 'problem_type', 'problem_num', 'grade')
 
 
 class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
-    problems = serializers.SlugRelatedField(many=True, read_only=True, slug_field='problem_id')
+    # problems = serializers.SlugRelatedField(many=True, read_only=True, slug_field='problem_id')
+    problems = ExamPaperProblemsSerializer(many=True)
     total_problem_num = serializers.SerializerMethodField()
     total_grade = serializers.SerializerMethodField()
     passing_grade = serializers.SerializerMethodField()

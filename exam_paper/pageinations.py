@@ -6,6 +6,8 @@ from collections import OrderedDict
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+from exam_paper.utils import response_format
+
 
 class FormatPageNumberPagination(PageNumberPagination):
     """
@@ -20,13 +22,9 @@ class FormatPageNumberPagination(PageNumberPagination):
     max_page_size = 1000
 
     def get_paginated_response(self, data):
-        return Response({
-            'status': 0,
-            'message': 'success',
-            'data': OrderedDict([
-                ('count', self.page.paginator.count),
-                ('next', self.get_next_link()),
-                ('previous', self.get_previous_link()),
-                ('results', data)
-            ])
-        })
+        return Response(response_format(OrderedDict([
+            ('count', self.page.paginator.count),
+            ('next', self.get_next_link()),
+            ('previous', self.get_previous_link()),
+            ('results', data)
+        ])))
