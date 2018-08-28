@@ -1,5 +1,6 @@
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux'
 import { Input, Icon, Breadcrumb, Button } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
@@ -7,7 +8,8 @@ import './index.scss';
 import axios from 'axios';
 import FixedQuestion from './fixed';
 import RandomQuestion from './random';
-export default class SelectQuestion extends Component {
+import { setFixedTable } from '../../model/action'
+class SelectQuestion extends Component {
   state = {
     courseList: [],
     sectionList: [],
@@ -30,50 +32,99 @@ export default class SelectQuestion extends Component {
     this.getCourses();
     this.random = {}
   }
-  initData = () => {
-    const { selectQuestionList, selectedRowKeys } = this.state;
+  initData = (selectedRowKeys) => {
+    // const { selectQuestionList } = this.state;
     axios.post('/api/problems/detail/', {
         problems:selectedRowKeys,
       }).then(res => {
       console.log(res.data)
-      const { tableList } = this.state;
-      const fetchData = new Map();
+      const { fixedTable } = this.props;
+      // const fetchData = new Map();
+      const fetchData = {}
       const list = res.data.data;
-      list.map(item => {
-        fetchData.set(item.id, item);// 初始化数据结构
+      list.map((item,index) => {
+        fetchData[item.id] = {
+          ...item,
+          grade: '1',
+          problem_id: item.id,
+          // number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
+        }
       })
-      if (tableList.size == 0){
-        this.setState({
-          tableList: fetchData
-        })
+      // 初始化结构
+      if (Object.keys(fixedTable).length == 0){
+        this.props.setFixedTable(fetchData);
+        // let index = 0;
+        // for( let key of fetchData.keys()){
+        //   fetchData.set(key, {
+        //     ...fetchData.get(key),
+        //     number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
+        //   })
+        //   index++;
+        // }
+        // this.setState({
+        //   fixedTableList: fetchData
+        // })
+
+        // this.editor.setFixedList(fetchData);
       } else {
+        // 非初始化结构
         this.resetData(fetchData)
       }
+      console.log(fetchData)
     }).catch(error => {
       console.log(error)
     })
   }
   resetData = (fetchData) => {
-    const { list, tableList } = this.state;
-    list.map(id => {
-      for (let key of tableList.keys()){
-        if (key === id){
-          fetchData.set(key, tableList.get(id));
+    const { fixedTable } = this.props;// 历史数据
+    // 查找还存在的历史数据
+    Object.keys(fetchData).map(id => {
+      Object.keys(fixedTable).map(key => {
+        if(id === key){
+          fetchData[key] = fixedTable[key];
         }
+      })
+    })
+    let index = 1;
+    Object.keys(fetchData).map(key => {
+      if (fetchData[key].number != undefined){
+        index = index > parseInt(fetchData[key].number) ? index : parseInt(fetchData[key].number)
       }
     })
-    this.setState({
-      tableList: fetchData,
+    Object.keys(fetchData).map(key => {
+      if (fetchData[key].number == undefined){
+        fetchData[key].number = index + 1 < 10 ? '0' + (index + 1) : index + 1;
+        index++;
+      }
     })
-  }
-  fixedInit = () => {
-    // const { data } = this.props;
-    // const selectedRowKeys = Object.keys(data).map(key => {
-    //   return data.id
-    // });
-    // this.setState({
-
+    this.props.setFixedTable(fetchData);
+    // const { selectQuestionList, fixedTableList } = this.state;
+    // selectQuestionList.map(id => {
+    //   for (let key of fixedTableList.keys()){
+    //     if (key === id){
+    //       fetchData.set(key, fixedTableList.get(id));
+    //     }
+    //   }
     // })
+    // let index = 1;
+    // for( let key of fetchData){
+    //   if (fetchData.get(key).number != undefined){
+    //     index = index > parseInt(fetchData.get(key).number) ? index : parseInt(fetchData.get(key).number)
+    //   }
+    // }
+    // for( let key of fetchData){
+    //   if (fetchData.get(key).number == undefined){
+    //     fetchData.set(key,{
+    //       ...fetchData.get(key),
+    //       number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
+    //     })
+    //     index++;
+    //   }
+    // }
+    // this.setState({
+    //   fixedTableList: fetchData,
+    // });
+    // this.editor.setFixedList(fetchData);
   }
   // 获取课程列表
   getCourses = () => {
@@ -127,12 +178,15 @@ export default class SelectQuestion extends Component {
   }
   // 回调设置勾选的题目
   onSelect = (selectedRowKeys) => {
-    this.setState({
-      selectedRowKeys,
-    }, () => {
-      console.log(1231231)
-      this.initData()
-    });
+    this.initData(selectedRowKeys);
+    // edit组件中回调设置状态
+    // this.props.setFixedList(selectedRowKeys)
+    // this.setState({
+    //   selectedRowKeys,
+    // }, () => {
+    //   console.log(1231231)
+    //   this.initData()
+    // });
   }
   sectionSelect = (selectedRowKeys) => {
     // this.setSta
@@ -181,8 +235,8 @@ export default class SelectQuestion extends Component {
 
   render() {
     const {courseList, activeCourse, sectionList, questionList, } = this.state;
-    const { paperType } = this.props ;
-    console.log(courseList)
+    const { paperType, selectQuestionList} = this.props;
+    console.log(this.props.fixedTable, 'fixedTable')
     return (
       <div style={this.props.style}>
         <div className="qs-container">
@@ -217,6 +271,7 @@ export default class SelectQuestion extends Component {
               paperType == 'fixed' ?
               // 固定出题
               <FixedQuestion
+                selectedRowKeys={selectQuestionList}
                 ref={node => this.fixed = node}
                 getList={this.getQuestionData} // 列表数据获取回调函数
                 activeCourse={activeCourse} // 选中的课程ID
@@ -268,3 +323,22 @@ export default class SelectQuestion extends Component {
     );
   }
 }
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+  console.log(fixedTable);
+  const selectQuestionList = Object.keys(fixedTable);
+  return {
+    selectQuestionList,
+    fixedTable,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(SelectQuestion)

@@ -12,6 +12,16 @@ export default class FixedQustion extends Component{
     selectedRowKeys: [],
   }
   componentDidMount(){
+    this.setState({
+      selectedRowKeys: this.props.selectedRowKeys,
+    })
+  }
+  componentWillReceiveProps(nextProps) {
+    if( JSON.stringify(this.props.selectedRowKeys) != JSON.stringify(nextProps.selectedRowKeys)){
+      this.setState({
+        selectedRowKeys: nextProps.selectedRowKeys,
+      })
+    }
   }
   // 题目列表数据更新
   getQuestionData = () => {

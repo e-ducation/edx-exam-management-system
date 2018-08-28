@@ -1,0 +1,2 @@
+export const SET_FIXED_TABLE = 'SET_FIXED_TABLE';
+export const INIT_FIXED_TABLE = 'SET_FIXED_TABLE';
