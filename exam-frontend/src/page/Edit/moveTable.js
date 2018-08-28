@@ -8,8 +8,6 @@ import './index.scss';
 import none from "../../assets/images/none.png";
 import axios from 'axios';
 
-import SelectQuestion from '../SelectQuestion'
-
 const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
@@ -133,7 +131,8 @@ class DragSortingTable extends React.Component {
       {subjectdec:'你好1',type:'选择题'},
       {subjectdec:'你好2',type:'选择题'}
     ],
-    settingScoreVisible: false
+    settingScoreVisible: false,
+    value:1
   }
 
   components = {
@@ -168,9 +167,10 @@ class DragSortingTable extends React.Component {
       settingScoreVisible: true,
     });
   }
-
-  onChange=(value)=>{
-    console.log('changed', value);
+  //单个设置分数
+  onsingleChange=(e,id)=>{
+    console.log('changed', e);
+    console.log('id',id);
   }
 
   settingHandleOk = (e) => {
@@ -202,12 +202,30 @@ class DragSortingTable extends React.Component {
   }
 
 
-
-
-
   //删除题目
-  deleteSubject=(index)=>{
+  deleteSubject=(id)=>{
     console.log(index);
+
+    list.map(item=>{
+      if(item.id==id){
+        //如果id值相等的情况下，找到对应的index，将它在数组中删除
+        list.splice(item.index,1)
+      }
+    })
+
+    consile.log(list);
+
+    this.setState({
+      //返回数据
+    })
+
+  }
+
+  //批量设置分数
+  settingOnChange=(e)=>{
+    this.setState({
+      value:e.target.value,
+    })
   }
 
   render() {
@@ -229,16 +247,15 @@ class DragSortingTable extends React.Component {
         width:'8.6%',
         title: '分值',
         dataIndex: 'score',
-        render:(record)=>(
-          <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+        render:(text,record)=>(
+          <InputNumber  min={0} max={10} step={0.1} key={record.subjectdec} onChange={(event)=>{this.onsingleChange(event,record.subjectdec)}} />
         )
       },{
         width:'7.6%',
         title: '操作',
-        dataIndex: 'operate',
-        render:(record,index)=>(
+        render:(text,record)=>(
           <Tooltip title="删除">
-            <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deleteSubject.bind(this.index)} />
+            <Icon type="delete" data-key={record.subjectdec} className="icon-red" style={{fontSize:'16px'}} onClick={this.deleteSubject.bind(this,record.id)} />
           </Tooltip>
         )
       }
@@ -255,7 +272,7 @@ class DragSortingTable extends React.Component {
             onCancel={this.settingHandleCancel}
           >
             <p>批量设置的分值将覆盖掉之前设置的分值，请谨慎操作。</p>
-            <RadioGroup onChange={this.settingOnChange} value={this.state.value} style={{marginTop:'10px'}}>
+            <RadioGroup onChange={this.settingOnChange} value={this.state.value} name="radiogroup" style={{marginTop:'10px'}}>
               <Radio value={1}>统一分数</Radio>
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
@@ -298,9 +315,9 @@ class DragSortingTable extends React.Component {
           <Button type="primary" onClick={() => {this.props.setShow(true)}}>添加试题</Button>
           {
             this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
             :
-              <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
+              <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
           }
 
         </div>

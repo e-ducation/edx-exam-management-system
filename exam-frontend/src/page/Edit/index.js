@@ -20,8 +20,8 @@ const { TextArea } = Input;
 
 class EditContainer extends React.Component {
   state={
-    paperName:"这是试卷名称",
-    paperIns:"这是试卷说明",
+    paperName:"",
+    paperIns:"",
     paper:[],
     paperpass:60,
     paperInsLength:0,
@@ -104,34 +104,34 @@ class EditContainer extends React.Component {
         saveVisible:true
       })
 
-      axios({
-        method:"POST",
-        url:'/api/exampaper/fixed/',
-        data:{
-          problems: [
-            {
-              "grade": 5,
-              "problem_id": "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
-              "sequence": 5
-            }
-          ],
-          name: "Middle Exam",
-          description:paperIns
-        }
-      }).then(res=>{
+      axios.post('/api/exampapers/fixed/',{
+        problems: [
+          {
+            grade: 5,
+            problem_id: "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
+            sequence: 5
+          }
+        ],
+        name: paperName,
+        description:paperIns
+      })
+      .then(res=>{
         console.log(res);
 
         //按钮可点击
         this.setState({
           saveVisible:true
         })
+
+        //跳转页面
+
       })
       .catch(error=>{
          //按钮可点击
          this.setState({
           saveVisible:true
         })
-        console.log(error);
+        //提示错误
       })
     }
   }
@@ -150,8 +150,8 @@ class EditContainer extends React.Component {
 
   warning=()=>{
     Modal.warning({
-      title: 'This is a warning message',
-      content: 'some messages...some messages...',
+      title: '提示',
+      content: '试卷名称不能为空！',
     });
   }
 
@@ -194,7 +194,7 @@ class EditContainer extends React.Component {
 
           <div className="edit-box">
             <div className="label-box">
-              <div>试卷说明</div>
+              <div>试卷名称*</div>
               <div>
                 <Input placeholder="请输入1-50个字符的名称"
                 onChange={this.onChangePaperName}
@@ -205,7 +205,7 @@ class EditContainer extends React.Component {
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'14px'}}>试卷名称*</div>
+              <div style={{lineHeight:'14px'}}>试卷说明</div>
               <div>
                 <div style={{position:"relative",width:'468px'}}>
                   <TextArea placeholder="请输入试卷说明"
