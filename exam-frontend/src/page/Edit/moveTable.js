@@ -204,20 +204,20 @@ class DragSortingTable extends React.Component {
 
   //删除题目
   deleteSubject=(id)=>{
-    console.log(index);
+    // console.log(index);
 
-    list.map(item=>{
-      if(item.id==id){
-        //如果id值相等的情况下，找到对应的index，将它在数组中删除
-        list.splice(item.index,1)
-      }
-    })
+    // list.map(item=>{
+    //   if(item.id==id){
+    //     //如果id值相等的情况下，找到对应的index，将它在数组中删除
+    //     list.splice(item.index,1)
+    //   }
+    // })
 
-    consile.log(list);
+    // console.log(list);
 
-    this.setState({
-      //返回数据
-    })
+    // this.setState({
+    //   //返回数据
+    // })
 
   }
 
