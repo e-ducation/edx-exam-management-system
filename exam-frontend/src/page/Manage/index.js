@@ -42,21 +42,23 @@ class ManageContainer extends React.Component {
     this.setState({
       loading: true,
     }, () => {
-      axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+      axios.get('/api/exampapers/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
         cancelToken: new CancelToken(function executor(c) {
           // An executor function receives a cancel function as a parameter
           that.searchAjax = c
         })
       }).then(function (response) {
-          if (response.status === 200){
+          console.log(response)
+          const res = response.data;
+          if (res.status === 0){
             // 给list添加key
-            let list = response.data.results;
+            let list = res.data.results;
             for (let i = 0; i < list.length; i++){
               list[i].key = i;
             }
             that.setState({
               list,
-              pageTotal: response.data.count,
+              pageTotal: res.data.count,
               loading: false,
             })
           } else {
@@ -128,9 +130,10 @@ class ManageContainer extends React.Component {
   // 4. 复制试卷
   copyPaper = (id) => {
     const that = this;
-    axios.post('/api/exampaper/' + id + '/duplicate/')
+    axios.post('/api/exampapers/' + id + '/duplicate/')
       .then(function (response) {
-        if (response.status === 200){
+        const res = response.data;
+        if (res.status === 0){
           that.getList();
         } else {
           message.error('复制失败');
@@ -154,9 +157,10 @@ class ManageContainer extends React.Component {
       cancelText: '取消',
       onOk: () => {
         // 删除试卷
-        axios.delete('/api/exampaper/' + id + '/')
+        axios.delete('/api/exampapers/' + id + '/')
         .then(function (response) {
-          if (response.status === 200){
+          const res = response.data;
+          if (res.status === 200){
             message.error('删除成功');
             that.getList();
           } else {
@@ -310,7 +314,6 @@ class ManageContainer extends React.Component {
 export default class Manage extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-    showShadow: false,
   }
 
   componentDidMount(){
@@ -321,18 +324,13 @@ export default class Manage extends React.Component {
       that.setState({ height })
     })
 
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
-    })
   }
 
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        <Header />
         <div className="container" style={containerHeight}>
           <ManageContainer />
         </div>

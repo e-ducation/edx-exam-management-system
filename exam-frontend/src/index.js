@@ -7,7 +7,7 @@ import axios from 'axios';
 axios.defaults.withCredentials = true
 // 基础服务器
 const baseURL = 'http://ems.ngrok.elitemc.cn';
-const AUTH_TOKEN = 'yNxRv0ELSxcDN0ZDSBNW3K0ajdpIjZQA3xXbCzSBS0XIQlo1Is7wCSWkwu78eBdn';
+const AUTH_TOKEN = '8gNzWj2eVjaoSTV7rYdJaw7WEwnHC07F1KbQVU8YDZGuxlPBY487LRzGzVxhhSnb';
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.common['X-CSRFToken'] = AUTH_TOKEN;
 

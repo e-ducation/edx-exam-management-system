@@ -83,7 +83,7 @@ class PreviewContainer extends React.Component{
 
     // 获取编辑的试卷信息及题目ids
     const id = 12;
-    axios.get('/api/exampaper/' + id)
+    axios.get('/api/exampapers/' + id)
       .then(function (response) {
         if (response.status === 200){
           console.log(response);
@@ -102,7 +102,6 @@ class PreviewContainer extends React.Component{
                 }
               */
               // 解析xml
-              console.log(res)
               const results = res.data;
               let xmlDoc = null;
               let arr = [];
