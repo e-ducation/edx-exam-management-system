@@ -413,7 +413,7 @@ class CourseSectionsListAPIView(APIView):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSE_SECTIONS']
         payload = {
-           'course_id': course_id
+            'course_id': course_id
         }
         rep = requests.get(
             url,

@@ -59,4 +59,3 @@ class ExamPaperCreateRule(TimeStampedModel):
     problem_num = models.IntegerField(default=0)
     grade = models.DecimalField(max_digits=5, decimal_places=2, default=1.00,
                                 validators=[MinValueValidator(0.01), MaxValueValidator(100.00)])
-

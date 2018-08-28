@@ -36,7 +36,6 @@ class ExamPaperCreateRuleSerializer(serializers.ModelSerializer):
 
 
 class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
-    # problems = serializers.SlugRelatedField(many=True, read_only=True, slug_field='problem_id')
     problems = ExamPaperProblemsSerializer(many=True)
     total_problem_num = serializers.SerializerMethodField()
     total_grade = serializers.SerializerMethodField()
@@ -50,6 +49,7 @@ class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
 
 class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
 
+    creator = serializers.SlugRelatedField(read_only=True, slug_field='username')
     total_problem_num = serializers.SerializerMethodField()
     total_grade = serializers.SerializerMethodField()
     passing_grade = serializers.SerializerMethodField()
@@ -123,6 +123,3 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
                 ExamPaperProblems.objects.create(exam_paper=exam_paper, **rule_data)
 
         return exam_paper
-
-
-
