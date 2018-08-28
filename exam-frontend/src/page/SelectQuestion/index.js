@@ -23,6 +23,9 @@ export default class SelectQuestion extends Component {
     selectType: 'immobilization',// immobilization|stochastic
     tableList: new Map(),
   }
+  static defaultProps = {
+    paperType: 'fixed'
+  }
   componentDidMount() {
     this.getCourses();
     this.random = {}
@@ -58,11 +61,9 @@ export default class SelectQuestion extends Component {
           fetchData.set(key, tableList.get(id));
         }
       }
-      tableList.map(item => {
-        if (id === item.id ){
-          // newTable.push(item);
-        }
-      })
+    })
+    this.setState({
+      tableList: fetchData,
     })
   }
   fixedInit = () => {
@@ -78,8 +79,10 @@ export default class SelectQuestion extends Component {
   getCourses = () => {
     axios.get('/api/courses/')
       .then( (res) => {
-        if (res.data.status == 200) {
+        console.log(res.data, 123)
+        if (res.data.status == 0) {
           const { data }  = res.data;
+          console.log(res.data, 123)
           if (data.length > 0) {
             this.setState({
               courseList: data,
@@ -98,7 +101,7 @@ export default class SelectQuestion extends Component {
   // 课程名称获取题目列表
   getList = (course) => {
     this.getSection(course);
-    axios.get(`/api/courses/${course}/problems/`)
+    axios.get(`/api/xblocks/${course}/problems/`)
       .then( (res) => {
         const { data } = res.data
         this.setState({
@@ -179,11 +182,9 @@ export default class SelectQuestion extends Component {
   render() {
     const {courseList, activeCourse, sectionList, questionList, } = this.state;
     const { paperType } = this.props ;
-    console.log(this.state.tableList)
+    console.log(courseList)
     return (
       <div style={this.props.style}>
-        <Header />
-
         <div className="qs-container">
           <Breadcrumb style={{ margin: '20px 0' }}>
             <Breadcrumb.Item>
@@ -205,7 +206,7 @@ export default class SelectQuestion extends Component {
               {
                  // 课程列表
                 courseList.map(data => {
-                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.display_name}</li>
+                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.name}</li>
                 })
               }
             </ul>
@@ -263,7 +264,6 @@ export default class SelectQuestion extends Component {
             }
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
