@@ -183,6 +183,10 @@ class EditContainerReducer extends React.Component {
       <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
     )
 
+    let subLength = this.props.fixHasNumArr.length;
+
+    console.log(this.props.fixHasNumArr);
+
     return (
       <div style={this.props.style} className="displayFlx">
         <Sidebar/>
@@ -254,8 +258,8 @@ class EditContainerReducer extends React.Component {
                     </div>
                     <div className="pass-per">
                       <div>
-                        <span>总题型：{this.state.paper.length}</span>
-                        <span>总分：{this.state.paper.length}</span>
+                        <span>总题数：{subLength}</span>
+                        <span>总分：{this.props.sum}</span>
                         <span>
                           <span style={{marginRight:'6px'}}>及格线*</span>
                           <InputNumber min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
@@ -313,10 +317,21 @@ const mapStateToProps = (state) => {
     fixHasNumArr.push(item)
   })
 
+  console.log(fixHasNumArr);
+  let sum =0;
+
+  let score = fixHasNumArr.map(item=>{
+    sum+=parseInt(item.grade);
+    console.log(item.grade);
+    return sum;
+  })
+
+
   return {
     selectQuestionList,
     fixedTable,
     fixHasNumArr,
+    sum
   }
 }
 

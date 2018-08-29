@@ -154,7 +154,29 @@ class DragSortingTable extends React.Component {
   //单个设置分数
   onsingleChange=(e,id)=>{
 
+
+
     this.props.fixedTable[id].grade=e
+
+    this.props.fixHasNumArr.map(item=>{
+      if(item.problem_id==id){
+        item.grade=e
+      }
+    })
+
+    this.props.setFixedTable(this.props.fixedTable);
+    //this.props.setFixedTable(this.props.fixHasNumArr);
+
+
+    // let sum01=0;
+
+    // this.props.fixHasNumArr.map(item=>{
+    //   sum01+=parseInt(item.grade);
+    //   console.log(item.grade);
+    //   return sum01;
+    // })
+    // console.log(sum01);
+    // this.props.sum=sum01;
 
   }
 
@@ -194,14 +216,6 @@ class DragSortingTable extends React.Component {
   }
 
 
-  //删除题目
-  deleteSubject=(id)=>{
-
-    delete this.props.fixedTable[id];
-
-    this.props.setFixedTable(this.props.fixedTable);
-  }
-
   showDeleteConfirm=(id)=>{
     confirm({
       title: 'Are you sure delete this task?',
@@ -209,11 +223,15 @@ class DragSortingTable extends React.Component {
       okText: '确定',
       okType: 'danger',
       cancelText: '取消',
-      onOk(){
-        alert(id);
+      onOk:()=>{
+        //删除并回推数据
+        delete this.props.fixedTable[id];
+
+        this.props.setFixedTable(this.props.fixedTable);
+
       },
-      onCancel() {
-        console.log('Cancel');
+      onCancel:()=>{
+
       },
     });
   }
@@ -244,14 +262,36 @@ class DragSortingTable extends React.Component {
         title: '题型',
         dataIndex: 'type',
         render:(text,record)=>(
-            <a>5555</a>
+          <div>
+            {
+              (
+                ()=>{
+                  if(record.type=="multiplechoiceresponse"){
+                    return(
+                      <span>单选题</span>
+                    )
+                  }
+                  else if(record.type=="choiceresponse"){
+                    return(
+                      <span>多选题</span>
+                    )
+                  }
+                  else{
+                    return(
+                      <span>填空题</span>
+                    )
+                  }
+                }
+              )()
+            }
+          </div>
         )
       },{
         width:'8.6%',
         title: '分值',
         dataIndex: '',
         render:(text,record)=>(
-          <InputNumber min={0} max={10} step={0.1} defaultValue={1} onChange={(event)=>{this.onsingleChange(event,record.id)}} />
+          <InputNumber min={0} max={10} step={0.1} defaultValue={1} onChange={(event)=>{this.onsingleChange(event,record.problem_id)}} />
         )
       },{
         width:'7.6%',
@@ -375,10 +415,21 @@ const mapStateToProps = (state) => {
     fixHasNumArr.push(item)
   })
 
+  let sum =0;
+
+  fixHasNumArr.map(item=>{
+    sum+=item.grade;
+    console.log(item.grade);
+    return sum;
+  })
+
+  console.log(sum);
+
   return {
     selectQuestionList,
     fixedTable,
     fixHasNumArr,
+    sum,
   }
 }
 
