@@ -20,6 +20,11 @@ class SelectQuestion extends Component {
     activeQuestionType: '全部题型',
     randomLoading: false,
     quesitonLoading: false,
+    counting: {
+      multiplechoiceresponse: 0,
+      choiceresponse: 0,
+      stringresponse: 0,
+    },
   }
   static defaultProps = {
     // paperType: 'fixed'
@@ -144,6 +149,28 @@ class SelectQuestion extends Component {
         console.log(error);
       });
   }
+  // 题型统计
+  countType = (selectedRowKeys) => {
+    axios.post('/api/problems/detail/', {
+      problems:selectedRowKeys,
+    }).then(res => {
+      const list = res.data.data;
+      const counting = {
+        multiplechoiceresponse: 0,
+        choiceresponse: 0,
+        stringresponse: 0,
+      }
+      list.map(data => {
+        counting[data.type]++;
+      })
+      this.setState({
+        counting
+      })
+      console.log(counting)
+    }).catch(error => {
+      console.log(error)
+    })
+  }
   // 回调设置勾选的题目
   onSelect = (selectedRowKeys) => {
     // 设置数据
@@ -167,7 +194,8 @@ class SelectQuestion extends Component {
     this.setState({
       quesitonLoading: true,
     })
-    axios.get(`/api/xblocks/${activeCourse}/problems/`, {
+    const block = params.block_id == undefined ? activeCourse : params.block_id;
+    axios.get(`/api/xblocks/${block}/problems/`, {
         params,
       })
       .then( (res) => {
@@ -184,11 +212,9 @@ class SelectQuestion extends Component {
     // const { callback } = this.props;
     // const { selectedRowKeys,totalAcount } = this.state;
   }
-
   render() {
-    const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading } = this.state;
+    const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
     const { paperType, selectQuestionList} = this.props;
-    console.log(this.props.fixedTable, 'fixedTable')
     return (
       <div style={this.props.style}>
         <div className="qs-container">
@@ -231,6 +257,7 @@ class SelectQuestion extends Component {
                 questionList={questionList} // 问题
                 callback={this.onSelect}    // 回调函数
                 loading={quesitonLoading}
+                countType={this.countType}
                 />
               :
               <RandomQuestion
@@ -241,35 +268,39 @@ class SelectQuestion extends Component {
                 callback={this.sectionSelect}
               />
             }
-            <div>
-              <div>已选<span style={{ color: '#0692e1' }}>100</span>题</div>
+            <div style={{padding: '10px 0'}}>
+              <div>已选<span style={{ color: '#0692e1' }}>
+                {
+                  counting['multiplechoiceresponse']+counting['choiceresponse']+counting['stringresponse']
+                }
+              </span>题</div>
               <div className="total">
                 <div className="total-block total-top">
                   <span className="first-span">题型</span>
                   <span>单选题</span>
                   <span>多选题</span>
-                  <span>判断题</span>
                   <span>填空题</span>
                 </div>
                 <div className="total-block">
                   <span className="first-span">已选数量</span>
-                  <span className="number">25</span>
-                  <span className="number">30</span>
-                  <span className="number">40</span>
-                  <span className="number">44</span>
+                  <span className="number">{counting['multiplechoiceresponse']}</span>
+                  <span className="number">{counting['choiceresponse']}</span>
+                  <span className="number">{counting['stringresponse']}</span>
                 </div>
               </div>
             </div>
-            {
-              paperType == 'fixed' ?
-              <Button onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
-                选好了
-              </Button>
-              :
-              <Button onClick={() => { this.random.confirm();this.props.setShow(false)}}>
-                选好了
-              </Button>
-            }
+            <div style={{padding: '10px',textAlign: 'center'}}>
+              {
+                paperType == 'fixed' ?
+                <Button type="primary" onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                  选好了
+                </Button>
+                :
+                <Button type="primary" onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                  选好了
+                </Button>
+              }
+            </div>
           </div>
         </div>
       </div>
@@ -279,7 +310,6 @@ class SelectQuestion extends Component {
 const mapStateToProps = (state) => {
   const { fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
-  console.log(randomTable)
   return {
     selectQuestionList,
     fixedTable,

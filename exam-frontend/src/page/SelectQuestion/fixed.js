@@ -7,7 +7,7 @@ export default class FixedQustion extends Component{
   state = {
     activeCourse: '',
     activeQuestionType: '全部',
-    activeChapter: null,
+    activeChapter: '全部',
     activeChapterName: '全部',
     keySearchL: null,
     page: 1,
@@ -24,6 +24,12 @@ export default class FixedQustion extends Component{
         selectedRowKeys: nextProps.selectedRowKeys,
       })
     }
+    if (this.props.activeCourse != nextProps.activeCourse){
+      this.setState({
+        activeQuestionType: '全部',
+        activeChapter: '全部',
+      })
+    }
   }
   // 题目列表数据更新
   getQuestionData = () => {
@@ -33,15 +39,13 @@ export default class FixedQustion extends Component{
       page,
       page_size: 10,
     };
-    if (activeChapter != null) params['block_id'] = activeChapter;
+    if (activeChapter != '全部') params['block_id'] = activeChapter;
     if (keySearch != null) params['search'] = keySearch;
     // if (activeQuestionType != null) params[] = activeQuestionType;
-    console.log(params,'paramsparamsparamsparamsparamsparamsparams')
     getList(params);
   }
   // 题型选择
   handleMenuClick = (v) => {
-    console.log(v.item.props);
     this.setState({
       activeQuestionType: v.key,
       page: 1,
@@ -69,6 +73,7 @@ export default class FixedQustion extends Component{
       this.getQuestionData()
     })
   }
+  // 题型统计
   confirm = () => {
     const { callback } =this.props;
     const { selectedRowKeys } = this.state;
@@ -90,7 +95,8 @@ export default class FixedQustion extends Component{
         // callback(selectedRowKeys);
         this.setState({
           selectedRowKeys,
-        })
+        });
+        this.props.countType(selectedRowKeys)
         console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({
@@ -113,6 +119,10 @@ export default class FixedQustion extends Component{
     const cmenu = (
       <Menu onClick={this.handleCMenuClick}>
         {
+          activeChapter != '全部' &&
+          <Menu.Item key="全部">全部章节</Menu.Item>
+        }
+        {
           sectionList.map(data => {
             return <Menu.Item key={data.id}>{data.name}</Menu.Item>
           })
@@ -121,6 +131,10 @@ export default class FixedQustion extends Component{
     );
     const menu = (
       <Menu onClick={this.handleMenuClick}>
+        {
+          activeQuestionType != '全部' &&
+          <Menu.Item key="全部">全部</Menu.Item>
+        }
         <Menu.Item key="multiplechoiceresponse">单选题</Menu.Item>
         <Menu.Item key="choiceresponse">多选题</Menu.Item>
         <Menu.Item key="stringresponse">填空题</Menu.Item>
@@ -136,7 +150,7 @@ export default class FixedQustion extends Component{
           </Dropdown>
           <Dropdown overlay={cmenu}>
             <Button  style={{marginLeft:'4px', width: '150px', overflow:'hidden',textOverflow: 'ellipsis'}}>
-              <span>{ activeChapter == null ? '全部章节' : activeChapterName }</span><Icon type="down" />
+              <span>{ activeChapter == '全部' ? '全部章节' : activeChapterName }</span><Icon type="down" />
             </Button>
           </Dropdown>
           <div style={{ textAlign: 'center',display:'inline-block',marginLeft: '35px',marginTop:'-1px'}}>
@@ -145,7 +159,6 @@ export default class FixedQustion extends Component{
         </div>
       )
     }
-    console.log(questionList);
     return(
       <div>
         <Table
