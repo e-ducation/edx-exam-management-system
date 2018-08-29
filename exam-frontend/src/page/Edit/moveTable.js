@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux'
 import { Input,Button,Table,Tooltip,Icon,InputNumber,Modal,Radio} from 'antd';
 import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
@@ -7,9 +8,12 @@ import update from 'immutability-helper';
 import './index.scss';
 import none from "../../assets/images/none.png";
 import axios from 'axios';
+import { setFixedTable } from '../../model/action'
 
 const RadioGroup = Radio.Group;
 const { TextArea } = Input;
+const confirm = Modal.confirm;
+
 
 function dragDirection(
   dragIndex,
@@ -122,15 +126,13 @@ class DragSortingTable extends React.Component {
   }
 
   componentDidMount() {
-    this.numberList();
+
   }
 
 
+
   state = {
-    data: [
-      {subjectdec:'你好1',type:'选择题'},
-      {subjectdec:'你好2',type:'选择题'}
-    ],
+    data:'',
     settingScoreVisible: false,
     value:1
   }
@@ -141,25 +143,7 @@ class DragSortingTable extends React.Component {
     },
   }
 
-  //序列号
-  numberList = ()=>{
-    let arr=[]
-    this.state.data.forEach((item,index)=>{
 
-      item = {
-        ...item,
-        // number: index+1<10 ? 0+index:index
-        number:index+1<10 ? '0'+(index+1):index
-      }
-      arr.push(item)
-    })
-
-    this.setState({
-      data:arr
-    })
-
-    console.log(this.state.data)
-  }
 
   //设置分数
   showModal = () => {
@@ -169,8 +153,9 @@ class DragSortingTable extends React.Component {
   }
   //单个设置分数
   onsingleChange=(e,id)=>{
-    console.log('changed', e);
-    console.log('id',id);
+
+    this.props.fixedTable[id].grade=e
+
   }
 
   settingHandleOk = (e) => {
@@ -188,38 +173,53 @@ class DragSortingTable extends React.Component {
   }
 
   moveRow = (dragIndex, hoverIndex) => {
-    const { data } = this.state;
+    const  data  = this.props.fixHasNumArr;
     const dragRow = data[dragIndex];
 
-    this.setState(
-      update(this.state, {
-        data: {
-          $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
-        },
-      }),
-    );
-    this.numberList();
+
+    // this.setState(
+    //   update(this.state, {
+    //     data: {
+    //       $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+    //     },
+    //   }),
+    // );
+
+    update(this.props, {
+      fixHasNumArr: {
+        $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+      },
+    })
+
   }
 
 
   //删除题目
   deleteSubject=(id)=>{
-    // console.log(index);
 
-    // list.map(item=>{
-    //   if(item.id==id){
-    //     //如果id值相等的情况下，找到对应的index，将它在数组中删除
-    //     list.splice(item.index,1)
-    //   }
-    // })
+    delete this.props.fixedTable[id];
 
-    // console.log(list);
-
-    // this.setState({
-    //   //返回数据
-    // })
-
+    this.props.setFixedTable(this.props.fixedTable);
   }
+
+  showDeleteConfirm=(id)=>{
+    confirm({
+      title: 'Are you sure delete this task?',
+      content: 'Some descriptions',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk(){
+        alert(id);
+      },
+      onCancel() {
+        console.log('Cancel');
+      },
+    });
+  }
+
+
+
 
   //批量设置分数
   settingOnChange=(e)=>{
@@ -238,24 +238,27 @@ class DragSortingTable extends React.Component {
       },{
         width:'67.4%',
         title: '试题',
-        dataIndex: 'subjectdec'
+        dataIndex: 'problem_id'
       },{
         width:'8.2%',
         title: '题型',
-        dataIndex: 'type'
+        dataIndex: 'type',
+        render:(text,record)=>(
+            <a>5555</a>
+        )
       },{
         width:'8.6%',
         title: '分值',
-        dataIndex: 'score',
+        dataIndex: '',
         render:(text,record)=>(
-          <InputNumber  min={0} max={10} step={0.1} key={record.subjectdec} onChange={(event)=>{this.onsingleChange(event,record.subjectdec)}} />
+          <InputNumber min={0} max={10} step={0.1} defaultValue={1} onChange={(event)=>{this.onsingleChange(event,record.id)}} />
         )
       },{
         width:'7.6%',
         title: '操作',
         render:(text,record)=>(
           <Tooltip title="删除">
-            <Icon type="delete" data-key={record.subjectdec} className="icon-red" style={{fontSize:'16px'}} onClick={this.deleteSubject.bind(this,record.id)} />
+            <Icon type="delete" data-key={record.subjectdec} className="icon-red" style={{fontSize:'16px'}} onClick={this.showDeleteConfirm.bind(this,record.id)} />
           </Tooltip>
         )
       }
@@ -314,7 +317,7 @@ class DragSortingTable extends React.Component {
         <div style={{marginBottom:'10px'}}>
           <Button type="primary" onClick={() => {this.props.setShow(true)}}>添加试题</Button>
           {
-            this.state.data.length === 0 ?
+            this.props.fixHasNumArr.length === 0 ?
               <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
             :
               <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
@@ -322,7 +325,7 @@ class DragSortingTable extends React.Component {
 
         </div>
         {
-          this.state.data.length === 0 ?
+          this.props.fixHasNumArr.length === 0 ?
             <div className="examnodata">
               <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
               <p style={{textAlign:'center'}}>暂无数据</p>
@@ -331,7 +334,7 @@ class DragSortingTable extends React.Component {
 
             <Table
               columns={columns}
-              dataSource={this.state.data}
+              dataSource={this.props.fixHasNumArr}
               components={this.components}
               pagination={false}
               bordered
@@ -351,6 +354,44 @@ class DragSortingTable extends React.Component {
   }
 }
 
-const MoveTable = DragDropContext(HTML5Backend)(DragSortingTable);
 
-export default MoveTable
+
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+
+  const selectQuestionList = Object.keys(fixedTable);
+
+  const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
+
+  const fixHasNumArr=[]
+
+  fixArr.forEach((item,index)=>{
+
+    item = {
+      ...item,
+      // number: index+1<10 ? 0+index:index
+      number:index+1<10 ? '0'+(index+1):index+1
+    }
+    fixHasNumArr.push(item)
+  })
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    fixHasNumArr,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+const tableFix = connect(mapStateToProps,mapDispatchToProps)(DragSortingTable);
+
+const MoveTable = DragDropContext(HTML5Backend)(tableFix);
+
+export default MoveTable;
