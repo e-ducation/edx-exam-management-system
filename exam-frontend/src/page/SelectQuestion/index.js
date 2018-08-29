@@ -47,7 +47,7 @@ class SelectQuestion extends Component {
       list.map((item,index) => {
         fetchData[item.id] = {
           ...item,
-          grade: '1',
+          grade: 1,
           problem_id: item.id,
           // number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
         }
