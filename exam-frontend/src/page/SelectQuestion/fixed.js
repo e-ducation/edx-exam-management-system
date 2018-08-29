@@ -164,7 +164,7 @@ export default class FixedQustion extends Component{
           pagination={{ current: page,pageSize: 10, total: questionList.count, onChange:(page) => { this.setState({page}, () => {this.getQuestionData()})} }}
           dataSource={questionList.results}
           size="small"
-          rowKey="title"
+          rowKey="id"
           loading={loading}
         />
       </div>
