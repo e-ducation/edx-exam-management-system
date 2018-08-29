@@ -69,14 +69,17 @@ fix_exampaper = openapi.Schema(
     properties={
         'name': openapi.Schema(type=openapi.TYPE_STRING, example="Middle Exam"),
         'description': openapi.Schema(type=openapi.TYPE_STRING, example="Middle Exam"),
+        'passing_ratio': openapi.Schema(type=openapi.TYPE_INTEGER, example=60),
         'problems': openapi.Schema(
             type=openapi.TYPE_ARRAY,
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    'sequence': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
                     'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
-                    'sequence': openapi.Schema(type=openapi.TYPE_INTEGER, example=5)
+                    'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
+                    'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    'markdown': openapi.Schema(type=openapi.TYPE_STRING, example='<div>hello</div>'),
                 }
             )
         )
@@ -205,8 +208,6 @@ class ExamPaperFixedCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateMo
     {
       "name": "Middle Exam",
       "description": "Middle Exam",
-      "create_type": "fixed",
-      "creator": 2,
       "passing_ratio": 60,
       "problems": [
         {
