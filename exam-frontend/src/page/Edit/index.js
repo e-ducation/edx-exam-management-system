@@ -1,5 +1,6 @@
 import React from 'react';
-import { Input,Button,Breadcrumb,Icon,InputNumber,Modal} from 'antd';
+import { connect } from 'react-redux'
+import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,message} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
@@ -10,7 +11,7 @@ import axios from 'axios';
 import SelectQuestion from '../SelectQuestion'
 
 import MoveTable from './moveTable'
-
+import { setFixedTable } from '../../model/action'
 
 
 // const RadioGroup = Radio.Group;
@@ -18,7 +19,7 @@ const { TextArea } = Input;
 
 
 
-class EditContainer extends React.Component {
+class EditContainerReducer extends React.Component {
   state={
     paperName:"",
     paperIns:"",
@@ -92,39 +93,41 @@ class EditContainer extends React.Component {
   //保存固定试题
   saveFixExam=()=>{
 
-    let {paperName,paperIns} = this.state
+    let {paperName,paperIns} = this.state;
 
+    let fixPaper = this.props.fixHasNumArr;
+
+    //是否有分值
+    fixPaper.map(item=>{
+      if(item.grade == undefined){
+        this.warningGrade();
+        return false;
+      }
+    })
+    //试卷名称是否填写
     if(paperName===""){
       this.warning();
     }
     else{
-
       //设置按钮不可点击
       this.setState({
         saveVisible:true
       })
 
+
       axios.post('/api/exampapers/fixed/',{
-        problems: [
-          {
-            grade: 5,
-            problem_id: "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
-            sequence: 5
-          }
-        ],
-        name: paperName,
+        problems:fixPaper,
+        name:paperName,
         description:paperIns
       })
       .then(res=>{
-        console.log(res);
-
         //按钮可点击
         this.setState({
           saveVisible:true
         })
-
         //跳转页面
 
+        window.location.href="/manage";
       })
       .catch(error=>{
          //按钮可点击
@@ -132,6 +135,7 @@ class EditContainer extends React.Component {
           saveVisible:true
         })
         //提示错误
+        message.warning('This is message of warning');
       })
     }
   }
@@ -155,6 +159,13 @@ class EditContainer extends React.Component {
     });
   }
 
+  warningGrade=()=>{
+    Modal.warning({
+      title: '提示',
+      content: '分值不能为空！',
+    });
+  }
+
   isShow = (isShow) => {
 
     this.props.isShow(isShow)
@@ -162,6 +173,8 @@ class EditContainer extends React.Component {
   }
 
   render() {
+
+
     const inputStyle={
       width:'468px'
     }
@@ -245,7 +258,7 @@ class EditContainer extends React.Component {
                         <span>总分：{this.state.paper.length}</span>
                         <span>
                           <span style={{marginRight:'6px'}}>及格线*</span>
-                          <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                          <InputNumber min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
@@ -256,11 +269,19 @@ class EditContainer extends React.Component {
                   </div>
                 </div>
 
-                <div className="editbtn">
-                  <Button>预览试卷</Button>
-                  <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
-                </div>
-
+                {/* 是否可以预览以及保存，保存提交方法saveFixExam */}
+                {
+                  this.props.fixHasNumArr.length>0 ?
+                  <div className="editbtn">
+                    <Button>预览试卷</Button>
+                    <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
+                  </div>
+                  :
+                  <div className="editbtn">
+                    <Button disabled>预览试卷</Button>
+                    <Button type="primary" disabled>保存</Button>
+                    </div>
+                }
 
               </div>
 
@@ -272,6 +293,48 @@ class EditContainer extends React.Component {
     );
   }
 }
+
+
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+  console.log(fixedTable);
+  const selectQuestionList = Object.keys(fixedTable);
+  const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
+
+  const fixHasNumArr=[]
+
+  fixArr.forEach((item,index)=>{
+
+    item = {
+      ...item,
+      // number: index+1<10 ? 0+index:index
+      number:index+1<10 ? '0'+(index+1):index+1
+    }
+    fixHasNumArr.push(item)
+  })
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    fixHasNumArr,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+const EditContainer = connect(mapStateToProps,mapDispatchToProps)(EditContainerReducer)
+
+
+
+
+
+
 
 
 export default class Edit extends React.Component {
@@ -304,7 +367,6 @@ export default class Edit extends React.Component {
       })
     })
   }
-
 
 
   render() {
