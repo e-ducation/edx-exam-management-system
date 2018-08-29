@@ -2,13 +2,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux'
 import { Input, Icon, Breadcrumb, Button } from 'antd';
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
 import './index.scss';
 import axios from 'axios';
 import FixedQuestion from './fixed';
 import RandomQuestion from './random';
-import { setFixedTable } from '../../model/action'
+import { setFixedTable, setRandomTable } from '../../model/action'
 class SelectQuestion extends Component {
   state = {
     courseList: [],
@@ -16,32 +14,31 @@ class SelectQuestion extends Component {
     courseSearch: '',
     keySearch: '',
     questionList: [],
-    selectedList: [],
     selectedRowKeys: [],
-    selectedRowData: {},
     activeChapter: '全部章节',
     activeCourse: '',
     activeQuestionType: '全部题型',
-    selectType: 'immobilization',// immobilization|stochastic
-    tableList: new Map(),
+    randomLoading: false,
+    quesitonLoading: false,
   }
   static defaultProps = {
-    paperType: 'fixed'
+    // paperType: 'fixed'
+    paperType: 'random'
   }
+
   componentDidMount() {
     this.getCourses();
     this.random = {}
   }
   initData = (selectedRowKeys) => {
-    // const { selectQuestionList } = this.state;
     axios.post('/api/problems/detail/', {
         problems:selectedRowKeys,
       }).then(res => {
       console.log(res.data)
       const { fixedTable } = this.props;
-      // const fetchData = new Map();
       const fetchData = {}
       const list = res.data.data;
+      // eslint-disable-next-line
       list.map((item,index) => {
         fetchData[item.id] = {
           ...item,
@@ -51,21 +48,8 @@ class SelectQuestion extends Component {
         }
       })
       // 初始化结构
-      if (Object.keys(fixedTable).length == 0){
+      if (Object.keys(fixedTable).length === 0){
         this.props.setFixedTable(fetchData);
-        // let index = 0;
-        // for( let key of fetchData.keys()){
-        //   fetchData.set(key, {
-        //     ...fetchData.get(key),
-        //     number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
-        //   })
-        //   index++;
-        // }
-        // this.setState({
-        //   fixedTableList: fetchData
-        // })
-
-        // this.editor.setFixedList(fetchData);
       } else {
         // 非初始化结构
         this.resetData(fetchData)
@@ -78,7 +62,9 @@ class SelectQuestion extends Component {
   resetData = (fetchData) => {
     const { fixedTable } = this.props;// 历史数据
     // 查找还存在的历史数据
+    // eslint-disable-next-line
     Object.keys(fetchData).map(id => {
+      // eslint-disable-next-line
       Object.keys(fixedTable).map(key => {
         if(id === key){
           fetchData[key] = fixedTable[key];
@@ -86,52 +72,26 @@ class SelectQuestion extends Component {
       })
     })
     let index = 1;
+    // eslint-disable-next-line
     Object.keys(fetchData).map(key => {
-      if (fetchData[key].number != undefined){
-        index = index > parseInt(fetchData[key].number) ? index : parseInt(fetchData[key].number)
+      if (fetchData[key].number !== undefined){
+        index = index > parseInt(fetchData[key].number, 0) ? index : parseInt(fetchData[key].number, 0)
       }
     })
     Object.keys(fetchData).map(key => {
-      if (fetchData[key].number == undefined){
+      if (fetchData[key].number === undefined){
         fetchData[key].number = index + 1 < 10 ? '0' + (index + 1) : index + 1;
         index++;
       }
     })
     this.props.setFixedTable(fetchData);
-    // const { selectQuestionList, fixedTableList } = this.state;
-    // selectQuestionList.map(id => {
-    //   for (let key of fixedTableList.keys()){
-    //     if (key === id){
-    //       fetchData.set(key, fixedTableList.get(id));
-    //     }
-    //   }
-    // })
-    // let index = 1;
-    // for( let key of fetchData){
-    //   if (fetchData.get(key).number != undefined){
-    //     index = index > parseInt(fetchData.get(key).number) ? index : parseInt(fetchData.get(key).number)
-    //   }
-    // }
-    // for( let key of fetchData){
-    //   if (fetchData.get(key).number == undefined){
-    //     fetchData.set(key,{
-    //       ...fetchData.get(key),
-    //       number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
-    //     })
-    //     index++;
-    //   }
-    // }
-    // this.setState({
-    //   fixedTableList: fetchData,
-    // });
-    // this.editor.setFixedList(fetchData);
   }
   // 获取课程列表
   getCourses = () => {
     axios.get('/api/courses/')
       .then( (res) => {
         console.log(res.data, 123)
-        if (res.data.status == 0) {
+        if (res.data.status === 0) {
           const { data }  = res.data;
           console.log(res.data, 123)
           if (data.length > 0) {
@@ -152,11 +112,15 @@ class SelectQuestion extends Component {
   // 课程名称获取题目列表
   getList = (course) => {
     this.getSection(course);
+    this.setState({
+      quesitonLoading: true,
+    })
     axios.get(`/api/xblocks/${course}/problems/`)
       .then( (res) => {
         const { data } = res.data
         this.setState({
           questionList: data,
+          quesitonLoading: false,
         })
       })
       .catch(function (error) {
@@ -165,11 +129,15 @@ class SelectQuestion extends Component {
   }
   // 获取章节列表
   getSection = (id) => {
+    this.setState({
+      randomLoading: true,
+    })
     axios.get(`/api/courses/${id}/sections/`)
       .then( (res) => {
         const { data } = res.data
         this.setState({
           sectionList: data,
+          randomLoading: false,
         })
       })
       .catch(function (error) {
@@ -178,18 +146,12 @@ class SelectQuestion extends Component {
   }
   // 回调设置勾选的题目
   onSelect = (selectedRowKeys) => {
+    // 设置数据
     this.initData(selectedRowKeys);
-    // edit组件中回调设置状态
-    // this.props.setFixedList(selectedRowKeys)
-    // this.setState({
-    //   selectedRowKeys,
-    // }, () => {
-    //   console.log(1231231)
-    //   this.initData()
-    // });
   }
   sectionSelect = (selectedRowKeys) => {
     // this.setSta
+    this.props.setRandomTable(selectedRowKeys);
   }
   // 切换课程
   changeCourse = (course) => {
@@ -198,31 +160,21 @@ class SelectQuestion extends Component {
       activeCourse: course,
     })
   }
-  outputData = () => {
-    // 数据格式
-    // const data = [{
-    //     classid,
-    //     classname,
-    //     radio,
-    //     multiple,
-    //     checking,
-    //     completion
-    // }]
-  }
   // 题目列表数据更新
   getQuestionData = (params) => {
-    const { activeCourse, activeChapter, activeQuestionType, keySearch } = this.state;
-    console.log('activeCourse',activeCourse)
-    console.log('activeChapter',activeChapter)
-    console.log('activeQuestionType',activeQuestionType)
-    console.log('keySearch',keySearch)
-    axios.get(`/api/courses/${activeCourse}/problems/`, {
+    const { activeCourse } = this.state;
+    console.log(params, 'params')
+    this.setState({
+      quesitonLoading: true,
+    })
+    axios.get(`/api/xblocks/${activeCourse}/problems/`, {
         params,
       })
       .then( (res) => {
         const { data } = res.data;
         this.setState({
           questionList: data,
+          quesitonLoading: false,
         })
         console.log(data)
       })
@@ -234,7 +186,7 @@ class SelectQuestion extends Component {
   }
 
   render() {
-    const {courseList, activeCourse, sectionList, questionList, } = this.state;
+    const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading } = this.state;
     const { paperType, selectQuestionList} = this.props;
     console.log(this.props.fixedTable, 'fixedTable')
     return (
@@ -278,13 +230,14 @@ class SelectQuestion extends Component {
                 sectionList={sectionList}   // 章节列表
                 questionList={questionList} // 问题
                 callback={this.onSelect}    // 回调函数
+                loading={quesitonLoading}
                 />
               :
               <RandomQuestion
                 ref={node => this.random = node}
+                loading={randomLoading}
                 activeCourse={activeCourse} // 选中的课程ID
                 sectionList={sectionList}   // 章节列表
-                questionList={questionList} // 问题
                 callback={this.sectionSelect}
               />
             }
@@ -324,12 +277,13 @@ class SelectQuestion extends Component {
   }
 }
 const mapStateToProps = (state) => {
-  const { fixedTable } = state;
-  console.log(fixedTable);
+  const { fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
+  console.log(randomTable)
   return {
     selectQuestionList,
     fixedTable,
+    randomTable,
   }
 }
 
@@ -337,7 +291,8 @@ const mapDispatchToProps = (dispatch, ownProps) => {
   return {
     setFixedTable: (data) => {
       dispatch(setFixedTable(data))
-    }
+    },
+    setRandomTable: (data) => dispatch(setRandomTable(data))
   }
 }
 

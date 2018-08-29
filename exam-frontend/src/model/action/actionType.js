@@ -1,2 +1,3 @@
 export const SET_FIXED_TABLE = 'SET_FIXED_TABLE';
 export const INIT_FIXED_TABLE = 'SET_FIXED_TABLE';
+export const SET_RANDOM_TABLE = 'SET_RANDOM_TABLE';
