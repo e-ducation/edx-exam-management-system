@@ -246,15 +246,13 @@ class EditContainerReducer extends React.Component {
                         <span className="first-span">题型</span>
                         <span>单选题</span>
                         <span>多选题</span>
-                        <span>判断题</span>
                         <span>填空题</span>
                     </div>
                     <div className="total-block">
                         <span className="first-span">已选数量</span>
-                        <span className="number">25</span>
-                        <span className="number">30</span>
-                        <span className="number">40</span>
-                        <span className="number">44</span>
+                        <span className="number">{this.props.singleChioceNum}</span>
+                        <span className="number">{this.props.mulChioceNum}</span>
+                        <span className="number">{this.props.exericeChioceNum}</span>
                     </div>
                     <div className="pass-per">
                       <div>
@@ -262,7 +260,7 @@ class EditContainerReducer extends React.Component {
                         <span>总分：{this.props.sum}</span>
                         <span>
                           <span style={{marginRight:'6px'}}>及格线*</span>
-                          <InputNumber min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
+                          <InputNumber className="input-padding" min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
@@ -301,7 +299,7 @@ class EditContainerReducer extends React.Component {
 
 const mapStateToProps = (state) => {
   const { fixedTable } = state;
-  console.log(fixedTable);
+
   const selectQuestionList = Object.keys(fixedTable);
   const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
 
@@ -312,26 +310,43 @@ const mapStateToProps = (state) => {
     item = {
       ...item,
       // number: index+1<10 ? 0+index:index
-      number:index+1<10 ? '0'+(index+1):index+1
+      sequence:index+1<10 ? '0'+(index+1):index+1
     }
     fixHasNumArr.push(item)
   })
 
-  console.log(fixHasNumArr);
   let sum =0;
 
-  let score = fixHasNumArr.map(item=>{
-    sum+=parseInt(item.grade);
-    console.log(item.grade);
+  fixHasNumArr.map(item=>{
+    sum+=item.grade;
     return sum;
-  })
+  });
 
+  let singleChioceNum=0;
+  let mulChioceNum=0;
+  let exericeChioceNum=0;
+
+
+  fixHasNumArr.forEach(item=>{
+    if(item.type=="choiceresponse"){
+      mulChioceNum++
+    }
+    else if(item.type=="multiplechoiceresponse"){
+      singleChioceNum++
+    }
+    else{
+      exericeChioceNum++
+    }
+  })
 
   return {
     selectQuestionList,
     fixedTable,
     fixHasNumArr,
-    sum
+    sum,
+    mulChioceNum,
+    singleChioceNum,
+    exericeChioceNum,
   }
 }
 
