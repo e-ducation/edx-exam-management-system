@@ -57,7 +57,7 @@ class EditContainerReducer extends React.Component {
   //修改及格线数值
   onChangePass=(e)=>{
     this.setState({
-      paperpass:e.target.value || 1
+      paperpass:e
     })
   }
   //keyup事件
@@ -68,26 +68,6 @@ class EditContainerReducer extends React.Component {
     this.setState({
       paperpass:value
     })
-  }
-  //增加及格线数值
-  paperpassAdd=(value)=>{
-    value>=100 ? value=100 :
-    this.setState({
-      paperpass:value+=1
-    })
-  }
-  //减少及格线数值
-  paperpassReduce=(value)=>{
-    if(this.state.paperpass<=1){
-      this.setState({
-        paperpass:1
-      })
-    }
-    else{
-      this.setState({
-        paperpass:value-=1
-      })
-    }
   }
 
   //保存固定试题
@@ -116,6 +96,7 @@ class EditContainerReducer extends React.Component {
 
 
       axios.post('/api/exampapers/fixed/',{
+        passing_ratio:this.state.paperpass,
         problems:fixPaper,
         name:paperName,
         description:paperIns
@@ -127,7 +108,7 @@ class EditContainerReducer extends React.Component {
         })
         //跳转页面
 
-        window.location.href="/manage";
+        window.location.href="/#/manage";
       })
       .catch(error=>{
          //按钮可点击
@@ -260,7 +241,7 @@ class EditContainerReducer extends React.Component {
                         <span>总分：{this.props.sum}</span>
                         <span>
                           <span style={{marginRight:'6px'}}>及格线*</span>
-                          <InputNumber className="input-padding" min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
+                          <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
@@ -328,10 +309,10 @@ const mapStateToProps = (state) => {
 
 
   fixHasNumArr.forEach(item=>{
-    if(item.type=="choiceresponse"){
+    if(item.problem_type=="choiceresponse"){
       mulChioceNum++
     }
-    else if(item.type=="multiplechoiceresponse"){
+    else if(item.problem_type=="multiplechoiceresponse"){
       singleChioceNum++
     }
     else{

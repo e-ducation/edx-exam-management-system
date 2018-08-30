@@ -180,10 +180,10 @@ class DragSortingTable extends React.Component {
     }
     else{
       for(var i in this.props.fixedTable){
-        if(this.props.fixedTable[i].type=="multiplechoiceresponse"){
+        if(this.props.fixedTable[i].problem_type=="multiplechoiceresponse"){
           this.props.fixedTable[i].grade=this.state.singleGrade;
         }
-        else if(this.props.fixedTable[i].type=="choiceresponse"){
+        else if(this.props.fixedTable[i].problem_type=="choiceresponse"){
           this.props.fixedTable[i].grade=this.state.MuiGrade;
         }
         else{
@@ -302,18 +302,18 @@ class DragSortingTable extends React.Component {
       },{
         width:'8.2%',
         title: '题型',
-        dataIndex: 'type',
+        dataIndex: 'problem_type',
         render:(text,record)=>(
           <div>
             {
               (
                 ()=>{
-                  if(record.type=="multiplechoiceresponse"){
+                  if(record.problem_type=="multiplechoiceresponse"){
                     return(
                       <span>单选题</span>
                     )
                   }
-                  else if(record.type=="choiceresponse"){
+                  else if(record.problem_type=="choiceresponse"){
                     return(
                       <span>多选题</span>
                     )

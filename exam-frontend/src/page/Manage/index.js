@@ -42,7 +42,7 @@ class ManageContainer extends React.Component {
     this.setState({
       loading: true,
     }, () => {
-      axios.get('/api/exampaper/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+      axios.get('/api/exampapers/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
         cancelToken: new CancelToken(function executor(c) {
           // An executor function receives a cancel function as a parameter
           that.searchAjax = c
