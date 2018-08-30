@@ -227,7 +227,7 @@ class EditContainerReducer extends React.Component {
 
     localStorage.setItem("paper",JSON.stringify(this.props.fixHasNumArr))
 
-    window.open("http://localhost:3000/#/preview");
+    window.open("http://localhost:3000/#/preview/storage");
   }
 
   render() {

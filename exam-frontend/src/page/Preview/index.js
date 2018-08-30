@@ -20,23 +20,25 @@ class PreviewContainer extends React.Component{
 
   componentDidMount() {
     // 获取试卷id
-    /*
-    function GetQueryString(name) {
-      var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
-      var r = window.location.search.substr(1).match(reg);
-      if(r!=null)return  unescape(r[2]); return null;
-    }
-    console.log(GetQueryString('id'));
-    */
     // 获取编辑的试卷信息及题目ids
-    const id = 1;
+    const id = window.location.href.split('/preview/')[1];
     const that = this;
+    console.log(id)
+    if (id === 'storage'){
+      const paper = JSON.parse(localStorage.getItem("paper"));
+
+      console.log(paper);
+      this.setState({
+        problems: paper,
+      })
+      return false;
+    }
+
+
     axios.get('/api/exampapers/' + id)
       .then(function (response) {
         const res = response.data;
-        console.log(res);
         const {name, passing_grade, problems, total_grade, total_problem_num, description } = res.data;
-        console.log(problems)
         if (res.status === 0){
           that.setState({
             name,
@@ -102,9 +104,7 @@ class PreviewContainer extends React.Component{
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
     const {name, passing_grade, problems, total_grade, total_problem_num, description } = this.state;
-    var paper = localStorage.getItem("paper");
 
-    console.log(JSON.parse(paper));
     return (
       <div style={{width:'100%', wordBreak:'break-word'}}>
         <div className="print-btn">
