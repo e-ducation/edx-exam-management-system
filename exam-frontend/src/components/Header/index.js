@@ -1,12 +1,30 @@
 import React from 'react';
 import $ from 'jquery';
 export default class Header extends React.Component {
+  state = {
+    showShadow: false,
+  }
+
+  componentDidMount() {
+    $(document).scroll(() => {
+      const old = this.state.showShadow;
+      const now = ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0;
+      if (old === now) {
+        return false;
+      }
+
+      this.setState({
+        showShadow: now
+      })
+    })
+  }
+
   render() {
     const { share } = this.props;
     const width = $(document).width() + 6 + 'px';
     return (
       <div className="header">
-        <div className="header-wrap" style={this.props.showShadow ? {boxShadow: '0px -1px 7px 0px rgba(0,0,0,.5)', width, borderBottom: 'none'} : {width}}>
+        <div className="header-wrap" style={this.state.showShadow ? {boxShadow: '0px -1px 7px 0px rgba(0,0,0,.5)', width, borderBottom: 'none'} : {width}}>
           <div className="header-content">
             <a href="/netdisk" style={{color:'rgba(0, 0, 0, 0.65)'}}>
               <div className="header-logo">
