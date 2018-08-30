@@ -80,10 +80,16 @@ class PreviewContainer extends React.Component{
 
   componentDidMount() {
     // 获取试卷id
+    console.log(this.props.match)
+    function GetQueryString(name) {
+      var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+      var r = window.location.search.substr(1).match(reg);
+      if(r!=null)return  unescape(r[2]); return null;
+    }
 
     // 获取编辑的试卷信息及题目ids
-    const id = 12;
-    axios.get('/api/exampaper/' + id)
+    const id = 1;
+    axios.get('/api/exampapers/' + id)
       .then(function (response) {
         if (response.status === 200){
           console.log(response);
@@ -102,7 +108,6 @@ class PreviewContainer extends React.Component{
                 }
               */
               // 解析xml
-              console.log(res)
               const results = res.data;
               let xmlDoc = null;
               let arr = [];
