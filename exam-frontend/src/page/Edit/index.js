@@ -222,6 +222,11 @@ class EditContainerReducer extends React.Component {
 
   //预览试卷
   seeExamPaper=()=>{
+
+    localStorage.clear();
+
+    localStorage.setItem("paper",JSON.stringify(this.props.fixHasNumArr))
+
     window.open("http://localhost:3000/#/preview");
   }
 

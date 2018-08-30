@@ -212,7 +212,9 @@ class PreviewContainerReducer extends React.Component{
   render() {
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
-    console.log(this.props.fixHasNumArr);
+    var paper = localStorage.getItem("paper");
+
+    console.log(JSON.parse(paper));
     return (
       <div style={{width:'100%', wordBreak:'break-word'}}>
         <div className="print-btn">
