@@ -134,7 +134,11 @@ class DragSortingTable extends React.Component {
   state = {
     data:'',
     settingScoreVisible: false,
-    value:1
+    value:1,
+    allGrade:1,
+    singleGrade:1,
+    MuiGrade:1,
+    exericeGrade:1
   }
 
   components = {
@@ -142,8 +146,6 @@ class DragSortingTable extends React.Component {
       row: DragableBodyRow,
     },
   }
-
-
 
   //设置分数
   showModal = () => {
@@ -154,8 +156,6 @@ class DragSortingTable extends React.Component {
   //单个设置分数
   onsingleChange=(e,id)=>{
 
-
-
     this.props.fixedTable[id].grade=e
 
     this.props.fixHasNumArr.map(item=>{
@@ -165,33 +165,46 @@ class DragSortingTable extends React.Component {
     })
 
     this.props.setFixedTable(this.props.fixedTable);
-    //this.props.setFixedTable(this.props.fixHasNumArr);
-
-
-    // let sum01=0;
-
-    // this.props.fixHasNumArr.map(item=>{
-    //   sum01+=parseInt(item.grade);
-    //   console.log(item.grade);
-    //   return sum01;
-    // })
-    // console.log(sum01);
-    // this.props.sum=sum01;
 
   }
 
   settingHandleOk = (e) => {
-    console.log(e);
+
+    if(this.state.value==1){
+
+      Object.keys(this.props.fixedTable).forEach((key)=>{
+        this.props.fixedTable[key].grade=this.state.allGrade;
+      })
+      this.props.setFixedTable(this.props.fixedTable);
+
+    }
+    else{
+      for(var i in this.props.fixedTable){
+        if(this.props.fixedTable[i].type=="multiplechoiceresponse"){
+          this.props.fixedTable[i].grade=this.state.singleGrade;
+        }
+        else if(this.props.fixedTable[i].type=="choiceresponse"){
+          this.props.fixedTable[i].grade=this.state.MuiGrade;
+        }
+        else{
+          this.props.fixedTable[i].grade=this.state.exericeGrade;
+        }
+      }
+      this.props.setFixedTable(this.props.fixedTable);
+    }
+
     this.setState({
       settingScoreVisible: false,
     });
+
   }
 
   settingHandleCancel = (e) => {
-    console.log(e);
+
     this.setState({
       settingScoreVisible: false,
     });
+
   }
 
   moveRow = (dragIndex, hoverIndex) => {
@@ -246,17 +259,46 @@ class DragSortingTable extends React.Component {
     })
   }
 
+  //修改全部分数
+  onAllGradeChange=(e)=>{
+    this.setState({
+      allGrade:e
+    })
+  }
+
+  //修改单选题
+  onSingleChange=(e)=>{
+    this.setState({
+      singleGrade:e
+    })
+  }
+
+  //修改多选题的分数
+  onMuiChange=(e)=>{
+    this.setState({
+      MuiGrade:e
+    })
+  }
+
+  //修改填空题的分数
+  onExericeChange=(e)=>{
+    this.setState({
+      exericeGrade:e
+    })
+  }
+
+
   render() {
 
     const columns = [
       {
         width:'8.2%',
         title: '序号',
-        dataIndex:'number'
+        dataIndex:'sequence'
       },{
         width:'67.4%',
         title: '试题',
-        dataIndex: 'problem_id'
+        dataIndex: 'title'
       },{
         width:'8.2%',
         title: '题型',
@@ -291,7 +333,7 @@ class DragSortingTable extends React.Component {
         title: '分值',
         dataIndex: '',
         render:(text,record)=>(
-          <InputNumber min={0} max={10} step={0.1} defaultValue={1} onChange={(event)=>{this.onsingleChange(event,record.problem_id)}} />
+          <InputNumber className="input-padding" min={0.01} max={100} step={0.01} value={record.grade} onChange={(event)=>{this.onsingleChange(event,record.problem_id)}} />
         )
       },{
         width:'7.6%',
@@ -320,32 +362,26 @@ class DragSortingTable extends React.Component {
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onAllGradeChange(event)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <Radio value={2}>按题型</Radio>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>单选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onSingleChange(event)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>多选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-              <div style={{margin:'6px 0px 12px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>判断题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onMuiChange(event)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>填空题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onExericeChange(event)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
             </RadioGroup>
@@ -409,8 +445,7 @@ const mapStateToProps = (state) => {
 
     item = {
       ...item,
-      // number: index+1<10 ? 0+index:index
-      number:index+1<10 ? '0'+(index+1):index+1
+      sequence:index+1<10 ? '0'+(index+1):index+1
     }
     fixHasNumArr.push(item)
   })
@@ -419,11 +454,8 @@ const mapStateToProps = (state) => {
 
   fixHasNumArr.map(item=>{
     sum+=item.grade;
-    console.log(item.grade);
     return sum;
   })
-
-  console.log(sum);
 
   return {
     selectQuestionList,
