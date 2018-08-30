@@ -44,11 +44,15 @@ class SelectQuestion extends Component {
       const fetchData = {}
       const list = res.data.data;
       // eslint-disable-next-line
+
       list.map((item,index) => {
-        fetchData[item.id] = {
-          ...item,
+        const { id, type , ...content } = item;
+        fetchData[id] = {
           grade: 1,
-          problem_id: item.id,
+          title: item.title,
+          problem_type: type,
+          problem_id: id,
+          content,
           // number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
         }
       })
