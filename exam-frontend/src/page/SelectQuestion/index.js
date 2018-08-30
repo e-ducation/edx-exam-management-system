@@ -53,7 +53,6 @@ class SelectQuestion extends Component {
           problem_type: type,
           problem_id: id,
           content,
-          // number: index + 1 < 10 ? '0' + (index + 1) : index + 1,
         }
       })
       // 初始化结构

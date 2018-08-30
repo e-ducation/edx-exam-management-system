@@ -5,6 +5,8 @@ import Header from '../../components/Header';
 import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
+
+
 class PreviewContainer extends React.Component{
 
   state = {
@@ -100,7 +102,9 @@ class PreviewContainer extends React.Component{
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
     const {name, passing_grade, problems, total_grade, total_problem_num, description } = this.state;
+    var paper = localStorage.getItem("paper");
 
+    console.log(JSON.parse(paper));
     return (
       <div style={{width:'100%', wordBreak:'break-word'}}>
         <div className="print-btn">
@@ -208,6 +212,7 @@ class PreviewContainer extends React.Component{
     )
   }
 }
+
 
 
 export default class Preview extends React.Component {
