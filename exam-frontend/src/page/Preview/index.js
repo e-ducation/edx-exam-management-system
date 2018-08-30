@@ -1,11 +1,14 @@
 import React from 'react';
+import { connect } from 'react-redux'
 import { Icon, Radio, Checkbox, Input, Button, message } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
-class PreviewContainer extends React.Component{
+import { setFixedTable } from '../../model/action'
+
+class PreviewContainerReducer extends React.Component{
 
   state = {
     title: '商务知识管理',
@@ -209,7 +212,7 @@ class PreviewContainer extends React.Component{
   render() {
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
-
+    console.log(this.props.fixHasNumArr);
     return (
       <div style={{width:'100%', wordBreak:'break-word'}}>
         <div className="print-btn">
@@ -327,6 +330,76 @@ class PreviewContainer extends React.Component{
     )
   }
 }
+
+
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+
+  const selectQuestionList = Object.keys(fixedTable);
+  const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
+
+  const fixHasNumArr=[]
+
+  fixArr.forEach((item,index)=>{
+
+    item = {
+      ...item,
+      // number: index+1<10 ? 0+index:index
+      sequence:index+1<10 ? '0'+(index+1):index+1
+    }
+    fixHasNumArr.push(item)
+  })
+
+  let sum =0;
+
+  fixHasNumArr.map(item=>{
+    sum+=item.grade;
+    return sum;
+  });
+
+  let singleChioceNum=0;
+  let mulChioceNum=0;
+  let exericeChioceNum=0;
+
+
+  fixHasNumArr.forEach(item=>{
+    if(item.problem_type=="choiceresponse"){
+      mulChioceNum++
+    }
+    else if(item.problem_type=="multiplechoiceresponse"){
+      singleChioceNum++
+    }
+    else{
+      exericeChioceNum++
+    }
+  })
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    fixHasNumArr,
+    sum,
+    mulChioceNum,
+    singleChioceNum,
+    exericeChioceNum,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+const PreviewContainer = connect(mapStateToProps,mapDispatchToProps)(PreviewContainerReducer)
+
+
+
+
+
+
 
 
 export default class Preview extends React.Component {

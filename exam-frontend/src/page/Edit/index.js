@@ -34,11 +34,14 @@ class EditContainerReducer extends React.Component {
 
   constructor(props) {
     super(props);
+
   }
 
   componentDidMount() {
-
+    this.getExamPaper();
   }
+
+
 
   //修改试卷名称
   onChangePaperName=(e)=>{
@@ -153,6 +156,75 @@ class EditContainerReducer extends React.Component {
 
   }
 
+  //编辑试卷，获取信息
+
+  getExamPaper=()=>{
+
+
+    let id = this.props.id
+    if(id=="undefined"){
+
+    }
+    else{
+
+      axios.get('/api/exampapers/fixed/'+id+'/')
+      .then(res=>{
+        let data = res.data.data
+        console.log(data);
+        const { fixedTable } = this.props;
+        const fetchData = {}
+
+        // eslint-disable-next-line
+
+        data.problems.map((item,index) => {
+          const { problem_id, problem_type , content } = item;
+          fetchData[problem_id] = {
+            grade: 1,
+            title: item.content.title,
+            problem_type: problem_type,
+            problem_id: problem_id,
+            content,
+          }
+        })
+
+        console.log(fetchData);
+
+
+        // 初始化结构
+        if (Object.keys(fixedTable).length === 0){
+          this.props.setFixedTable(fetchData);
+        } else {
+          // 非初始化结构
+          this.resetData(fetchData)
+        }
+
+
+
+
+
+        this.setState({
+          paperName:data.name,
+          paperIns:data.description,
+          paperpass:data.passing_ratio
+        })
+
+
+
+
+
+      })
+      .catch(error=>{
+
+      })
+    }
+
+  }
+
+  //预览试卷
+  seeExamPaper=()=>{
+    window.open("http://localhost:3000/#/preview");
+  }
+
   render() {
 
 
@@ -210,7 +282,8 @@ class EditContainerReducer extends React.Component {
                   autosize={{ minRows: 3, maxRows: 6 }}
                   onChange={this.onChangePaperIns}
                   style={{ width:'468px',paddingBottom:'20px'}}
-                  maxLength="500"/>
+                  maxLength="500"
+                  value={this.state.paperIns}/>
                   { Length }
                 </div>
               </div>
@@ -256,7 +329,7 @@ class EditContainerReducer extends React.Component {
                 {
                   this.props.fixHasNumArr.length>0 ?
                   <div className="editbtn">
-                    <Button>预览试卷</Button>
+                    <Button onClick={this.seeExamPaper}>预览试卷</Button>
                     <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
                   </div>
                   :
@@ -356,7 +429,7 @@ export default class Edit extends React.Component {
   }
 
   setShow=(isShow)=>{
-    console.log(123);
+
     this.setState({
       isShow,
     })
@@ -392,12 +465,13 @@ export default class Edit extends React.Component {
       display:isShow ? 'block':'none',
       width: '100%',
     }
+
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
 
-          <EditContainer style={display} setShow={this.setShow} isShow={isShow}/>
+          <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
           <SelectQuestion
             selectQuestionList={this.state.selectQuestionList}
