@@ -10,7 +10,7 @@ export default class RandomBlock extends Component {
     callback(selectedRowKeys);
   }
   render(){
-    const { sectionList } = this.props;
+    const { sectionList, loading } = this.props;
     const { selectedRowKeys } = this.state;
     const  stochasticColumns = [{
         title: '全选本页',
@@ -56,10 +56,8 @@ export default class RandomBlock extends Component {
           dataSource={sectionList}
           size="small"
           rowKey="id"
+          loading={loading}
         />
-        <Button onClick={this.confirm}>
-          确定
-        </Button>
       </div>
     )
   }

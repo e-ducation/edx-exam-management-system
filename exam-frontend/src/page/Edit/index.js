@@ -1,395 +1,35 @@
 import React from 'react';
-import { Input,Button,Table,Breadcrumb,Tooltip,Icon,InputNumber,Modal,Radio} from 'antd';
-import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
+import { connect } from 'react-redux'
+import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,message} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
-import none from "../../assets/images/none.png";
 import axios from 'axios';
 
 import SelectQuestion from '../SelectQuestion'
-const RadioGroup = Radio.Group;
+
+import MoveTable from './moveTable'
+import { setFixedTable } from '../../model/action'
+
+
+// const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
 
-function dragDirection(
-  dragIndex,
-  hoverIndex,
-  initialClientOffset,
-  clientOffset,
-  sourceClientOffset,
-) {
-  const hoverMiddleY = (initialClientOffset.y - sourceClientOffset.y) / 2;
-  const hoverClientY = clientOffset.y - sourceClientOffset.y;
-  if (dragIndex < hoverIndex && hoverClientY > hoverMiddleY) {
-    return 'downward';
-  }
-  if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
-    return 'upward';
-  }
-}
 
-class BodyRow extends React.Component {
-  render() {
-    const {
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      moveRow,
-      dragRow,
-      clientOffset,
-      sourceClientOffset,
-      initialClientOffset,
-      ...restProps
-    } = this.props;
-    const style = { ...restProps.style, cursor: 'move' };
-
-    let className = restProps.className;
-    if (isOver && initialClientOffset) {
-      const direction = dragDirection(
-        dragRow.index,
-        restProps.index,
-        initialClientOffset,
-        clientOffset,
-        sourceClientOffset
-      );
-      if (direction === 'downward') {
-        className += ' drop-over-downward';
-      }
-      if (direction === 'upward') {
-        className += ' drop-over-upward';
-      }
-    }
-
-    return connectDragSource(
-      connectDropTarget(
-        <tr
-          {...restProps}
-          className={className}
-          style={style}
-        />
-      )
-    );
-  }
-}
-
-const rowSource = {
-  beginDrag(props) {
-    return {
-      index: props.index,
-    };
-  },
-};
-
-const rowTarget = {
-  drop(props, monitor) {
-    const dragIndex = monitor.getItem().index;
-    const hoverIndex = props.index;
-
-    // Don't replace items with themselves
-    if (dragIndex === hoverIndex) {
-      return;
-    }
-
-    // Time to actually perform the action
-    props.moveRow(dragIndex, hoverIndex);
-
-    // Note: we're mutating the monitor item here!
-    // Generally it's better to avoid mutations,
-    // but it's good here for the sake of performance
-    // to avoid expensive index searches.
-    monitor.getItem().index = hoverIndex;
-  },
-};
-
-const DragableBodyRow = DropTarget('row', rowTarget, (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  sourceClientOffset: monitor.getSourceClientOffset(),
-}))(
-  DragSource('row', rowSource, (connect, monitor) => ({
-    connectDragSource: connect.dragSource(),
-    dragRow: monitor.getItem(),
-    clientOffset: monitor.getClientOffset(),
-    initialClientOffset: monitor.getInitialClientOffset(),
-  }))(BodyRow)
-);
-
-
-class DragSortingTable extends React.Component {
-
-  constructor(props) {
-    super(props);
-  }
-
-  componentDidMount() {
-    this.numberList();
-  }
-
-
-  state = {
-    data: [
-      {subjectdec:'你好1',type:'选择题'},
-      {subjectdec:'你好2',type:'选择题'}
-    ],
-    settingScoreVisible: false,
-    selectQuestionList: [],
-    paperType: '',
-    selectSectionList: [],
-  }
-
-  components = {
-    body: {
-      row: DragableBodyRow,
-    },
-  }
-
-  //序列号
-  numberList = ()=>{
-    let arr=[]
-    this.state.data.forEach((item,index)=>{
-
-      item = {
-        ...item,
-        // number: index+1<10 ? 0+index:index
-        number:index+1<10 ? '0'+(index+1):index
-      }
-      arr.push(item)
-    })
-
-    this.setState({
-      data:arr
-    })
-
-    console.log(this.state.data)
-  }
-
-  //设置分数
-  showModal = () => {
-    this.setState({
-      settingScoreVisible: true,
-    });
-  }
-
-  onChange=(value)=>{
-    console.log('changed', value);
-  }
-
-  settingHandleOk = (e) => {
-    console.log(e);
-    this.setState({
-      settingScoreVisible: false,
-    });
-  }
-
-  settingHandleCancel = (e) => {
-    console.log(e);
-    this.setState({
-      settingScoreVisible: false,
-    });
-  }
-
-  moveRow = (dragIndex, hoverIndex) => {
-    const { data } = this.state;
-    const dragRow = data[dragIndex];
-
-    this.setState(
-      update(this.state, {
-        data: {
-          $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
-        },
-      }),
-    );
-    this.numberList();
-  }
-
-  //承海部分
-  setQuestionList = (selectQuestionList) => {
-    this.setState({
-        selectQuestionList,
-    })
-  }
-  setSectionList = (selectSectionList) => {
-    this.setState({
-        selectSectionList,
-    })
-  }
-
-  //删除题目
-  deleteSubject=(index)=>{
-    console.log(index);
-  }
-
-  render() {
-
-    const columns = [
-      {
-        width:'8.2%',
-        title: '序号',
-        dataIndex:'number'
-      },{
-        width:'67.4%',
-        title: '试题',
-        dataIndex: 'subjectdec'
-      },{
-        width:'8.2%',
-        title: '题型',
-        dataIndex: 'type'
-      },{
-        width:'8.6%',
-        title: '分值',
-        dataIndex: 'score',
-        render:(record)=>(
-          <div className="inputBox">
-            <div className="inputLeft">
-              <Input type="text" />
-            </div>
-            <div className="inputRight">
-              <div><Icon type="up" /></div>
-              <div><Icon type="down" /></div>
-            </div>
-          </div>
-        )
-      },{
-        width:'7.6%',
-        title: '操作',
-        dataIndex: 'operate',
-        render:(record,index)=>(
-          <Tooltip title="删除">
-            <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deleteSubject.bind(this.index)} />
-          </Tooltip>
-        )
-      }
-    ];
-
-
-
-
-
-    return (
-      <div>
-        <div>
-          <Modal
-            title="批量设置分值"
-            visible={this.state.settingScoreVisible}
-            onOk={this.settingHandleOk}
-            onCancel={this.settingHandleCancel}
-          >
-            <p>批量设置的分值将覆盖掉之前设置的分值，请谨慎操作。</p>
-            <RadioGroup onChange={this.settingOnChange} value={this.state.value} style={{marginTop:'10px'}}>
-              <Radio value={1}>统一分数</Radio>
-              <div style={{margin:'6px 0px 6px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-              <Radio value={2}>按题型</Radio>
-              <div style={{margin:'6px 0px 12px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>单选题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-              <div style={{margin:'6px 0px 12px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>多选题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-              <div style={{margin:'6px 0px 12px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>判断题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-              <div style={{margin:'6px 0px 6px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>填空题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
-            </RadioGroup>
-
-          </Modal>
-        </div>
-
-
-        <div style={{marginBottom:'10px'}}>
-          <Button type="primary" href="/#/question">添加试题</Button>
-          {/* {
-            this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
-            :
-              <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
-          } */}
-          <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
-        </div>
-        {/* {
-          this.state.data.length === 0 ?
-            <div className="examnodata">
-              <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
-              <p style={{textAlign:'center'}}>暂无数据</p>
-            </div>
-          :
-
-            <Table
-              columns={columns}
-              dataSource={this.state.data}
-              components={this.components}
-              pagination={false}
-              bordered
-              className="editExam"
-              size="small"
-              onRow={(record, index) => ({
-                index,
-                moveRow: this.moveRow,
-              })}
-            />
-
-        } */}
-
-        <Table
-              columns={columns}
-              dataSource={this.state.data}
-              components={this.components}
-              pagination={false}
-              bordered
-              className="editExam"
-              size="small"
-              onRow={(record, index) => ({
-                index,
-                moveRow: this.moveRow,
-              })}
-            />
-
-        <SelectQuestion
-            selectQuestionList={this.state.selectQuestionList}
-            setFixedList={this.setFixedList}
-            paperType="fixed" // random || fixed
-        />
-
-
-      </div>
-    );
-  }
-}
-
-const MoveTable = DragDropContext(HTML5Backend)(DragSortingTable);
-
-
-class EditContainer extends React.Component {
+class EditContainerReducer extends React.Component {
   state={
-    paperName:"这是试卷名称",
-    paperIns:"这是试卷说明",
+    paperName:"",
+    paperIns:"",
     paper:[],
     paperpass:60,
     paperInsLength:0,
-    saveVisible:false
+    saveVisible:false,
+    selectQuestionList: [],
+    paperType: '',
+    selectSectionList: []
   }
 
   constructor(props) {
@@ -397,6 +37,7 @@ class EditContainer extends React.Component {
   }
 
   componentDidMount() {
+
   }
 
   //修改试卷名称
@@ -452,65 +93,88 @@ class EditContainer extends React.Component {
   //保存固定试题
   saveFixExam=()=>{
 
-    let {paperName,paperIns} = this.state
+    let {paperName,paperIns} = this.state;
 
+    let fixPaper = this.props.fixHasNumArr;
+
+    //是否有分值
+    fixPaper.map(item=>{
+      if(item.grade == undefined){
+        this.warningGrade();
+        return false;
+      }
+    })
+    //试卷名称是否填写
     if(paperName===""){
       this.warning();
     }
     else{
-
       //设置按钮不可点击
       this.setState({
         saveVisible:true
       })
 
-      axios({
-        method:"POST",
-        url:'/api/exampaper/fixed/',
-        data:{
-          problems: [
-            {
-              "grade": 5,
-              "problem_id": "hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32",
-              "sequence": 5
-            }
-          ],
-          name: "Middle Exam",
-          description:paperIns
-        }
-      }).then(res=>{
-        console.log(res);
 
+      axios.post('/api/exampapers/fixed/',{
+        problems:fixPaper,
+        name:paperName,
+        description:paperIns
+      })
+      .then(res=>{
         //按钮可点击
         this.setState({
           saveVisible:true
         })
+        //跳转页面
+
+        window.location.href="/manage";
       })
       .catch(error=>{
          //按钮可点击
          this.setState({
           saveVisible:true
         })
-        console.log(error);
+        //提示错误
+        message.warning('This is message of warning');
       })
     }
+  }
 
-
-
-
+  //承海部分
+  setQuestionList = (selectQuestionList) => {
+    this.setState({
+        selectQuestionList,
+    })
+  }
+  setSectionList = (selectSectionList) => {
+    this.setState({
+        selectSectionList,
+    })
   }
 
   warning=()=>{
     Modal.warning({
-      title: 'This is a warning message',
-      content: 'some messages...some messages...',
+      title: '提示',
+      content: '试卷名称不能为空！',
     });
   }
 
+  warningGrade=()=>{
+    Modal.warning({
+      title: '提示',
+      content: '分值不能为空！',
+    });
+  }
 
+  isShow = (isShow) => {
 
+    this.props.isShow(isShow)
+
+  }
 
   render() {
+
+
     const inputStyle={
       width:'468px'
     }
@@ -519,8 +183,12 @@ class EditContainer extends React.Component {
       <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
     )
 
+    let subLength = this.props.fixHasNumArr.length;
+
+    console.log(this.props.fixHasNumArr);
+
     return (
-      <div className="displayFlx">
+      <div style={this.props.style} className="displayFlx">
         <Sidebar/>
         <div className="text-right-left">
 
@@ -543,7 +211,7 @@ class EditContainer extends React.Component {
 
           <div className="edit-box">
             <div className="label-box">
-              <div>试卷说明</div>
+              <div>试卷名称*</div>
               <div>
                 <Input placeholder="请输入1-50个字符的名称"
                 onChange={this.onChangePaperName}
@@ -554,7 +222,7 @@ class EditContainer extends React.Component {
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'14px'}}>试卷名称*</div>
+              <div style={{lineHeight:'14px'}}>试卷说明</div>
               <div>
                 <div style={{position:"relative",width:'468px'}}>
                   <TextArea placeholder="请输入试卷说明"
@@ -570,7 +238,7 @@ class EditContainer extends React.Component {
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
 
-                <MoveTable />
+                <MoveTable setShow={this.props.setShow}/>
 
                 <div>
                   <div className="total">
@@ -578,23 +246,21 @@ class EditContainer extends React.Component {
                         <span className="first-span">题型</span>
                         <span>单选题</span>
                         <span>多选题</span>
-                        <span>判断题</span>
                         <span>填空题</span>
                     </div>
                     <div className="total-block">
                         <span className="first-span">已选数量</span>
-                        <span className="number">25</span>
-                        <span className="number">30</span>
-                        <span className="number">40</span>
-                        <span className="number">44</span>
+                        <span className="number">{this.props.singleChioceNum}</span>
+                        <span className="number">{this.props.mulChioceNum}</span>
+                        <span className="number">{this.props.exericeChioceNum}</span>
                     </div>
                     <div className="pass-per">
                       <div>
-                        <span>总题型：{this.state.paper.length}</span>
-                        <span>总分：{this.state.paper.length}</span>
+                        <span>总题数：{subLength}</span>
+                        <span>总分：{this.props.sum}</span>
                         <span>
                           <span style={{marginRight:'6px'}}>及格线*</span>
-                          <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
+                          <InputNumber className="input-padding" min={0} max={100} step={1} defaultValue={60} onChange={this.onChange} />
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
@@ -605,20 +271,21 @@ class EditContainer extends React.Component {
                   </div>
                 </div>
 
-                <div className="editbtn">
-                  <Button>预览试卷</Button>
-                  <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
-                </div>
-
+                {/* 是否可以预览以及保存，保存提交方法saveFixExam */}
+                {
+                  this.props.fixHasNumArr.length>0 ?
+                  <div className="editbtn">
+                    <Button>预览试卷</Button>
+                    <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
+                  </div>
+                  :
+                  <div className="editbtn">
+                    <Button disabled>预览试卷</Button>
+                    <Button type="primary" disabled>保存</Button>
+                    </div>
+                }
 
               </div>
-
-
-
-
-
-
-
 
             </div>
           </div>
@@ -627,17 +294,94 @@ class EditContainer extends React.Component {
       </div>
     );
   }
-
-
-
 }
+
+
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+
+  const selectQuestionList = Object.keys(fixedTable);
+  const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
+
+  const fixHasNumArr=[]
+
+  fixArr.forEach((item,index)=>{
+
+    item = {
+      ...item,
+      // number: index+1<10 ? 0+index:index
+      sequence:index+1<10 ? '0'+(index+1):index+1
+    }
+    fixHasNumArr.push(item)
+  })
+
+  let sum =0;
+
+  fixHasNumArr.map(item=>{
+    sum+=item.grade;
+    return sum;
+  });
+
+  let singleChioceNum=0;
+  let mulChioceNum=0;
+  let exericeChioceNum=0;
+
+
+  fixHasNumArr.forEach(item=>{
+    if(item.type=="choiceresponse"){
+      mulChioceNum++
+    }
+    else if(item.type=="multiplechoiceresponse"){
+      singleChioceNum++
+    }
+    else{
+      exericeChioceNum++
+    }
+  })
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    fixHasNumArr,
+    sum,
+    mulChioceNum,
+    singleChioceNum,
+    exericeChioceNum,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+const EditContainer = connect(mapStateToProps,mapDispatchToProps)(EditContainerReducer)
+
+
+
+
+
+
 
 
 export default class Edit extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
+    isShow:false,
   }
+
+  setShow=(isShow)=>{
+    console.log(123);
+    this.setState({
+      isShow,
+    })
+
+  }
+
 
   componentDidMount(){
     const that = this;
@@ -654,13 +398,34 @@ export default class Edit extends React.Component {
     })
   }
 
+
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const {isShow} = this.state;
+
+    const display = {
+      display:isShow ? 'none':'flex'
+    }
+
+    const selectdispaly = {
+      display:isShow ? 'block':'none',
+      width: '100%',
+    }
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <EditContainer />
+
+          <EditContainer style={display} setShow={this.setShow} isShow={isShow}/>
+
+          <SelectQuestion
+            selectQuestionList={this.state.selectQuestionList}
+            setShow={this.setShow}
+            setFixedList={this.setFixedList}
+            paperType="fixed" // random || fixed
+            style={selectdispaly}
+          />
+
         </div>
         <Footer />
       </div>
