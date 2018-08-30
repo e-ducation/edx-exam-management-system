@@ -26,7 +26,7 @@ export default class Header extends React.Component {
       <div className="header">
         <div className="header-wrap" style={this.state.showShadow ? {boxShadow: '0px -1px 7px 0px rgba(0,0,0,.5)', width, borderBottom: 'none'} : {width}}>
           <div className="header-content">
-            <a href="/netdisk" style={{color:'rgba(0, 0, 0, 0.65)'}}>
+            <a href="/" style={{color:'rgba(0, 0, 0, 0.65)'}}>
               <div className="header-logo">
                 <i className="iconfont" style={{ color: '#fff', lineHeight: '20px', fontSize:'22px' }}>&#xe601;</i>
               </div>
