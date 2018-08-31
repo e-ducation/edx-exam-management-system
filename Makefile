@@ -13,5 +13,5 @@ dev.makemigrations: ## Generate migrations
 dev.migrate: ## Execute migrate
 	python manage.py migrate
 
-dev.run: ## Run develop server
+dev.up: ## Run develop server
 	python manage.py runserver 0.0.0.0:8111

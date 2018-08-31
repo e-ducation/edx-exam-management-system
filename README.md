@@ -17,7 +17,7 @@ make dev.migrate
 
 3. Run the server
 ```bash
-make dev.run
+make dev.up
 ```
 
 4. View api document

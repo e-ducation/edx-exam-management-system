@@ -5,7 +5,9 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import Sum
+
 from model_utils.models import TimeStampedModel
+from jsonfield import JSONField
 
 
 PAPER_CREATE_TYPE = (
@@ -42,12 +44,12 @@ class ExamPaper(TimeStampedModel):
 class ExamPaperProblems(TimeStampedModel):
 
     exam_paper = models.ForeignKey(ExamPaper, related_name='problems', null=True)
-    sequence = models.IntegerField(default=1)
+    sequence = models.CharField(max_length=16, default='01')
     problem_id = models.CharField(max_length=255, db_index=True)
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE)
     grade = models.DecimalField(max_digits=5, decimal_places=2,
                                 validators=[MinValueValidator(0.01), MaxValueValidator(100.00)])
-    markdown = models.TextField()
+    content = JSONField()
 
 
 class ExamPaperCreateRule(TimeStampedModel):

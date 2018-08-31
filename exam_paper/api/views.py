@@ -79,7 +79,7 @@ fix_exampaper = openapi.Schema(
                     'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
-                    'markdown': openapi.Schema(type=openapi.TYPE_STRING, example='<div>hello</div>'),
+                    'content': openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
                 }
             )
         )
@@ -433,7 +433,7 @@ class BlocksProblemsListAPIView(APIView):
 
     @swagger_auto_schema(
         operation_description='get courses problem list',
-        manual_parameters=[page, page_size, section_id, search],
+        manual_parameters=[page, page_size, search],
         responses={
             200: openapi.Schema(
                 title='response',
@@ -473,6 +473,7 @@ class BlocksProblemsListAPIView(APIView):
         payload = {
             'block_id': block_id,
             'text': request.query_params.get('search', ''),
+            # 'problem_type': request.query_params.get('problem_type', ''),
             'page': request.query_params.get('page'),
             'page_size': request.query_params.get('page_size'),
         }
@@ -552,4 +553,23 @@ class ProblemsTypesAPIView(APIView):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['PROBLEM_TYPES']
         rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
+        return Response(response_format(rep.json()))
+
+
+class SectionProblemTypeCountView(APIView):
+    """
+    获取章节的题型统计数据
+    """
+    authentication_classes = (SessionAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    @swagger_auto_schema(operation_description='get section problem type count')
+    def get(self, request, section_id, *args, **kwargs):
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PROBLEM_TYPE_COUNT']
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            param={'section_id': section_id}
+        )
         return Response(response_format(rep.json()))

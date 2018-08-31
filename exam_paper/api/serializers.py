@@ -22,10 +22,11 @@ class ExamPaperMixin(object):
 
 
 class ExamPaperProblemsSerializer(serializers.ModelSerializer):
+    content = serializers.JSONField()
 
     class Meta:
         model = ExamPaperProblems
-        fields = ('sequence', 'problem_id', 'grade', 'markdown', 'problem_type')
+        fields = ('sequence', 'problem_id', 'grade', 'problem_type', 'content')
 
 
 class ExamPaperCreateRuleSerializer(serializers.ModelSerializer):
@@ -43,8 +44,8 @@ class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
 
     class Meta:
         model = ExamPaper
-        fields = ('name', 'total_problem_num', 'total_grade', 'passing_grade', 'creator',
-                  'problems')
+        fields = ('name', 'description', 'total_problem_num', 'total_grade', 'passing_grade',
+                  'creator', 'problems')
 
 
 class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
@@ -76,7 +77,9 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
         exam_paper = ExamPaper.objects.create(**validated_data)
         with transaction.atomic():
             for problem_data in problems_data:
-                ExamPaperProblems.objects.create(exam_paper=exam_paper, **problem_data)
+                problem_serializer = ExamPaperProblemsSerializer(data=problem_data)
+                problem_serializer.is_valid(raise_exception=True)
+                ExamPaperProblems.objects.create(exam_paper=exam_paper, **problem_serializer.validated_data)
 
         return exam_paper
 
@@ -89,7 +92,9 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
             for problem_data in problems_data:
                 if problem_data.get('id'):
                     problem_data.pop('id')
-                ExamPaperProblems.objects.create(exam_paper=exam_paper, **problem_data)
+                problem_serializer = ExamPaperProblemsSerializer(data=problem_data)
+                problem_serializer.is_valid(raise_exception=True)
+                ExamPaperProblems.objects.create(exam_paper=exam_paper, **problem_serializer.validated_data)
 
         return exam_paper
 
@@ -107,7 +112,9 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
         exam_paper = ExamPaper.objects.create(**validated_data)
         with transaction.atomic():
             for rule_data in rules_data:
-                ExamPaperCreateRule.objects.create(exam_paper=exam_paper, **rule_data)
+                rule_serializer = ExamPaperCreateRuleSerializer(data=rule_data)
+                rule_serializer.is_valid(raise_exception=True)
+                ExamPaperCreateRule.objects.create(exam_paper=exam_paper, **rule_serializer.validated_data)
 
         return exam_paper
 
@@ -120,6 +127,9 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
             for rule_data in rules_data:
                 if rule_data.get('id'):
                     rule_data.pop('id')
-                ExamPaperProblems.objects.create(exam_paper=exam_paper, **rule_data)
+
+                rule_serializer = ExamPaperCreateRuleSerializer(data=rule_data)
+                rule_serializer.is_valid(raise_exception=True)
+                ExamPaperCreateRule.objects.create(exam_paper=exam_paper, **rule_serializer.validated_data)
 
         return exam_paper

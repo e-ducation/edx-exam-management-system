@@ -28,6 +28,7 @@ from exam_paper.api.views import (
     CourseSectionsListAPIView,
     ProblemsDetailAPIView,
     ProblemsTypesAPIView,
+    SectionProblemTypeCountView,
 )
 
 urlpatterns = [
@@ -37,6 +38,7 @@ urlpatterns = [
     url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
     url(r'^problems/types/$', ProblemsTypesAPIView.as_view()),
     url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
+    url(r'^sections/(?P<section_id>.+)/problems/count$', SectionProblemTypeCountView.as_view()),
 ]
 
 router = routers.SimpleRouter()
