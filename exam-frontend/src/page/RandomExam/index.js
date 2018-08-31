@@ -3,6 +3,7 @@ import { Input,Button,Breadcrumb,Tooltip,Icon,Modal,Radio,InputNumber} from 'ant
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import SelectQuestion from '../SelectQuestion'
 import './index.scss';
 import $ from "jquery";
 const RadioGroup = Radio.Group;
@@ -101,6 +102,7 @@ class RandomExamContainer extends React.Component {
       settingScoreVisible: false,
     });
   }
+
 
 
   render() {
@@ -202,8 +204,10 @@ class RandomExamContainer extends React.Component {
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
               <div style={{marginBottom:'10px'}}>
-                <Button type="primary">添加 </Button>
+
+                <Button type="primary" onClick={()=>this.props.setShow(true)} >添加 </Button>
                 <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+
               </div>
 
 
@@ -319,6 +323,7 @@ export default class RandomExam extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
+    isShow:false,
   }
 
   componentDidMount(){
@@ -336,13 +341,41 @@ export default class RandomExam extends React.Component {
     })
   }
 
+  setShow=(isShow)=>{
+
+    this.setState({
+      isShow,
+    })
+
+  }
+
   render() {
     const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+
+    const {isShow} = this.state;
+
+    const display = {
+      display:isShow ? 'none':'flex'
+    }
+
+    const selectdispaly = {
+      display:isShow ? 'block':'none',
+      width: '100%',
+    }
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <RandomExamContainer />
+          <RandomExamContainer setShow={this.setShow} isShow={isShow}/>
+
+          <SelectQuestion
+            selectQuestionList={this.state.selectQuestionList}
+            setShow={this.setShow}
+            setFixedList={this.setFixedList}
+            paperType="random" // random || fixed
+            style={selectdispaly}
+          />
+
         </div>
         <Footer />
       </div>

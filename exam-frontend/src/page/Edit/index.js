@@ -41,8 +41,6 @@ class EditContainerReducer extends React.Component {
     this.getExamPaper();
   }
 
-
-
   //修改试卷名称
   onChangePaperName=(e)=>{
     this.setState({
@@ -72,7 +70,6 @@ class EditContainerReducer extends React.Component {
       paperpass:value
     })
   }
-
   //保存固定试题
   saveFixExam=()=>{
 
@@ -97,43 +94,58 @@ class EditContainerReducer extends React.Component {
         saveVisible:true
       })
 
-
-      axios.post('/api/exampapers/fixed/',{
-        passing_ratio:this.state.paperpass,
-        problems:fixPaper,
-        name:paperName,
-        description:paperIns
-      })
-      .then(res=>{
-        //按钮可点击
-        this.setState({
-          saveVisible:true
+      if(this.props.id==undefined){
+        axios.post('/api/exampapers/fixed/',{
+          passing_ratio:this.state.paperpass,
+          problems:fixPaper,
+          name:paperName,
+          description:paperIns
         })
-        //跳转页面
+        .then(res=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //跳转页面
 
-        window.location.href="/#/manage";
-      })
-      .catch(error=>{
-         //按钮可点击
-         this.setState({
-          saveVisible:true
+          window.location.href="/#/manage";
         })
-        //提示错误
-        message.warning('This is message of warning');
-      })
+        .catch(error=>{
+           //按钮可点击
+           this.setState({
+            saveVisible:true
+          })
+          //提示错误
+          message.warning('This is message of warning');
+        })
+      }
+      else{
+        axios.put('/api/exampapers/fixed/'+this.props.id+'/',{
+          passing_ratio:this.state.paperpass,
+          problems:fixPaper,
+          name:paperName,
+          description:paperIns
+        })
+        .then(res=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //跳转页面
+
+          window.location.href="/#/manage";
+        })
+        .catch(error=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //提示错误
+          message.warning('This is message of warning');
+       })
+      }
+
     }
-  }
-
-  //承海部分
-  setQuestionList = (selectQuestionList) => {
-    this.setState({
-        selectQuestionList,
-    })
-  }
-  setSectionList = (selectSectionList) => {
-    this.setState({
-        selectSectionList,
-    })
   }
 
   warning=()=>{
@@ -162,7 +174,9 @@ class EditContainerReducer extends React.Component {
 
 
     let id = this.props.id
-    if(id=="undefined"){
+
+
+    if(id==undefined){
 
     }
     else{
@@ -170,11 +184,8 @@ class EditContainerReducer extends React.Component {
       axios.get('/api/exampapers/fixed/'+id+'/')
       .then(res=>{
         let data = res.data.data
-        console.log(data);
         const { fixedTable } = this.props;
         const fetchData = {}
-
-        // eslint-disable-next-line
 
         data.problems.map((item,index) => {
           const { problem_id, problem_type , content } = item;
@@ -187,9 +198,6 @@ class EditContainerReducer extends React.Component {
           }
         })
 
-        console.log(fetchData);
-
-
         // 初始化结构
         if (Object.keys(fixedTable).length === 0){
           this.props.setFixedTable(fetchData);
@@ -198,23 +206,15 @@ class EditContainerReducer extends React.Component {
           this.resetData(fetchData)
         }
 
-
-
-
-
         this.setState({
           paperName:data.name,
           paperIns:data.description,
           paperpass:data.passing_ratio
         })
 
-
-
-
-
       })
       .catch(error=>{
-
+        message.error('请求失败')
       })
     }
 
@@ -223,9 +223,18 @@ class EditContainerReducer extends React.Component {
   //预览试卷
   seeExamPaper=()=>{
 
+    var data={
+      passing_grade:(this.state.paperpass*this.props.sum)*0.01,
+      name:this.state.paperName,
+      description:this.state.paperIns,
+      problems:this.props.fixHasNumArr,
+      total_grade:this.props.sum,
+      total_problem_num:this.props.fixHasNumArr.length
+    }
+
     localStorage.clear();
 
-    localStorage.setItem("paper",JSON.stringify(this.props.fixHasNumArr))
+    localStorage.setItem("paper",JSON.stringify(data))
 
     window.open("http://localhost:3000/#/preview/storage");
   }
