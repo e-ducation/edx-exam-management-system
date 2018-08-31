@@ -124,7 +124,7 @@ class ManageContainer extends React.Component {
 
   // 3. 预览试卷
   previewPaper = (id) => {
-    window.open("/#/preview?id=" + id)
+    window.open("/#/preview/" + id)
   }
 
   // 4. 复制试卷
