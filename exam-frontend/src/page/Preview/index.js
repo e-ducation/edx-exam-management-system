@@ -25,11 +25,15 @@ class PreviewContainer extends React.Component{
     const that = this;
     console.log(id)
     if (id === 'storage'){
-      const paper = JSON.parse(localStorage.getItem("paper"));
+      const { description, name, passing_grade, problems, total_grade, total_problem_num} = JSON.parse(localStorage.getItem('paper'));
 
-      console.log(paper);
       this.setState({
-        problems: paper,
+        description,
+        name,
+        passing_grade,
+        problems,
+        total_grade,
+        total_problem_num
       })
       return false;
     }
