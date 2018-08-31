@@ -16,6 +16,7 @@ class PreviewContainer extends React.Component{
     passing_grade: null,
     description: '',
     problems: [],
+    loading: true,
   }
 
   componentDidMount() {
