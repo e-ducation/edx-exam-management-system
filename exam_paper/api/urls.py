@@ -29,6 +29,7 @@ from exam_paper.api.views import (
     ProblemsDetailAPIView,
     ProblemsTypesAPIView,
     SectionProblemTypeCountView,
+    GetUserInfo,
 )
 
 urlpatterns = [
@@ -45,4 +46,5 @@ router = routers.SimpleRouter()
 router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
 router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
 router.register(r'exampapers', ExamPaperListViewSet, 'exampaper')
+router.register(r'userinfo',GetUserInfo,'getuserinfo')
 urlpatterns += router.urls
