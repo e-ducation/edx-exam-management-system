@@ -71,7 +71,7 @@ class HomeContainer extends React.Component {
             <div className="home-guide">
               <span>4</span>
               <h3>查看考试数据</h3>
-              <p>福克斯的弗兰克的酸辣粉</p>
+              <p>考试结束后，可以在考试任务的统计功能中查看本场考试的统计数据和考生的答卷</p>
             </div>
           </div>
           <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
@@ -87,7 +87,6 @@ class HomeContainer extends React.Component {
 export default class Home extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-    showShadow: false,
   }
 
   componentDidMount(){
@@ -98,19 +97,13 @@ export default class Home extends React.Component {
       that.setState({ height })
     })
 
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
-    })
-
   }
 
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        <Header />
         <div className="container" style={containerHeight}>
           <HomeContainer />
         </div>

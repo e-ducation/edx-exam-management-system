@@ -25,7 +25,6 @@ export default class ProblemDetail extends Component {
   render() {
     const { item } = this.state;
     const loading = !Boolean(item);
-    console.log(item)
     return (
       <Modal
         title="查看题目"

@@ -48,7 +48,6 @@ class ManageContainer extends React.Component {
           that.searchAjax = c
         })
       }).then(function (response) {
-          console.log(response)
           const res = response.data;
           if (res.status === 0){
             // 给list添加key
@@ -160,7 +159,6 @@ class ManageContainer extends React.Component {
         axios.delete('/api/exampapers/' + id + '/')
         .then(function (response) {
           const res = response.data;
-          console.log(res)
           if (res.status === 0){
             message.success('删除成功');
             that.getList();
@@ -282,28 +280,35 @@ class ManageContainer extends React.Component {
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '150px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>No files.</div></div> }}
+            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>暂无试卷</div></div> }}
           />
-          <div className="page">
-            <Pagination
-              size="small"
-              current={this.state.pageCurrent}
-              total={this.state.pageTotal}
-              onChange={this.handlePageChange}
-              pageSize={this.state.pageSize}
-              className="page-num"
-            />
-            <span className="page-size">
-              {  !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '每页显示' : '' }
-              <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
-                <Select.Option value="10">10</Select.Option>
-                <Select.Option value="20">20</Select.Option>
-                <Select.Option value="30">30</Select.Option>
-                <Select.Option value="50">50</Select.Option>
-              </Select>
-              { !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '条' : 'items per page' }
-            </span>
-          </div>
+          {
+            this.state.list.length === 0 ?
+              null
+            :
+              <div className="page">
+                <span className="page-total">共{ this.state.pageTotal }条记录</span>
+                <Pagination
+                  size="small"
+                  current={this.state.pageCurrent}
+                  total={this.state.pageTotal}
+                  onChange={this.handlePageChange}
+                  pageSize={this.state.pageSize}
+                  className="page-num"
+                />
+                <span className="page-size">
+                  {  !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '每页显示' : '' }
+                  <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
+                    <Select.Option value="10">10</Select.Option>
+                    <Select.Option value="20">20</Select.Option>
+                    <Select.Option value="30">30</Select.Option>
+                    <Select.Option value="50">50</Select.Option>
+                  </Select>
+                  { !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '条' : 'items per page' }
+                </span>
+              </div>
+          }
+
         </div>
         <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
       </div>
