@@ -160,8 +160,9 @@ class ManageContainer extends React.Component {
         axios.delete('/api/exampapers/' + id + '/')
         .then(function (response) {
           const res = response.data;
-          if (res.status === 200){
-            message.error('删除成功');
+          console.log(res)
+          if (res.status === 0){
+            message.success('删除成功');
             that.getList();
           } else {
             message.error('删除失败');

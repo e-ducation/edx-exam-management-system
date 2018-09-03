@@ -8,7 +8,6 @@ import $ from "jquery";
 
 
 class PreviewContainer extends React.Component{
-
   state = {
     name: '',
     total_problem_num: null,
@@ -20,11 +19,32 @@ class PreviewContainer extends React.Component{
   }
 
   componentDidMount() {
+    // 监听打印机事件
+    var beforePrint = function() {
+    };
+
+    var afterPrint = function() {
+      that.setPrinting(false)
+    };
+
+    if (window.matchMedia) {
+      var mediaQueryList = window.matchMedia('print');
+      mediaQueryList.addListener(function(mql) {
+        if (mql.matches) {
+          beforePrint();
+        } else {
+          afterPrint();
+        }
+      });
+    }
+
+    window.onbeforeprint = beforePrint;
+    window.onafterprint = afterPrint;
+
     // 获取试卷id
     // 获取编辑的试卷信息及题目ids
     const id = window.location.href.split('/preview/')[1];
     const that = this;
-    console.log(id)
     if (id === 'storage'){
       const { description, name, passing_grade, problems, total_grade, total_problem_num} = JSON.parse(localStorage.getItem('paper'));
 
@@ -62,29 +82,6 @@ class PreviewContainer extends React.Component{
         message.error('请求失败')
       });
 
-
-
-    // 监听打印机事件
-    var beforePrint = function() {
-    };
-
-    var afterPrint = function() {
-      that.setPrinting(false)
-    };
-
-    if (window.matchMedia) {
-      var mediaQueryList = window.matchMedia('print');
-      mediaQueryList.addListener(function(mql) {
-        if (mql.matches) {
-          beforePrint();
-        } else {
-          afterPrint();
-        }
-      });
-    }
-
-    window.onbeforeprint = beforePrint;
-    window.onafterprint = afterPrint;
   }
 
   setPrinting = (printing) => {
@@ -108,6 +105,7 @@ class PreviewContainer extends React.Component{
   render() {
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
+    // stringresponse         填空题
     const {name, passing_grade, problems, total_grade, total_problem_num, description } = this.state;
 
     return (
@@ -147,8 +145,6 @@ class PreviewContainer extends React.Component{
                               return '[多选题]';
                             case 'fill':
                               return '[填空题]';
-                            case 'judge':
-                              return '[判断题]';
                             default:
                               return null;
                           }
@@ -195,13 +191,6 @@ class PreviewContainer extends React.Component{
                               }
                             </div>
 
-
-                          case 'judge':
-                            return <Radio.Group style={{display:'block'}} defaultValue={null}>
-                              <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={true}>正确</Radio>
-                              <Radio style={{display:'block', height: '30px', lineHeight: '30px'}} value={false}>错误</Radio>
-                            </Radio.Group>;
-
                           default:
                               return null;
                         }
@@ -223,7 +212,6 @@ class PreviewContainer extends React.Component{
 export default class Preview extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-    showShadow: false,
   }
 
   componentDidMount(){
@@ -233,19 +221,13 @@ export default class Preview extends React.Component {
       that.setState({ height })
     })
 
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
-    })
-
   }
 
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px', minWidth: '649px'}
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        <Header />
         <div className="container" style={containerHeight}>
           <PreviewContainer showBackToTop={this.state.showShadow} />
         </div>
