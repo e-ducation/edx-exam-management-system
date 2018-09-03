@@ -40,6 +40,9 @@ urlpatterns = [
     url(r'^problems/types/$', ProblemsTypesAPIView.as_view()),
     url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
     url(r'^sections/(?P<section_id>.+)/problems/count$', SectionProblemTypeCountView.as_view()),
+    url(r'^getuserinfo/$', GetUserInfo.as_view()),
+
+
 ]
 
 router = routers.SimpleRouter()
