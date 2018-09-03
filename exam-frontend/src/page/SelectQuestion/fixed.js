@@ -41,7 +41,7 @@ export default class FixedQustion extends Component{
     };
     if (activeChapter != '全部') params['block_id'] = activeChapter;
     if (keySearch != null) params['search'] = keySearch;
-    // if (activeQuestionType != null) params[] = activeQuestionType;
+    if (activeQuestionType != '全部') params['problem_type'] = activeQuestionType;
     getList(params);
   }
   // 题型选择
