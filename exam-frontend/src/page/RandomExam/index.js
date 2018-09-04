@@ -41,7 +41,7 @@ class RandomExamContainerReducer extends React.Component {
   componentWillReceiveProps(nextProps){
     if(nextProps.randomArr){
 
-      axios.post('/api/sections/problems/count',{
+      axios.post('/api/sections/problems/count/',{
         section_ids:nextProps.randomArr
       })
       .then(res=>{
