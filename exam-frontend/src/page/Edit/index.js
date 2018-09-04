@@ -455,12 +455,6 @@ export default class Edit extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
-
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
-    })
   }
 
 
