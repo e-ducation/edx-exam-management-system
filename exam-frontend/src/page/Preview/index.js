@@ -61,7 +61,7 @@ class PreviewContainer extends React.Component{
     }
 
 
-    axios.get('/api/exampapers/' + id)
+    axios.get('/api/exampapers/' + id + '/')
       .then(function (response) {
         const res = response.data;
         const {name, passing_grade, problems, total_grade, total_problem_num, description } = res.data;
@@ -222,7 +222,8 @@ class PreviewContainer extends React.Component{
 
 export default class Preview extends React.Component {
   state = {
-    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
+    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeigh,
+    showBackToTop: false,
   }
 
   componentDidMount(){
@@ -232,15 +233,22 @@ export default class Preview extends React.Component {
       that.setState({ height })
     })
 
+
+  }
+
+  onChangeUpBtn = (val) => {
+    this.setState({
+      showBackToTop: val,
+    })
   }
 
   render() {
     const containerHeight = { minHeight: this.state.height - 186 + 'px', minWidth: '649px'}
     return (
       <div>
-        <Header />
+        <Header changeUpBtn={this.onChangeUpBtn} />
         <div className="container" style={containerHeight}>
-          <PreviewContainer showBackToTop={this.state.showShadow} />
+          <PreviewContainer showBackToTop={this.state.showBackToTop} />
         </div>
         <Footer />
       </div>

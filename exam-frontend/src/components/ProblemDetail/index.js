@@ -104,10 +104,16 @@ export default class ProblemDetail extends Component {
                   })()
                 }
               </div>
-              <p className="preview-title" style={{margin:'30px 0 0 0'}}>
-                <span className="preview-type">[答案解析]</span>
-                {item.content.solution}
-              </p>
+              {
+                item.content.solution ?
+                  <p className="preview-title" style={{margin:'30px 0 0 0'}}>
+                    <span className="preview-type">[答案解析]</span>
+                    {item.content.solution}
+                  </p>
+                :
+                  null
+              }
+
             </div>
         }
       </Modal>

@@ -16,12 +16,18 @@ export default class Header extends React.Component {
       this.setState({
         showShadow: now
       })
+
+      if (this.props.changeUpBtn){
+        this.props.changeUpBtn(now);
+      }
     }
     $(document).scroll(this.scroll)
   }
+
   componentWillUnmount(){
     $(document).unbind('scroll',this.scroll)
   }
+
   render() {
     const { share } = this.props;
     const width = $(document).width() + 6 + 'px';
