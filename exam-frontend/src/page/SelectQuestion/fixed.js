@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import { Table, Input, Icon, Dropdown, Menu, Button } from 'antd';
 import axios from 'axios';
 import { problemsType } from '../../utils';
+import ProblemDetail from '../../components/ProblemDetail';
+
 export default class FixedQustion extends Component{
   state = {
     activeCourse: '',
@@ -109,7 +111,19 @@ export default class FixedQustion extends Component{
         dataIndex: 'title',
         width: '80%',
         // eslint-disable-next-line
-        render: text => <a href="javascript:;">{text}</a>,
+        render: (text,item) => {
+          // console.log(this.ProblemDetail,item);
+          const { id, type , ...content } = item;
+          const data = {
+            grade: 1,
+            title: item.title,
+            problem_type: type,
+            problem_id: id,
+            content,
+          }
+          // co
+          return (<a onClick={this.ProblemDetail.showModal.bind(this, data)} href="javascript:;">{text}</a>)
+        },
       }, {
         title: '类型',
         dataIndex: 'type',
@@ -161,6 +175,7 @@ export default class FixedQustion extends Component{
     }
     return(
       <div>
+        <ProblemDetail ref={(node) => {this.ProblemDetail = node;}} />
         <Table
           title= {
             TableHeader

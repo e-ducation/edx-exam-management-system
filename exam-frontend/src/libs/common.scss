@@ -2,13 +2,12 @@ html,body{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,"Helvetica Neue", Helvetica,Tahoma，Arial, "PingFang SC", "Hiragino Sans GB",
 "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei",SimHei，sans-serif;
 }
-
 @font-face {
   font-family: 'iconfont';  /* project id 683888 */
-  src: url('/font/iconfont.eot'),
-  url('/font/iconfont.woff') format('woff'),
-  url('/font/iconfont.ttf') format('truetype'),
-  url('/font/iconfont.svg') format('svg');
+  src: url('/static/font/iconfont.eot'),
+  url('/static/font/iconfont.woff') format('woff'),
+  url('/static/font/iconfont.ttf') format('truetype'),
+  url('/static/font/iconfont.svg') format('svg');
 }
 
 .iconfont{
