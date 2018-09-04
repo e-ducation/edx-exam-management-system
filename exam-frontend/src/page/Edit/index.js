@@ -22,10 +22,10 @@ const { TextArea } = Input;
 class EditContainerReducer extends React.Component {
   state={
     paperName:"",
+    paperInsLength:0,
     paperIns:"",
     paper:[],
     paperpass:60,
-    paperInsLength:0,
     saveVisible:false,
     selectQuestionList: [],
     paperType: '',
