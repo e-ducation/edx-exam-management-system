@@ -1,249 +1,225 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Breadcrumb, Dropdown, Menu, Button } from 'antd';
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
-import axios from 'axios';
+import { connect } from 'react-redux'
+import { Input, Icon, Breadcrumb, Button } from 'antd';
 import './index.scss';
-export default class SelectQuestion extends Component {
+import axios from 'axios';
+import FixedQuestion from './fixed';
+import RandomQuestion from './random';
+import { setFixedTable, setRandomTable } from '../../model/action'
+class SelectQuestion extends Component {
   state = {
-    course: [1, 2, 3, 4, 5],
-    chapters: ['a', 'b', 'c'],
+    courseList: [],
+    sectionList: [],
     courseSearch: '',
     keySearch: '',
     questionList: [],
-    selectedList: [],
-    selectedRowKeys: [5,6,7],
+    selectedRowKeys: [],
     activeChapter: '全部章节',
-    activeCourse: '1',
+    activeCourse: '',
     activeQuestionType: '全部题型',
-    selectType: 'immobilization'// immobilization|stochastic
-
+    randomLoading: false,
+    quesitonLoading: false,
+    counting: {
+      multiplechoiceresponse: 0,
+      choiceresponse: 0,
+      stringresponse: 0,
+    },
   }
+  static defaultProps = {
+    // paperType: 'fixed'
+    paperType: 'random'
+  }
+
   componentDidMount() {
-    this.getList('a');
-    axios.get('/user?ID=12345')
-      .then(function (response) {
-        console.log(response);
+    this.getCourses();
+    this.random = {}
+  }
+  initData = (selectedRowKeys) => {
+    axios.post('/api/problems/detail/', {
+        problems:selectedRowKeys,
+      }).then(res => {
+      console.log(res.data)
+      const { fixedTable } = this.props;
+      const fetchData = {}
+      const list = res.data.data;
+      // eslint-disable-next-line
+
+      list.map((item,index) => {
+        const { id, type , ...content } = item;
+        fetchData[id] = {
+          grade: 1,
+          title: item.title,
+          problem_type: type,
+          problem_id: id,
+          content,
+        }
+      })
+      // 初始化结构
+      if (Object.keys(fixedTable).length === 0){
+        this.props.setFixedTable(fetchData);
+      } else {
+        // 非初始化结构
+        this.resetData(fetchData)
+      }
+      console.log(fetchData)
+    }).catch(error => {
+      console.log(error)
+    })
+  }
+  resetData = (fetchData) => {
+    const { fixedTable } = this.props;// 历史数据
+    // 查找还存在的历史数据
+    // eslint-disable-next-line
+    Object.keys(fetchData).map(id => {
+      // eslint-disable-next-line
+      Object.keys(fixedTable).map(key => {
+        if(id === key){
+          fetchData[key] = fixedTable[key];
+        }
+      })
+    })
+    let index = 1;
+    // eslint-disable-next-line
+    Object.keys(fetchData).map(key => {
+      if (fetchData[key].number !== undefined){
+        index = index > parseInt(fetchData[key].number, 0) ? index : parseInt(fetchData[key].number, 0)
+      }
+    })
+    Object.keys(fetchData).map(key => {
+      if (fetchData[key].number === undefined){
+        fetchData[key].number = index + 1 < 10 ? '0' + (index + 1) : index + 1;
+        index++;
+      }
+    })
+    this.props.setFixedTable(fetchData);
+  }
+  // 获取课程列表
+  getCourses = () => {
+    axios.get('/api/courses/')
+      .then( (res) => {
+        console.log(res.data, 123)
+        if (res.data.status === 0) {
+          const { data }  = res.data;
+          console.log(res.data, 123)
+          if (data.length > 0) {
+            this.setState({
+              courseList: data,
+              activeCourse: data[0].id,
+            })
+            this.getList(data[0].id);
+          } else {
+
+          }
+        }
       })
       .catch(function (error) {
         console.log(error);
       });
   }
-  getList = (chapter) => {
-    let tmp = new Array(10).fill(0);
-    const questionList = tmp.map((t, i) => {
-      let chapter = '';
-      if (i < 3) {
-        chapter = 'a';
-      } else if (i < 6) {
-        chapter = 'b'
-      } else {
-        chapter = 'c';
+  // 课程名称获取题目列表
+  getList = (course) => {
+    this.getSection(course);
+    this.setState({
+      quesitonLoading: true,
+    })
+    axios.get(`/api/xblocks/${course}/problems/`)
+      .then( (res) => {
+        const { data } = res.data
+        this.setState({
+          questionList: data,
+          quesitonLoading: false,
+        })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  // 获取章节列表
+  getSection = (id) => {
+    this.setState({
+      randomLoading: true,
+    })
+    axios.get(`/api/courses/${id}/sections/`)
+      .then( (res) => {
+        const { data } = res.data
+        this.setState({
+          sectionList: data,
+          randomLoading: false,
+        })
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
+  // 题型统计
+  countType = (selectedRowKeys) => {
+    axios.post('/api/problems/detail/', {
+      problems:selectedRowKeys,
+    }).then(res => {
+      const list = res.data.data;
+      const counting = {
+        multiplechoiceresponse: 0,
+        choiceresponse: 0,
+        stringresponse: 0,
       }
-      return {
-        id: i,
-        name: `${i}`,
-        chapter,
-        key: i,
-        // name: 'John Brown',
-        radio: 32,
-        multiple: 'New York No. 1 Lake Park',
-        checking: 32,
-        completion: 32,
-      }
-    })
-    this.setState({
-      questionList: questionList.filter(x => x.chapter === chapter),
+      list.map(data => {
+        counting[data.type]++;
+      })
+      this.setState({
+        counting
+      })
+      console.log(counting)
+    }).catch(error => {
+      console.log(error)
     })
   }
-  onChange = (value) => {
-    this.setState({
-      selectedRowKeys: value,
-    })
-    // const { questionList, activeChapter, active } = this.state;
-    // let activeData = active.filter((x) => x.chapter != activeChapter);
-    // const addData = value.map((data) => {
-    //     let qs = undefined;
-    //     questionList.map((item) => {
-    //         if (item.id  == data ) {
-    //             qs = item;
-    //         }
-    //     })
-    //     return qs;
-    // }).filter((x) => x != undefined)
-    // this.setState({
-    //     active:[
-    //         ...activeData,
-    //         ...addData,
-    //     ]
-    // })
-    // console.log(value,activeData,addData,questionList)
+  // 回调设置勾选的题目
+  onSelect = (selectedRowKeys) => {
+    // 设置数据
+    this.initData(selectedRowKeys);
   }
-  changeChapter = (chapter) => {
-    this.getList(chapter)
-    this.setState({
-
-    })
+  sectionSelect = (selectedRowKeys) => {
+    // this.setSta
+    this.props.setRandomTable(selectedRowKeys);
   }
-  outputData = () => {
-    // 数据格式
-    // const data = [{
-    //     classid,
-    //     classname,
-    //     radio,
-    //     multiple,
-    //     checking,
-    //     completion
-    // }]
+  // 切换课程
+  changeCourse = (course) => {
+    this.getList(course)
+    this.setState({
+      activeCourse: course,
+    })
   }
   // 题目列表数据更新
-  getQuestionData = () => {
-    const { activeCourse, activeChapter, activeQuestionType, keySearch } = this.state;
-    console.log('activeCourse',activeCourse)
-    console.log('activeChapter',activeChapter)
-    console.log('activeQuestionType',activeQuestionType)
-    console.log('keySearch',keySearch)
+  getQuestionData = (params) => {
+    const { activeCourse } = this.state;
+    console.log(params, 'params')
+    this.setState({
+      quesitonLoading: true,
+    })
+    const block = params.block_id == undefined ? activeCourse : params.block_id;
+    axios.get(`/api/xblocks/${block}/problems/`, {
+        params,
+      })
+      .then( (res) => {
+        const { data } = res.data;
+        this.setState({
+          questionList: data,
+          quesitonLoading: false,
+        })
+        console.log(data)
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     // const { callback } = this.props;
     // const { selectedRowKeys,totalAcount } = this.state;
   }
-  // 题型选择
-  handleMenuClick = (v) => {
-    console.log(v);
-    this.setState({
-      activeQuestionType: v.key,
-    }, () => {
-      this.getQuestionData();
-    });
-  }
-  // 章节选择
-  handleCMenuClick = (v) => {
-    console.log(v)
-    this.setState({
-      activeChapter: v.key
-    }, () => {
-      this.getQuestionData();
-    });
-  }
-  handleSearch = (e) => {
-    console.log(e.target.value);
-    this.setState({
-      keySearch: e.target.value,
-    }, () => {
-      this.getQuestionData()
-    })
-  }
   render() {
-    const { questionList, selectedRowKeys, activeChapter } = this.state;
-    // const CheckboxGroup = Checkbox.Group;
-    let plainOptions = questionList.map((data) => {
-      if (data.chapter === activeChapter) {
-        return {
-          label: data.name, value: data.id
-        }
-      } else {
-        return null;
-      }
-    })
-    plainOptions = plainOptions.filter(x => x != null);
-    console.log(plainOptions)
-    const columns = [{
-        title: '全选本页',
-        dataIndex: 'name',
-        // eslint-disable-next-line
-        render: text => <a href="javascript:;">{text}</a>,
-      }, {
-        title: '单选题',
-        dataIndex: 'radio',
-      },
-      {
-        title: '多选题',
-        dataIndex: 'multiple',
-      },
-      {
-        title: '判断题',
-        dataIndex: 'checking',
-      },
-      {
-        title: '填空题',
-        dataIndex: 'completion',
-      },
-    ];
-    const stochasticRowSelection = {
-      selectedRowKeys,
-      onChange: (selectedRowKeys, selectedRows) => {
-        this.setState({
-          selectedRowKeys,
-        })
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      },
-      getCheckboxProps: record => ({
-        disabled: record.name === 'Disabled User', // Column configuration not to be checked
-        name: record.name,
-      }),
-    };
-    const stochasticColumns = [{
-        title: '题目',
-        dataIndex: 'name',
-        width: '80%',
-        // eslint-disable-next-line
-        render: text => <a href="javascript:;">{text}</a>,
-      }, {
-        title: '类型',
-        dataIndex: 'radio',
-      }
-    ];
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: (selectedRowKeys, selectedRows) => {
-        this.setState({
-          selectedRowKeys,
-        })
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-      },
-      getCheckboxProps: record => ({
-        disabled: record.name === 'Disabled User', // Column configuration not to be checked
-        name: record.name,
-      }),
-    };
-    const cmenu = (
-      <Menu onClick={this.handleCMenuClick}>
-        <Menu.Item key="a">a</Menu.Item>
-        <Menu.Item key="b">b</Menu.Item>
-        <Menu.Item key="c">c</Menu.Item>
-      </Menu>
-    );
-    const menu = (
-      <Menu onClick={this.handleMenuClick}>
-        <Menu.Item key="单选题">单选题</Menu.Item>
-        <Menu.Item key="多选题">多选题</Menu.Item>
-        <Menu.Item key="判断题">判断题</Menu.Item>
-        <Menu.Item key="填空题">填空题</Menu.Item>
-      </Menu>
-    );
-    const TableHeader = () => {
-      return (
-        <div>
-           <Dropdown overlay={menu}>
-            <Button>
-              {this.state.activeQuestionType} <Icon type="down" />
-            </Button>
-          </Dropdown>
-          <Dropdown overlay={cmenu}>
-            <Button style={{marginLeft:'4px'}}>
-              {this.state.activeChapter} <Icon type="down" />
-            </Button>
-          </Dropdown>
-          <div style={{ textAlign: 'center',display:'inline-block',marginLeft: '35px',marginTop:'-1px'}}>
-            <Input onChange={this.handleSearch} prefix={<Icon  type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
-          </div>
-        </div>
-      )
-    }
+    const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
+    const { paperType, selectQuestionList} = this.props;
     return (
-      <div>
-        <Header />
-
+      <div style={this.props.style}>
         <div className="qs-container">
           <Breadcrumb style={{ margin: '20px 0' }}>
             <Breadcrumb.Item>
@@ -258,76 +234,99 @@ export default class SelectQuestion extends Component {
 
           <div className="select-scope">选择范围</div>
           <div className="sidebar">
-            <div style={{ textAlign: 'center', marginTop: '8px' }}>
+            <div style={{ textAlign: 'center', margin: '8px 0' }}>
               <Input prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
             </div>
             <ul className="course-list">
-              <li onClick={this.changeChapter.bind(this, 'a')}>全球信息化管理</li>
-              <li onClick={this.changeChapter.bind(this, 'b')} className="active">大数据分析</li>
-              <li onClick={this.changeChapter.bind(this, 'c')}>vue学习教程</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
-              <li>1</li>
+              {
+                 // 课程列表
+                courseList.map(data => {
+                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.name}</li>
+                })
+              }
             </ul>
           </div>
           <div className="main">
             <div className="course-name">大数据分析</div>
             {
-              false &&
-              <Table
-                onHeaderRow={(column) => {
-                  return {
-                    onClick: () => { },        // 点击表头行
-                    style: { backgroundColor: '#fff' },
-                  };
-                }}
-                bordered={true}
-                rowSelection={rowSelection}
-                columns={columns}
-                dataSource={questionList}
-                size="small"
+              paperType == 'fixed' ?
+              // 固定出题
+              <FixedQuestion
+                selectedRowKeys={selectQuestionList}
+                ref={node => this.fixed = node}
+                getList={this.getQuestionData} // 列表数据获取回调函数
+                activeCourse={activeCourse} // 选中的课程ID
+                sectionList={sectionList}   // 章节列表
+                questionList={questionList} // 问题
+                callback={this.onSelect}    // 回调函数
+                loading={quesitonLoading}
+                countType={this.countType}
+                />
+              :
+              <RandomQuestion
+                ref={node => this.random = node}
+                loading={randomLoading}
+                activeCourse={activeCourse} // 选中的课程ID
+                sectionList={sectionList}   // 章节列表
+                callback={this.sectionSelect}
               />
             }
-            {
-              <Table
-                title= {
-                  TableHeader
+            <div style={{padding: '10px 0'}}>
+              <div>已选<span style={{ color: '#0692e1' }}>
+                {
+                  counting['multiplechoiceresponse']+counting['choiceresponse']+counting['stringresponse']
                 }
-                bordered={true}
-                rowSelection={stochasticRowSelection}
-                columns={stochasticColumns}
-                dataSource={questionList}
-                size="small"
-              />
-            }
-            <div>
-              <div>已选<span style={{ color: '#0692e1' }}>100</span>题</div>
+              </span>题</div>
               <div className="total">
                 <div className="total-block total-top">
                   <span className="first-span">题型</span>
                   <span>单选题</span>
                   <span>多选题</span>
-                  <span>判断题</span>
                   <span>填空题</span>
                 </div>
                 <div className="total-block">
                   <span className="first-span">已选数量</span>
-                  <span className="number">25</span>
-                  <span className="number">30</span>
-                  <span className="number">40</span>
-                  <span className="number">44</span>
+                  <span className="number">{counting['multiplechoiceresponse']}</span>
+                  <span className="number">{counting['choiceresponse']}</span>
+                  <span className="number">{counting['stringresponse']}</span>
                 </div>
               </div>
             </div>
+            <div style={{padding: '10px',textAlign: 'center'}}>
+              {
+                paperType == 'fixed' ?
+                <Button type="primary" onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                  选好了
+                </Button>
+                :
+                <Button type="primary" onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                  选好了
+                </Button>
+              }
+            </div>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 }
+const mapStateToProps = (state) => {
+  const { fixedTable, randomTable } = state;
+  const selectQuestionList = Object.keys(fixedTable);
+  return {
+    selectQuestionList,
+    fixedTable,
+    randomTable,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    },
+    setRandomTable: (data) => dispatch(setRandomTable(data))
+  }
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(SelectQuestion)
