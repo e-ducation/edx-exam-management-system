@@ -1,25 +1,33 @@
 import React from 'react';
+import { connect } from 'react-redux'
 import { Input,Button,Breadcrumb,Tooltip,Icon,Modal,Radio,InputNumber} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import SelectQuestion from '../SelectQuestion'
+import { setFixedTable,setRandomTable } from '../../model/action'
 import './index.scss';
 import $ from "jquery";
+import axios from 'axios';
 const RadioGroup = Radio.Group;
 
 
 const { TextArea } = Input;
 
+const confirm = Modal.confirm;
 
-class RandomExamContainer extends React.Component {
+
+class RandomExamContainerReducer extends React.Component {
   state={
-    paperName:"这是试卷名称",
-    paperIns:"这是试卷说明",
+    paperName:"",
+    paperIns:"",
     paper:[],
+    paperInsLength:0,
     paperpass:60,
-    settingScoreVisible: true,
+    settingScoreVisible: false,
     value: 1,
+    saveVisible:true,
+    randomPaper:[],
   }
 
   constructor(props) {
@@ -27,25 +35,47 @@ class RandomExamContainer extends React.Component {
   }
 
   componentDidMount() {
+
+  }
+
+  componentWillReceiveProps(nextProps){
+    if(nextProps.randomArr){
+
+      axios.post('/api/sections/problems/count',{
+        section_ids:nextProps.randomArr
+      })
+      .then(res=>{
+
+        this.setState({
+          randomPaper:res.data.data
+        })
+      })
+      .catch(res=>{
+        console.log(res);
+      })
+
+    }
+    console.log(this.state.randomPaper);
   }
 
   //修改试卷名称
   onChangePaperName=(e)=>{
     this.setState({
-      paperName:e.target.value
+      paperName:e.target.value,
     })
 
   }
   //修改试卷说明
   onChangePaperIns=(e)=>{
     this.setState({
-      paperIns:e.target.value
+      paperIns:e.target.value,
+      paperInsLength:e.target.value.length,
     })
   }
   //修改及格线数值
   onChangePass=(e)=>{
     this.setState({
-      paperpass:e.target.value || 1
+      paperpass:e
     })
   }
   //keyup事件
@@ -56,26 +86,6 @@ class RandomExamContainer extends React.Component {
     this.setState({
       paperpass:value
     })
-  }
-  //增加及格线数值
-  paperpassAdd=(value)=>{
-    value>=100 ? value=100 :
-    this.setState({
-      paperpass:value+=1
-    })
-  }
-  //减少及格线数值
-  paperpassReduce=(value)=>{
-    if(this.state.paperpass<=1){
-      this.setState({
-        paperpass:1
-      })
-    }
-    else{
-      this.setState({
-        paperpass:value-=1
-      })
-    }
   }
 
   //设置分数
@@ -103,6 +113,35 @@ class RandomExamContainer extends React.Component {
     });
   }
 
+  //删除
+  seleteSection=(id)=>{
+    delete this.props.fixedTable[id];
+
+    this.props.setFixedTable(this.props.fixedTable);
+
+  }
+
+
+
+  showDeleteConfirm=(id)=>{
+    confirm({
+      title: 'Are you sure delete this task?',
+      content: 'Some descriptions',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk:()=>{
+        //删除并回推数据
+        delete this.props.fixedTable[id];
+
+        this.props.setFixedTable(this.props.fixedTable);
+
+      },
+      onCancel:()=>{
+
+      },
+    });
+  }
 
 
   render() {
@@ -110,8 +149,16 @@ class RandomExamContainer extends React.Component {
       width:'468px'
     }
 
+
+
+    const Length = (
+      <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
+    )
+
+    var randomArrData=[];
+
     return (
-      <div className="displayFlx">
+      <div style={this.props.style} className="displayFlx">
         <div>
           <Modal
             title="批量设置分值"
@@ -183,21 +230,28 @@ class RandomExamContainer extends React.Component {
 
           <div className="edit-box">
             <div className="label-box">
-              <div>试卷说明</div>
+              <div>试卷名称*</div>
               <div>
                 <Input placeholder="请输入1-50个字符的名称"
                 onChange={this.onChangePaperName}
                 value={this.state.paperName}
-                style={inputStyle}/>
+                style={inputStyle}
+                maxLength="50"
+                />
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'14px'}}>试卷名称*</div>
+              <div style={{lineHeight:'14px'}}>试卷说明</div>
               <div>
-                <TextArea placeholder="请输入试卷说明"
-                autosize={{ minRows: 4, maxRows: 6 }}
-                onChange={this.onChangePaperIns}
-                style={inputStyle}/>
+                <div style={{position:"relative",width:'468px'}}>
+                  <TextArea placeholder="请输入试卷说明"
+                  autosize={{ minRows: 3, maxRows: 6 }}
+                  onChange={this.onChangePaperIns}
+                  style={{ width:'468px',paddingBottom:'20px'}}
+                  maxLength="500"
+                  value={this.state.paperIns}/>
+                  { Length }
+                </div>
               </div>
             </div>
             <div className="label-box">
@@ -206,102 +260,126 @@ class RandomExamContainer extends React.Component {
               <div style={{marginBottom:'10px'}}>
 
                 <Button type="primary" onClick={()=>this.props.setShow(true)} >添加 </Button>
-                <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
 
+                {
+                  this.props.randomArr.length === 0 ?
+                    <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
+                  :
+                    <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+                }
+              </div>
+              <div>
+                {
+                   this.state.randomPaper.map((item,index)=>{
+                    return(
+                      <div class="random-exam" key={item.id} style={{marginBottom:'10px'}}>
+                      <div className="courseName">
+                      <span className="examtype-name">{item.name}</span>
+                      <Tooltip title="删除" className="delete-right">
+                        <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
+                      </Tooltip>
+                    </div>
+                      <ul className="question-type">
+                        <li className="type">选择题</li>
+                        <li className="question-addnumber">共<a>{item.multiplechoiceresponse}</a>题</li>
+                        <li className="question-number">
+                          <div>
+                            <span style={{marginRight:'30px'}}>抽题数目</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                        <li className="question-score">
+                          <div>
+                            <span style={{marginRight:'30px'}}>单题分数</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                      </ul>
+                      <ul className="question-type">
+                        <li className="type">多选题</li>
+                        <li className="question-addnumber">共<a>{item.choiceresponse}</a>题</li>
+                        <li className="question-number">
+                          <div>
+                            <span style={{marginRight:'30px'}}>抽题数目</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                        <li className="question-score">
+                          <div>
+                            <span style={{marginRight:'30px'}}>单题分数</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                      </ul>
+                      <ul className="question-type">
+                        <li className="type">填空题</li>
+                        <li className="question-addnumber">共<a>120</a>题</li>
+                        <li className="question-number">
+                          <div>
+                            <span style={{marginRight:'30px'}}>抽题数目</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                        <li className="question-score">
+                          <div>
+                            <span style={{marginRight:'30px'}}>单题分数</span>
+                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
+                          </div>
+                        </li>
+                      </ul>
+                    </div>
+                    )
+
+                  })
+
+                }
               </div>
 
 
-                <div class="random-exam">
-                  <div className="courseName">
-                    <span className="examtype-name">母婴产品进阶课程</span>
-                    <Tooltip title="删除" className="delete-right">
-                      <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
-                    </Tooltip>
+
+              <div>
+                <div className="total">
+                  <div className="total-block total-top">
+                      <span className="first-span">题型</span>
+                      <span>单选题</span>
+                      <span>多选题</span>
+                      <span>判断题</span>
+                      <span>填空题</span>
                   </div>
-                  <ul className="question-type">
-                    <li className="type">选择题</li>
-                    <li className="question-addnumber">共<a>120</a>题</li>
-                    <li className="question-number">
-                      <div>
-                        <span style={{marginRight:'30px'}}>抽题数目</span>
-                        <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
-                      </div>
-                    </li>
-                    <li className="question-score">
-                      <div>
-                        <span style={{marginRight:'30px'}}>单题分数</span>
-                        <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
-                      </div>
-                    </li>
-                  </ul>
-                  <ul className="question-type">
-                    <li className="type">多选题</li>
-                    <li className="question-addnumber">共<span>120</span>题</li>
-                    <li className="question-number">3</li>
-                    <li className="question-score">4</li>
-                  </ul>
-                  <ul className="question-type">
-                    <li className="type">判断题</li>
-                    <li className="question-addnumber">共<span>120</span>题</li>
-                    <li className="question-number">3</li>
-                    <li className="question-score">4</li>
-                  </ul>
-                  <ul className="question-type">
-                    <li className="type">填空题</li>
-                    <li className="question-addnumber">共<span>120</span>题</li>
-                    <li className="question-number">3</li>
-                    <li className="question-score">4</li>
-                  </ul>
-                </div>
+                  <div className="total-block">
+                      <span className="first-span">已选数量</span>
+                      <span className="number">25</span>
+                      <span className="number">30</span>
+                      <span className="number">40</span>
+                      <span className="number">44</span>
+                  </div>
+                  <div className="pass-per">
+                    <div>
+                      <span>总题型：{this.state.paper.length}</span>
+                      <span>总分：{this.state.paper.length}</span>
+                      <span>
+                        <span style={{marginRight:'6px'}}>及格线*</span>
+                        <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
+                        <span style={{marginLeft:'6px'}}>%</span>
 
+                      </span>
 
-
-
-
-
-
-
-
-
-
-                <div>
-                  <div className="total">
-                    <div className="total-block total-top">
-                        <span className="first-span">题型</span>
-                        <span>单选题</span>
-                        <span>多选题</span>
-                        <span>判断题</span>
-                        <span>填空题</span>
+                      <span>（及格分60=总分100分*及格线60%）</span>
                     </div>
-                    <div className="total-block">
-                        <span className="first-span">已选数量</span>
-                        <span className="number">25</span>
-                        <span className="number">30</span>
-                        <span className="number">40</span>
-                        <span className="number">44</span>
-                    </div>
-                    <div className="pass-per">
-                      <div>
-                        <span>总题型：{this.state.paper.length}</span>
-                        <span>总分：{this.state.paper.length}</span>
-                        <span>
-                          <span style={{marginRight:'6px'}}>及格线*</span>
-                          <InputNumber min={0} max={10} step={1} onChange={this.onChange} />
-                          <span style={{marginLeft:'6px'}}>%</span>
-
-                        </span>
-
-                        <span>（及格分60=总分100分*及格线60%）</span>
-                      </div>
-                    </div>
-
                   </div>
                 </div>
+              </div>
 
-                <div className="editbtn">
-                  <Button>预览试卷</Button>
-                  <Button type="primary">保存</Button>
+              {
+                this.props.randomArr.length>0 ?
+                <div className="editbtn" style={{width:'64px'}}>
+                  <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveRandomExam}>保存</Button>
                 </div>
+                :
+                <div className="editbtn" style={{width:'64px'}}>
+                  <Button type="primary" disabled>保存</Button>
+                </div>
+              }
 
 
               </div>
@@ -314,9 +392,37 @@ class RandomExamContainer extends React.Component {
     );
   }
 
-
-
 }
+
+const mapStateToProps = (state) => {
+  const {fixedTable, randomTable } = state;
+  const selectQuestionList = Object.keys(fixedTable);
+  const randomArr=[];
+
+  for (let i in randomTable) {
+    randomArr.push(randomTable[i]);
+  }
+
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    randomTable,
+    randomArr,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    },
+    setRandomTable: (data) => dispatch(setRandomTable(data))
+  }
+}
+
+const RandomExamContainer= connect(mapStateToProps,mapDispatchToProps)(RandomExamContainerReducer)
+
 
 
 export default class RandomExam extends React.Component {
@@ -328,16 +434,9 @@ export default class RandomExam extends React.Component {
 
   componentDidMount(){
     const that = this;
-
     $(window).resize(() => {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
-    })
-
-    $(document).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0
-      })
     })
   }
 
@@ -366,7 +465,7 @@ export default class RandomExam extends React.Component {
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <RandomExamContainer setShow={this.setShow} isShow={isShow}/>
+          <RandomExamContainer setShow={this.setShow} isShow={isShow} style={display}/>
 
           <SelectQuestion
             selectQuestionList={this.state.selectQuestionList}
