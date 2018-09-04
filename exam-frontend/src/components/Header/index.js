@@ -6,7 +6,7 @@ export default class Header extends React.Component {
   }
 
   componentDidMount() {
-    $(document).scroll(() => {
+    this.scroll = () => {
       const old = this.state.showShadow;
       const now = ($(window).height() !== $(document).height()) && $(document).scrollTop() > 0;
       if (old === now) {
@@ -16,9 +16,12 @@ export default class Header extends React.Component {
       this.setState({
         showShadow: now
       })
-    })
+    }
+    $(document).scroll(this.scroll)
   }
-
+  componentWillUnmount(){
+    $(document).unbind('scroll',this.scroll)
+  }
   render() {
     const { share } = this.props;
     const width = $(document).width() + 6 + 'px';

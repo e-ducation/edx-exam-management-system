@@ -124,7 +124,6 @@ class DragSortingTable extends React.Component {
   constructor(props) {
     super(props);
   }
-
   componentDidMount() {
 
   }
@@ -210,7 +209,7 @@ class DragSortingTable extends React.Component {
   moveRow = (dragIndex, hoverIndex) => {
     const  data  = this.props.fixHasNumArr;
     const dragRow = data[dragIndex];
-
+    console.log(dragIndex,hoverIndex)
 
     // this.setState(
     //   update(this.state, {
@@ -219,17 +218,28 @@ class DragSortingTable extends React.Component {
     //     },
     //   }),
     // );
-
-    update(this.props, {
-      fixHasNumArr: {
-        $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
-      },
+    const props = update(this.props, {
+        fixHasNumArr: {
+          $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
+        },
+      })
+    const arr = props.fixHasNumArr;
+    console.log(arr)
+    const table = {};
+    arr.map(item => {
+      table[item.problem_id] = item;
     })
+    this.props.setFixedTable(table);
+    // this.setState({
+
+    // })
+
 
   }
 
 
   showDeleteConfirm=(id)=>{
+    console.log(id)
     confirm({
       title: 'Are you sure delete this task?',
       content: 'Some descriptions',
@@ -239,12 +249,12 @@ class DragSortingTable extends React.Component {
       onOk:()=>{
         //删除并回推数据
         delete this.props.fixedTable[id];
-
+        console.log(this.props.fixedTable)
         this.props.setFixedTable(this.props.fixedTable);
 
       },
       onCancel:()=>{
-
+        console.log(231)
       },
     });
   }
@@ -294,7 +304,8 @@ class DragSortingTable extends React.Component {
       {
         width:'8.2%',
         title: '序号',
-        dataIndex:'sequence'
+        dataIndex:'sequence',
+        render: (index) => index + 1 < 10 ? '0' + (index+1) : index + 1
       },{
         width:'67.4%',
         title: '试题',
@@ -340,7 +351,7 @@ class DragSortingTable extends React.Component {
         title: '操作',
         render:(text,record)=>(
           <Tooltip title="删除">
-            <Icon type="delete" data-key={record.subjectdec} className="icon-red" style={{fontSize:'16px'}} onClick={this.showDeleteConfirm.bind(this,record.id)} />
+            <Icon type="delete" data-key={record.subjectdec} className="icon-red" style={{fontSize:'16px'}} onClick={this.showDeleteConfirm.bind(this,record.problem_id)} />
           </Tooltip>
         )
       }
@@ -416,6 +427,7 @@ class DragSortingTable extends React.Component {
               bordered
               className="editExam"
               size="small"
+              rowKey="problem_id"
               onRow={(record, index) => ({
                 index,
                 moveRow: this.moveRow,
@@ -445,7 +457,8 @@ const mapStateToProps = (state) => {
 
     item = {
       ...item,
-      sequence:index+1<10 ? '0'+(index+1):index+1
+      // sequence:index+1<10 ? '0'+(index+1):index+1
+      sequence: index,
     }
     fixHasNumArr.push(item)
   })

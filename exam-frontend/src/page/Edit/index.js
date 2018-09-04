@@ -36,7 +36,9 @@ class EditContainerReducer extends React.Component {
     super(props);
 
   }
-
+  componentWillMount(){
+    this.props.setFixedTable({})
+  }
   componentDidMount() {
     this.getExamPaper();
   }
@@ -198,14 +200,8 @@ class EditContainerReducer extends React.Component {
           }
         })
 
+        this.props.setFixedTable(fetchData);
         // 初始化结构
-        if (Object.keys(fixedTable).length === 0){
-          this.props.setFixedTable(fetchData);
-        } else {
-          // 非初始化结构
-          this.resetData(fetchData)
-        }
-
         this.setState({
           paperName:data.name,
           paperIns:data.description,
@@ -377,8 +373,9 @@ const mapStateToProps = (state) => {
 
     item = {
       ...item,
+      sequence: index,
       // number: index+1<10 ? 0+index:index
-      sequence:index+1<10 ? '0'+(index+1):index+1
+      // sequence:index+1<10 ? '0'+(index+1):index+1
     }
     fixHasNumArr.push(item)
   })
