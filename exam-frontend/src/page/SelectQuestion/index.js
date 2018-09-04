@@ -79,19 +79,6 @@ class SelectQuestion extends Component {
         }
       })
     })
-    let index = 1;
-    // eslint-disable-next-line
-    Object.keys(fetchData).map(key => {
-      if (fetchData[key].number !== undefined){
-        index = index > parseInt(fetchData[key].number, 0) ? index : parseInt(fetchData[key].number, 0)
-      }
-    })
-    Object.keys(fetchData).map(key => {
-      if (fetchData[key].number === undefined){
-        fetchData[key].number = index + 1 < 10 ? '0' + (index + 1) : index + 1;
-        index++;
-      }
-    })
     this.props.setFixedTable(fetchData);
   }
   // 获取课程列表
@@ -178,6 +165,7 @@ class SelectQuestion extends Component {
   onSelect = (selectedRowKeys) => {
     // 设置数据
     this.initData(selectedRowKeys);
+    console.log(this.props.randomTable);
   }
   sectionSelect = (selectedRowKeys) => {
     // this.setSta
