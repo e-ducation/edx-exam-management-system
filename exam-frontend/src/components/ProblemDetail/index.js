@@ -30,8 +30,8 @@ export default class ProblemDetail extends Component {
         title="查看题目"
         visible={this.state.visible}
         destroyOnClose={true}
-        onCancel={this.hideModal}
         width="600px"
+        footer={[<Button key="cancel" type="primary" onClick={this.hideModal}>确定</Button>]}
       >
         {
           loading ?
@@ -87,15 +87,12 @@ export default class ProblemDetail extends Component {
                             :
                               null
                           }
-
-                          <p>
                           {
                             item.content.additional_answer ?
                               <div style={{color:'#2E313C', marginBottom:'10px'}}>备选答案2 :{item.content.additional_answer}</div>
                             :
                               null
                           }
-                          </p>
                         </div>
 
                       default:
@@ -104,10 +101,16 @@ export default class ProblemDetail extends Component {
                   })()
                 }
               </div>
-              <p className="preview-title" style={{margin:'30px 0 0 0'}}>
-                <span className="preview-type">[答案解析]</span>
-                {item.content.solution}
-              </p>
+              {
+                item.content.solution ?
+                  <p className="preview-title" style={{margin:'30px 0 0 0'}}>
+                    <span className="preview-type">[答案解析]</span>
+                    {item.content.solution}
+                  </p>
+                :
+                  null
+              }
+
             </div>
         }
       </Modal>
