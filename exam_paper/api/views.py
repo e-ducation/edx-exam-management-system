@@ -326,7 +326,33 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
     def create(self, request, *args, **kwargs):
         request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
-
+        rules = request.data['subject']
+        new_rules = []
+        for rule in rules:
+            new_rules += [
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'choiceresponse',
+                    'problem_num': rule['choiceresponseNumber'],
+                    'grade': rule['choiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'multiplechoiceresponse',
+                    'problem_num': rule['multiplechoiceresponseNumber'],
+                    'grade': rule['multiplechoiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'stringresponse',
+                    'problem_num': rule['stringresponseNumber'],
+                    'grade': rule['stringresponseGrade']
+                },
+            ]
+        request.data['rules'] = new_rules
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -334,9 +360,6 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
         return Response(response_format(serializer.data),
                         status=status.HTTP_201_CREATED,
                         headers=headers)
-
-        response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
-        return response
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
