@@ -57,7 +57,7 @@ export default class FixedQustion extends Component{
   }
   // 章节选择
   handleCMenuClick = (v) => {
-    console.log(v)
+    // console.log(v)
     this.setState({
       activeChapter: v.key,
       activeChapterName: v.item.props.children,
@@ -67,7 +67,7 @@ export default class FixedQustion extends Component{
     });
   }
   handleSearch = (e) => {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     this.setState({
       keySearch: e.target.value,
       page: 1,
@@ -99,7 +99,7 @@ export default class FixedQustion extends Component{
           selectedRowKeys,
         });
         this.props.countType(selectedRowKeys)
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+        // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({
         disabled: record.name === 'Disabled User', // Column configuration not to be checked

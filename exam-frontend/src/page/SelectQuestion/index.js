@@ -71,14 +71,19 @@ class SelectQuestion extends Component {
     const { fixedTable } = this.props;// 历史数据
     // 查找还存在的历史数据
     // eslint-disable-next-line
-    Object.keys(fetchData).map(id => {
-      // eslint-disable-next-line
-      Object.keys(fixedTable).map(key => {
-        if(id === key){
-          fetchData[key] = fixedTable[key];
-        }
-      })
+    Object.keys(fixedTable).map(key => {
+      if(fetchData[key] != undefined){
+        fetchData[key] = fixedTable[key];
+      }
     })
+    // Object.keys(fetchData).map(id => {
+    //   // eslint-disable-next-line
+    //   Object.keys(fixedTable).map(key => {
+    //     if(id === key){
+    //       fetchData[key] = fixedTable[key];
+    //     }
+    //   })
+    // })
     this.props.setFixedTable(fetchData);
   }
   // 获取课程列表
@@ -205,7 +210,7 @@ class SelectQuestion extends Component {
   }
   render() {
     const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
-    const { paperType, selectQuestionList} = this.props;
+    const { paperType, selectQuestionList, selectSectionList} = this.props;
     return (
       <div style={this.props.style}>
         <div className="qs-container">
@@ -252,6 +257,7 @@ class SelectQuestion extends Component {
                 />
               :
               <RandomQuestion
+                selectedRowKeys={selectSectionList}
                 ref={node => this.random = node}
                 loading={randomLoading}
                 activeCourse={activeCourse} // 选中的课程ID
@@ -301,8 +307,10 @@ class SelectQuestion extends Component {
 const mapStateToProps = (state) => {
   const { fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
+  const selectSectionList = randomTable.map(data => data.id);
   return {
     selectQuestionList,
+    selectSectionList,
     fixedTable,
     randomTable,
   }
