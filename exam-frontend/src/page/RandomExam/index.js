@@ -48,13 +48,14 @@ class RandomExamContainerReducer extends React.Component {
     else{
       axios.get('/api/exampapers/random/'+id+'/')
       .then(res=>{
-        console.log(res.data.data);
+
         let data= res.data.data;
         this.setState({
           paperName:data.name,
           paperIns:data.description,
           paperpass:data.passing_ratio,
         })
+
 
       })
       .catch(error=>{
@@ -115,12 +116,12 @@ class RandomExamContainerReducer extends React.Component {
     })
 
     this.props.setRandomTable(this.props.randomTable);
-    console.log(this.props.randomTable);
+
   }
 
   //抽取分数
   onChangeGrade=(e,id,type)=>{
-    console.log(e);
+
     this.props.randomTable.map(item=>{
       if(item.id===id&&type==='multiplechoiceresponse'){
         item.multiplechoiceresponseGrade=e
