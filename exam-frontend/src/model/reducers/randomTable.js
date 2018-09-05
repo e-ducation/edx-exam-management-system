@@ -1,10 +1,10 @@
 import { SET_RANDOM_TABLE } from '../action/actionType';
-const table = (state = {}, action) => {
+const table = (state = [], action) => {
   switch (action.type) {
     case SET_RANDOM_TABLE:
-      return {
+      return [
         ...action.data
-      }
+      ]
     default:
       return{
         ...state
