@@ -25,7 +25,7 @@ class HomeContainer extends React.Component {
         const res = response.data;
         if (res.status === 0){
           that.setState({
-            username: res.data.username,
+            username: res.data.username || res.data.name || res.data.email,
           })
         } else {
           message.error('请求失败')
