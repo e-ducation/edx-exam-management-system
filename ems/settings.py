@@ -188,8 +188,8 @@ CORS_ALLOW_HEADERS = (
 )
 
 SWAGGER_SETTINGS = {
-    'LOGIN_URL': '/login',
-    'LOGOUT_URL': '/logout',
+    'LOGIN_URL': '/login/',
+    'LOGOUT_URL': '/logout/',
 
 }
 
