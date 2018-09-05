@@ -44,7 +44,6 @@ class SelectQuestion extends Component {
       const fetchData = {}
       const list = res.data.data;
       // eslint-disable-next-line
-
       list.map((item,index) => {
         const { id, type , ...content } = item;
         fetchData[id] = {
@@ -72,7 +71,7 @@ class SelectQuestion extends Component {
     // 查找还存在的历史数据
     // eslint-disable-next-line
     Object.keys(fixedTable).map(key => {
-      if(fetchData[key] != undefined){
+      if(fetchData[key] !== undefined){
         fetchData[key] = fixedTable[key];
       }
     })
@@ -155,6 +154,7 @@ class SelectQuestion extends Component {
         choiceresponse: 0,
         stringresponse: 0,
       }
+      // eslint-disable-next-line
       list.map(data => {
         counting[data.type]++;
       })
@@ -178,12 +178,13 @@ class SelectQuestion extends Component {
   sectionSelect = (selectedRowKeys) => {
 
     //如果一开始为空的情况下
-    if(Object.keys(this.props.randomTable).length==0){
+    if(Object.keys(this.props.randomTable).length === 0){
       axios.post('/api/sections/problems/count/',{
         section_ids:selectedRowKeys
       })
       .then(res=>{
         const list = res.data.data;
+        // eslint-disable-next-line
         list.map(item=>{
           item["multiplechoiceresponseGrade"]=1;
           item["multiplechoiceresponseNumber"]=0;
@@ -208,6 +209,7 @@ class SelectQuestion extends Component {
       })
       .then(res=>{
         const list = res.data.data;
+        // eslint-disable-next-line
         list.map(item=>{
           item["multiplechoiceresponseGrade"]=1;
           item["multiplechoiceresponseNumber"]=0;
@@ -216,10 +218,10 @@ class SelectQuestion extends Component {
           item["stringresponseGrade"]=1;
           item["stringresponseNumber"]=0;
         });
-
         //利用新数据去遍历
+        // eslint-disable-next-line
         list.map((item,index)=>{
-
+          // eslint-disable-next-line
           this.props.randomTable.map((oldItem,index) => {
             if(item.id === oldItem.id){
               list[index] = this.props.randomTable[index];
@@ -249,7 +251,7 @@ class SelectQuestion extends Component {
     this.setState({
       quesitonLoading: true,
     })
-    const block = params.block_id == undefined ? activeCourse : params.block_id;
+    const block = params.block_id === undefined ? activeCourse : params.block_id;
     axios.get(`/api/xblocks/${block}/problems/`, {
         params,
       })
@@ -301,7 +303,7 @@ class SelectQuestion extends Component {
           <div className="main">
             <div className="course-name">大数据分析</div>
             {
-              paperType == 'fixed' ?
+              paperType === 'fixed' ?
               // 固定出题
               <FixedQuestion
                 selectedRowKeys={selectQuestionList}
@@ -347,7 +349,7 @@ class SelectQuestion extends Component {
             </div>
             <div style={{padding: '10px',textAlign: 'center'}}>
               {
-                paperType == 'fixed' ?
+                paperType === 'fixed' ?
                 <Button type="primary" onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
                   选好了
                 </Button>

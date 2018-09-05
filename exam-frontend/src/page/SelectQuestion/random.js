@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Button } from 'antd';
+import { Table } from 'antd';
 export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],
@@ -10,7 +10,7 @@ export default class RandomBlock extends Component {
     })
   }
   componentWillReceiveProps(nextProps) {
-    if( JSON.stringify(this.props.selectedRowKeys) != JSON.stringify(nextProps.selectedRowKeys)){
+    if( JSON.stringify(this.props.selectedRowKeys) !== JSON.stringify(nextProps.selectedRowKeys)){
       this.setState({
         selectedRowKeys: nextProps.selectedRowKeys,
       })
