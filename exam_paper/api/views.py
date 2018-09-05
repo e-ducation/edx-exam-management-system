@@ -54,7 +54,7 @@ search = openapi.Parameter(
     'search',
     openapi.IN_QUERY,
     description="search text",
-    type=openapi.TYPE_INTEGER
+    type=openapi.TYPE_STRING
 )
 problem_type = openapi.Parameter(
     'problem_type',
@@ -395,6 +395,7 @@ class CoursesListAPIView(APIView):
 
     @swagger_auto_schema(
         operation_description='get courses list',
+        manual_parameters=[search],
         responses={
             200: openapi.Schema(
                 title='response',
@@ -416,7 +417,13 @@ class CoursesListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSES']
-        rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params={
+                'title': request.query_params.get('search')
+            }
+        )
         return Response(response_format(rep.json()))
 
 
