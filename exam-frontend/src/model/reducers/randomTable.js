@@ -6,9 +6,9 @@ const table = (state = [], action) => {
         ...action.data
       ]
     default:
-      return{
+      return [
         ...state
-      }
+      ]
   }
 }
 export default table
