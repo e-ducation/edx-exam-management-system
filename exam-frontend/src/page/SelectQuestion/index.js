@@ -172,9 +172,68 @@ class SelectQuestion extends Component {
     this.initData(selectedRowKeys);
     console.log(this.props.randomTable);
   }
+
+
+  //随机抽题部分
   sectionSelect = (selectedRowKeys) => {
-    // this.setSta
-    this.props.setRandomTable(selectedRowKeys);
+
+    //如果一开始为空的情况下
+    if(Object.keys(this.props.randomTable).length==0){
+      axios.post('/api/sections/problems/count/',{
+        section_ids:selectedRowKeys
+      })
+      .then(res=>{
+        const list = res.data.data;
+        list.map(item=>{
+          item["multiplechoiceresponseGrade"]=1;
+          item["multiplechoiceresponseNumber"]=0;
+          item["choiceresponseGrade"]=1;
+          item["choiceresponseNumber"]=0;
+          item["stringresponseGrade"]=1;
+          item["stringresponseNumber"]=0;
+        })
+
+        this.props.setRandomTable(list);
+
+      })
+      .catch(reeor=>{
+
+      })
+
+    }
+    else{
+
+      axios.post('/api/sections/problems/count/',{
+        section_ids:selectedRowKeys
+      })
+      .then(res=>{
+        const list = res.data.data;
+        list.map(item=>{
+          item["multiplechoiceresponseGrade"]=1;
+          item["multiplechoiceresponseNumber"]=0;
+          item["choiceresponseGrade"]=1;
+          item["choiceresponseNumber"]=0;
+          item["stringresponseGrade"]=1;
+          item["stringresponseNumber"]=0;
+        });
+
+        //利用新数据去遍历
+        list.map((item,index)=>{
+
+          this.props.randomTable.map((oldItem,index) => {
+            if(item.id === oldItem.id){
+              list[index] = this.props.randomTable[index];
+            }
+          })
+        })
+        //输出
+        this.props.setRandomTable(list);
+
+      })
+      .catch(error=>{
+
+      })
+    }
   }
   // 切换课程
   changeCourse = (course) => {
