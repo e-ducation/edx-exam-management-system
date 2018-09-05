@@ -239,7 +239,7 @@ class DragSortingTable extends React.Component {
 
 
   showDeleteConfirm=(id)=>{
-    console.log(id)
+
     confirm({
       title: 'Are you sure delete this task?',
       content: 'Some descriptions',

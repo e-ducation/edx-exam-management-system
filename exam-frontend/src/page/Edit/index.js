@@ -4,6 +4,7 @@ import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,message} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import RandomExam from '../RandomExam';
 import './index.scss';
 import $ from "jquery";
 import axios from 'axios';
@@ -32,10 +33,6 @@ class EditContainerReducer extends React.Component {
     selectSectionList: []
   }
 
-  constructor(props) {
-    super(props);
-
-  }
   componentWillMount(){
     this.props.setFixedTable({})
   }
@@ -81,7 +78,7 @@ class EditContainerReducer extends React.Component {
 
     //是否有分值
     fixPaper.map(item=>{
-      if(item.grade == undefined){
+      if(item.grade === undefined){
         this.warningGrade();
         return false;
       }
@@ -96,7 +93,7 @@ class EditContainerReducer extends React.Component {
         saveVisible:true
       })
 
-      if(this.props.id==undefined){
+      if(this.props.id===undefined){
         axios.post('/api/exampapers/fixed/',{
           passing_ratio:this.state.paperpass,
           problems:fixPaper,
@@ -136,6 +133,7 @@ class EditContainerReducer extends React.Component {
           //跳转页面
 
           window.location.href="/#/manage";
+
         })
         .catch(error=>{
           //按钮可点击
@@ -178,7 +176,7 @@ class EditContainerReducer extends React.Component {
     let id = this.props.id
 
 
-    if(id==undefined){
+    if(id===undefined){
 
     }
     else{
@@ -186,7 +184,7 @@ class EditContainerReducer extends React.Component {
       axios.get('/api/exampapers/fixed/'+id+'/')
       .then(res=>{
         let data = res.data.data
-        const { fixedTable } = this.props;
+
         const fetchData = {}
 
         data.problems.map((item,index) => {
@@ -247,8 +245,6 @@ class EditContainerReducer extends React.Component {
     )
 
     let subLength = this.props.fixHasNumArr.length;
-
-    console.log(this.props.fixHasNumArr);
 
     return (
       <div style={this.props.style} className="displayFlx">
@@ -387,16 +383,18 @@ const mapStateToProps = (state) => {
     return sum;
   });
 
+  sum = sum.toFixed(2);
+
   let singleChioceNum=0;
   let mulChioceNum=0;
   let exericeChioceNum=0;
 
 
   fixHasNumArr.forEach(item=>{
-    if(item.problem_type=="choiceresponse"){
+    if(item.problem_type==="choiceresponse"){
       mulChioceNum++
     }
-    else if(item.problem_type=="multiplechoiceresponse"){
+    else if(item.problem_type==="multiplechoiceresponse"){
       singleChioceNum++
     }
     else{
@@ -437,6 +435,7 @@ export default class Edit extends React.Component {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
     isShow:false,
+    type:"fixed"
   }
 
   setShow=(isShow)=>{
@@ -455,6 +454,21 @@ export default class Edit extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
+
+    let id = this.props.match.params.id;
+
+    axios.get('/api/exampapers/fixed/'+id+'/')
+    .then(res=>{
+
+      this.setState({
+        type:res.data.data.create_type
+      })
+    })
+    .catch(res=>{
+
+    })
+
+
   }
 
 
@@ -476,16 +490,23 @@ export default class Edit extends React.Component {
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
 
-          <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
-          <SelectQuestion
-            selectQuestionList={this.state.selectQuestionList}
-            setShow={this.setShow}
-            setFixedList={this.setFixedList}
-            paperType="fixed" // random || fixed
-            style={selectdispaly}
-          />
+          {
+            this.state.type==="fixed" ?
+            <div>
+              <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
+              <SelectQuestion
+                selectQuestionList={this.state.selectQuestionList}
+                setShow={this.setShow}
+                setFixedList={this.setFixedList}
+                paperType="fixed" // random || fixed
+                style={selectdispaly}
+              />
+            </div>
+            :
+            <RandomExam/>
+          }
         </div>
         <Footer />
       </div>
