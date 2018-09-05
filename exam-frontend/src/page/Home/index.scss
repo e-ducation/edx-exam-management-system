@@ -1,12 +1,5 @@
 // 首页
-$blue: #0692e1;
-$red: #f5222d;
-$border: #E6E9ED;
-$font: #656D78;
-$title: #2E313C;
-$note: #AAB2BD;
-$blue_hover: #1da6f3;
-$blue_active: #1da6f3;
+@import '../../default.scss';
 .home{
     color: $font;
     .home-create{
@@ -19,6 +12,11 @@ $blue_active: #1da6f3;
       padding: 10px;
       border-radius: 5px;
       margin-right: 10px;
+      cursor: pointer;
+    }
+    .home-create:hover{
+      border: 1px solid $blue;
+      background: #ebf6fd;
     }
     .home-icon{
       font-size: 45px;
@@ -68,4 +66,10 @@ $blue_active: #1da6f3;
         line-height: 1.5;
       }
     }
+  }
+
+  .displayFlx{
+    width:'100%';
+    display:'flex';
+    display:'-webkit-flex';
   }

@@ -1,30 +1,57 @@
-import React, { Component } from 'react';
-import { Icon } from 'antd';
+import React from 'react';
+import { Icon, message } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import ChoosePaperType from '../../components/ChoosePaperType';
+import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
-class HomeContainer extends Component {
+class HomeContainer extends React.Component {
   state={
-
+    visible: false,
+    username: '',
   }
 
-  // constructor(props) {
-  //   super(props);
-  // }
-
   componentDidMount() {
+    // 获取用户信息
+    const that = this;
+    axios.get('/api/user/info/')
+      .then(function (response) {
+        const res = response.data;
+        console.log(res)
+        if (res.status === 0){
+          that.setState({
+            username: res.data.username,
+          })
+        } else {
+          message.error('请求失败')
+        }
+      })
+      .catch(function (error) {
+        message.error('请求失败')
+      });
+  }
+
+  showModal = () => {
+    this.setState({
+      visible: true,
+    })
+  }
+
+  hideModal = () =>{
+    this.setState({
+      visible: false,
+    })
   }
 
   render() {
     return (
-      // eslint-disable-next-line
-      <div style={{width:'100%',display:'flex',display:'-webkit-flex'}}>
+      <div className="displayFlx">
         <Sidebar active="home" />
         <div className="text-right-left home">
-          <p style={{ margin: '10px 0 20px'}}>叶文洁，欢迎来到【公司名】考试管理系统，您可以在这里管理您的试卷和发布考试任务。</p>
-          <div className="home-create">
+          <p style={{ margin: '10px 0 20px'}}>{this.state.username}，欢迎来到考试管理系统，您可以在这里管理您的试卷和发布考试任务。</p>
+          <div className="home-create" onClick={this.showModal}>
             <Icon type="edit" className="home-icon" style={{color:'#37c591'}}/>
             <div>我要创建试卷</div>
           </div>
@@ -62,9 +89,10 @@ class HomeContainer extends Component {
             <div className="home-guide">
               <span>4</span>
               <h3>查看考试数据</h3>
-              <p>福克斯的弗兰克的酸辣粉</p>
+              <p>考试结束后，可以在考试任务的统计功能中查看本场考试的统计数据和考生的答卷</p>
             </div>
           </div>
+          <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
         </div>
       </div>
     );
@@ -77,7 +105,6 @@ class HomeContainer extends Component {
 export default class Home extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-    showShadow: false,
   }
 
   componentDidMount(){
@@ -88,19 +115,13 @@ export default class Home extends React.Component {
       that.setState({ height })
     })
 
-    $(document.body).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
-      })
-    })
-
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        <Header />
         <div className="container" style={containerHeight}>
           <HomeContainer />
         </div>

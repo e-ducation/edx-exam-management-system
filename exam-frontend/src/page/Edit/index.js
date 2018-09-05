@@ -1,241 +1,46 @@
 import React from 'react';
-import { Input,Button,Table,Breadcrumb,Tooltip,Icon} from 'antd';
-import { DragDropContext, DragSource, DropTarget } from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
-import update from 'immutability-helper';
+import { connect } from 'react-redux'
+import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,message} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
 import './index.scss';
 import $ from "jquery";
+import axios from 'axios';
+
+import SelectQuestion from '../SelectQuestion'
+
+import MoveTable from './moveTable'
+import { setFixedTable } from '../../model/action'
+
+
+// const RadioGroup = Radio.Group;
 const { TextArea } = Input;
 
 
-function dragDirection(
-  dragIndex,
-  hoverIndex,
-  initialClientOffset,
-  clientOffset,
-  sourceClientOffset,
-) {
-  const hoverMiddleY = (initialClientOffset.y - sourceClientOffset.y) / 2;
-  const hoverClientY = clientOffset.y - sourceClientOffset.y;
-  if (dragIndex < hoverIndex && hoverClientY > hoverMiddleY) {
-    return 'downward';
-  }
-  if (dragIndex > hoverIndex && hoverClientY < hoverMiddleY) {
-    return 'upward';
-  }
-}
 
-class BodyRow extends React.Component {
-  render() {
-    const {
-      isOver,
-      connectDragSource,
-      connectDropTarget,
-      moveRow,
-      dragRow,
-      clientOffset,
-      sourceClientOffset,
-      initialClientOffset,
-      ...restProps
-    } = this.props;
-    const style = { ...restProps.style, cursor: 'move' };
-
-    let className = restProps.className;
-    if (isOver && initialClientOffset) {
-      const direction = dragDirection(
-        dragRow.index,
-        restProps.index,
-        initialClientOffset,
-        clientOffset,
-        sourceClientOffset
-      );
-      if (direction === 'downward') {
-        className += ' drop-over-downward';
-      }
-      if (direction === 'upward') {
-        className += ' drop-over-upward';
-      }
-    }
-
-    return connectDragSource(
-      connectDropTarget(
-        <tr
-          {...restProps}
-          className={className}
-          style={style}
-        />
-      )
-    );
-  }
-}
-
-const rowSource = {
-  beginDrag(props) {
-    return {
-      index: props.index,
-    };
-  },
-};
-
-const rowTarget = {
-  drop(props, monitor) {
-    const dragIndex = monitor.getItem().index;
-    const hoverIndex = props.index;
-
-    // Don't replace items with themselves
-    if (dragIndex === hoverIndex) {
-      return;
-    }
-
-    // Time to actually perform the action
-    props.moveRow(dragIndex, hoverIndex);
-
-    // Note: we're mutating the monitor item here!
-    // Generally it's better to avoid mutations,
-    // but it's good here for the sake of performance
-    // to avoid expensive index searches.
-    monitor.getItem().index = hoverIndex;
-  },
-};
-
-const DragableBodyRow = DropTarget('row', rowTarget, (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  sourceClientOffset: monitor.getSourceClientOffset(),
-}))(
-  DragSource('row', rowSource, (connect, monitor) => ({
-    connectDragSource: connect.dragSource(),
-    dragRow: monitor.getItem(),
-    clientOffset: monitor.getClientOffset(),
-    initialClientOffset: monitor.getInitialClientOffset(),
-  }))(BodyRow)
-);
-
-const columns = [
-  {
-    width:'8.2%',
-    title: '序号',
-    dataIndex: 'index'
-  },{
-    width:'67.4%',
-    title: '试题',
-    dataIndex: 'subjectdec'
-  },{
-    width:'8.2%',
-    title: '题型',
-    dataIndex: 'type'
-  },{
-    width:'8.6%',
-    title: '分值',
-    dataIndex: 'score',
-    render:(record)=>(
-      <div className="inputBox">
-        <div className="inputLeft">
-          <Input type="text" />
-        </div>
-        <div className="inputRight">
-          <div><Icon type="up" /></div>
-          <div><Icon type="down" /></div>
-        </div>
-      </div>
-    )
-  },{
-    width:'7.6%',
-    title: '操作',
-    dataIndex: 'operate',
-    render:(record)=>(
-      <Tooltip title="删除">
-        <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
-      </Tooltip>
-    )
-  }
-];
-
-class DragSortingTable extends React.Component {
-  state = {
-    data: [
-      // {index:'01',subjectdec:'你好',type:'选择题'}
-    ],
-  }
-
-  components = {
-    body: {
-      row: DragableBodyRow,
-    },
-  }
-
-  moveRow = (dragIndex, hoverIndex) => {
-    const { data } = this.state;
-    const dragRow = data[dragIndex];
-
-    this.setState(
-      update(this.state, {
-        data: {
-          $splice: [[dragIndex, 1], [hoverIndex, 0, dragRow]],
-        },
-      }),
-    );
-  }
-
-  render() {
-    return (
-      <div>
-        <div style={{marginBottom:'10px'}}>
-          <Button type="primary">添加试题</Button>
-          {
-            this.state.data.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
-            :
-              <Button type="primary" style={{marginLeft:'10px'}}>批量设置分值</Button>
-          }
-        </div>
-        {
-          this.state.data.length === 0 ?
-            <div className="examnodata">
-              <image src="" />
-              <p>暂无数据</p>
-            </div>
-          :
-
-            <Table
-              columns={columns}
-              dataSource={this.state.data}
-              components={this.components}
-              pagination={false}
-              bordered
-              className="editExam"
-              size="small"
-              onRow={(record, index) => ({
-                index,
-                moveRow: this.moveRow,
-              })}
-            />
-
-        }
-      </div>
-    );
-  }
-}
-
-const MoveTable = DragDropContext(HTML5Backend)(DragSortingTable);
-
-
-class EditContainer extends React.Component {
+class EditContainerReducer extends React.Component {
   state={
-    paperName:"这是试卷名称",
-    paperIns:"这是试卷说明",
+    paperName:"",
+    paperInsLength:0,
+    paperIns:"",
     paper:[],
-    paperpass:60
+    paperpass:60,
+    saveVisible:false,
+    selectQuestionList: [],
+    paperType: '',
+    selectSectionList: []
   }
 
-  // constructor(props) {
-  //   super(props);
-  // }
+  constructor(props) {
+    super(props);
 
+  }
+  componentWillMount(){
+    this.props.setFixedTable({})
+  }
   componentDidMount() {
+    this.getExamPaper();
   }
 
   //修改试卷名称
@@ -248,13 +53,14 @@ class EditContainer extends React.Component {
   //修改试卷说明
   onChangePaperIns=(e)=>{
     this.setState({
-      paperIns:e.target.value
+      paperIns:e.target.value,
+      paperInsLength:e.target.value.length
     })
   }
   //修改及格线数值
   onChangePass=(e)=>{
     this.setState({
-      paperpass:e.target.value || 1
+      paperpass:e
     })
   }
   //keyup事件
@@ -266,36 +72,186 @@ class EditContainer extends React.Component {
       paperpass:value
     })
   }
-  //增加及格线数值
-  paperpassAdd=(value)=>{
-    value>=100 ? value=100 :
-    this.setState({
-      paperpass:value+=1
+  //保存固定试题
+  saveFixExam=()=>{
+
+    let {paperName,paperIns} = this.state;
+
+    let fixPaper = this.props.fixHasNumArr;
+
+    //是否有分值
+    fixPaper.map(item=>{
+      if(item.grade == undefined){
+        this.warningGrade();
+        return false;
+      }
     })
-  }
-  //减少及格线数值
-  paperpassReduce=(value)=>{
-    if(this.state.paperpass<=1){
-      this.setState({
-        paperpass:1
-      })
+    //试卷名称是否填写
+    if(paperName===""){
+      this.warning();
     }
     else{
+      //设置按钮不可点击
       this.setState({
-        paperpass:value-=1
+        saveVisible:true
       })
+
+      if(this.props.id==undefined){
+        axios.post('/api/exampapers/fixed/',{
+          passing_ratio:this.state.paperpass,
+          problems:fixPaper,
+          name:paperName,
+          description:paperIns
+        })
+        .then(res=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //跳转页面
+
+          window.location.href="/#/manage";
+        })
+        .catch(error=>{
+           //按钮可点击
+           this.setState({
+            saveVisible:true
+          })
+          //提示错误
+          message.warning('This is message of warning');
+        })
+      }
+      else{
+        axios.put('/api/exampapers/fixed/'+this.props.id+'/',{
+          passing_ratio:this.state.paperpass,
+          problems:fixPaper,
+          name:paperName,
+          description:paperIns
+        })
+        .then(res=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //跳转页面
+
+          window.location.href="/#/manage";
+        })
+        .catch(error=>{
+          //按钮可点击
+          this.setState({
+            saveVisible:true
+          })
+          //提示错误
+          message.warning('This is message of warning');
+       })
+      }
+
     }
   }
 
+  warning=()=>{
+    Modal.warning({
+      title: '提示',
+      content: '试卷名称不能为空！',
+    });
+  }
 
+  warningGrade=()=>{
+    Modal.warning({
+      title: '提示',
+      content: '分值不能为空！',
+    });
+  }
+
+  isShow = (isShow) => {
+
+    this.props.isShow(isShow)
+
+  }
+
+  //编辑试卷，获取信息
+
+  getExamPaper=()=>{
+
+
+    let id = this.props.id
+
+
+    if(id==undefined){
+
+    }
+    else{
+
+      axios.get('/api/exampapers/fixed/'+id+'/')
+      .then(res=>{
+        let data = res.data.data
+        const { fixedTable } = this.props;
+        const fetchData = {}
+
+        data.problems.map((item,index) => {
+          const { problem_id, problem_type , content } = item;
+          fetchData[problem_id] = {
+            grade: 1,
+            title: item.content.title,
+            problem_type: problem_type,
+            problem_id: problem_id,
+            content,
+          }
+        })
+
+        this.props.setFixedTable(fetchData);
+        // 初始化结构
+        this.setState({
+          paperName:data.name,
+          paperIns:data.description,
+          paperpass:data.passing_ratio
+        })
+
+      })
+      .catch(error=>{
+        message.error('请求失败')
+      })
+    }
+
+  }
+
+  //预览试卷
+  seeExamPaper=()=>{
+
+    var data={
+      passing_grade:(this.state.paperpass*this.props.sum)*0.01,
+      name:this.state.paperName,
+      description:this.state.paperIns,
+      problems:this.props.fixHasNumArr,
+      total_grade:this.props.sum,
+      total_problem_num:this.props.fixHasNumArr.length
+    }
+
+    localStorage.clear();
+
+    localStorage.setItem("paper",JSON.stringify(data))
+
+    window.open("http://localhost:3000/#/preview/storage");
+  }
 
   render() {
+
+
     const inputStyle={
       width:'468px'
     }
 
+    const Length = (
+      <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
+    )
+
+    let subLength = this.props.fixHasNumArr.length;
+
+    console.log(this.props.fixHasNumArr);
+
     return (
-      <div className="displayFlx">
+      <div style={this.props.style} className="displayFlx">
         <Sidebar/>
         <div className="text-right-left">
 
@@ -318,28 +274,35 @@ class EditContainer extends React.Component {
 
           <div className="edit-box">
             <div className="label-box">
-              <div>试卷说明</div>
+              <div>试卷名称*</div>
               <div>
                 <Input placeholder="请输入1-50个字符的名称"
                 onChange={this.onChangePaperName}
                 value={this.state.paperName}
-                style={inputStyle}/>
+                style={inputStyle}
+                maxLength="50"
+                />
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'14px'}}>试卷名称*</div>
+              <div style={{lineHeight:'14px'}}>试卷说明</div>
               <div>
-                <TextArea placeholder="请输入试卷说明"
-                autosize={{ minRows: 4, maxRows: 6 }}
-                onChange={this.onChangePaperIns}
-                style={inputStyle}/>
+                <div style={{position:"relative",width:'468px'}}>
+                  <TextArea placeholder="请输入试卷说明"
+                  autosize={{ minRows: 3, maxRows: 6 }}
+                  onChange={this.onChangePaperIns}
+                  style={{ width:'468px',paddingBottom:'20px'}}
+                  maxLength="500"
+                  value={this.state.paperIns}/>
+                  { Length }
+                </div>
               </div>
             </div>
             <div className="label-box">
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
 
-                <MoveTable />
+                <MoveTable setShow={this.props.setShow}/>
 
                 <div>
                   <div className="total">
@@ -347,34 +310,24 @@ class EditContainer extends React.Component {
                         <span className="first-span">题型</span>
                         <span>单选题</span>
                         <span>多选题</span>
-                        <span>判断题</span>
                         <span>填空题</span>
                     </div>
                     <div className="total-block">
                         <span className="first-span">已选数量</span>
-                        <span className="number">25</span>
-                        <span className="number">30</span>
-                        <span className="number">40</span>
-                        <span className="number">44</span>
+                        <span className="number">{this.props.singleChioceNum}</span>
+                        <span className="number">{this.props.mulChioceNum}</span>
+                        <span className="number">{this.props.exericeChioceNum}</span>
                     </div>
                     <div className="pass-per">
                       <div>
-                        <span>总题型：{this.state.paper.length}</span>
-                        <span>总分：{this.state.paper.length}</span>
-                        <span>及格线*：
-                        <span style={{float: 'right'}}>%</span>
-                          <div className="inputBox">
-                            <div className="inputLeft">
+                        <span>总题数：{subLength}</span>
+                        <span>总分：{this.props.sum}</span>
+                        <span>
+                          <span style={{marginRight:'6px'}}>及格线*</span>
+                          <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
+                          <span style={{marginLeft:'6px'}}>%</span>
 
-                              <Input value={this.state.paperpass} type="text" onKeyUp={this.inputNumberPass} onChange={this.onChangePass}/>
-                            </div>
-                            <div className="inputRight">
-                              <div onClick={this.paperpassAdd.bind(this,this.state.paperpass)}><Icon type="up" /></div>
-                              <div onClick={this.paperpassReduce.bind(this,this.state.paperpass)}><Icon type="down" /></div>
-                            </div>
-                          </div>
                         </span>
-
                         <span>（及格分60=总分100分*及格线60%）</span>
                       </div>
                     </div>
@@ -382,15 +335,21 @@ class EditContainer extends React.Component {
                   </div>
                 </div>
 
-
-
+                {/* 是否可以预览以及保存，保存提交方法saveFixExam */}
+                {
+                  this.props.fixHasNumArr.length>0 ?
+                  <div className="editbtn">
+                    <Button onClick={this.seeExamPaper}>预览试卷</Button>
+                    <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
+                  </div>
+                  :
+                  <div className="editbtn">
+                    <Button disabled>预览试卷</Button>
+                    <Button type="primary" disabled>保存</Button>
+                    </div>
+                }
 
               </div>
-
-
-
-
-
 
             </div>
           </div>
@@ -399,17 +358,95 @@ class EditContainer extends React.Component {
       </div>
     );
   }
-
-
-
 }
+
+
+const mapStateToProps = (state) => {
+  const { fixedTable } = state;
+
+  const selectQuestionList = Object.keys(fixedTable);
+  const fixArr = Object.keys(fixedTable).map(key=>fixedTable[key]);
+
+  const fixHasNumArr=[]
+
+  fixArr.forEach((item,index)=>{
+
+    item = {
+      ...item,
+      sequence: index,
+      // number: index+1<10 ? 0+index:index
+      // sequence:index+1<10 ? '0'+(index+1):index+1
+    }
+    fixHasNumArr.push(item)
+  })
+
+  let sum =0;
+
+  fixHasNumArr.map(item=>{
+    sum+=item.grade;
+    return sum;
+  });
+
+  let singleChioceNum=0;
+  let mulChioceNum=0;
+  let exericeChioceNum=0;
+
+
+  fixHasNumArr.forEach(item=>{
+    if(item.problem_type=="choiceresponse"){
+      mulChioceNum++
+    }
+    else if(item.problem_type=="multiplechoiceresponse"){
+      singleChioceNum++
+    }
+    else{
+      exericeChioceNum++
+    }
+  })
+
+  return {
+    selectQuestionList,
+    fixedTable,
+    fixHasNumArr,
+    sum,
+    mulChioceNum,
+    singleChioceNum,
+    exericeChioceNum,
+  }
+}
+
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    setFixedTable: (data) => {
+      dispatch(setFixedTable(data))
+    }
+  }
+}
+
+const EditContainer = connect(mapStateToProps,mapDispatchToProps)(EditContainerReducer)
+
+
+
+
+
+
 
 
 export default class Edit extends React.Component {
   state = {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
+    isShow:false,
   }
+
+  setShow=(isShow)=>{
+
+    this.setState({
+      isShow,
+    })
+
+  }
+
 
   componentDidMount(){
     const that = this;
@@ -418,21 +455,37 @@ export default class Edit extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
-
-    $(document.body).scroll(() => {
-      this.setState({
-        showShadow: ($(window).height() !== $(document).height()) && $(document.body).scrollTop() > 0
-      })
-    })
   }
 
+
   render() {
-    const containerHeight = { minHeight: this.state.height - 180 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const {isShow} = this.state;
+
+    const display = {
+      display:isShow ? 'none':'flex'
+    }
+
+    const selectdispaly = {
+      display:isShow ? 'block':'none',
+      width: '100%',
+    }
+
     return (
       <div>
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
-          <EditContainer />
+
+          <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
+
+          <SelectQuestion
+            selectQuestionList={this.state.selectQuestionList}
+            setShow={this.setShow}
+            setFixedList={this.setFixedList}
+            paperType="fixed" // random || fixed
+            style={selectdispaly}
+          />
+
         </div>
         <Footer />
       </div>
