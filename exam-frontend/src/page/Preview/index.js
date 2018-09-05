@@ -47,7 +47,6 @@ class PreviewContainer extends React.Component{
     const that = this;
     if (id === 'storage'){
       const { description, name, passing_grade, problems, total_grade, total_problem_num} = JSON.parse(localStorage.getItem('paper'));
-
       this.setState({
         description,
         name,
@@ -185,9 +184,10 @@ class PreviewContainer extends React.Component{
                                   }
                                 </Checkbox.Group>;
 
-                              case 'fill':
+                              case 'stringresponse':
                                 return <div>
                                   {
+                                    /*
                                     item.input.map((answer, index) => {
                                       return <div style={(index !== item.input.length - 1) ? { marginBottom: '20px'} : {} }>
                                         <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
@@ -197,7 +197,13 @@ class PreviewContainer extends React.Component{
                                         />
                                       </div>
                                     })
+                                    */
                                   }
+                                  <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
+                                  <Input.TextArea
+                                    autosize={{ minRows: 1, maxRows: 6 }}
+                                    style={{ width: '400px', display:'inline-block', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                  />
                                 </div>
 
                               default:

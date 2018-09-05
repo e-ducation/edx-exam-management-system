@@ -48,6 +48,10 @@ class ManageContainer extends React.Component {
           that.searchAjax = c
         })
       }).then(function (response) {
+          if (response.status === 403){
+            window.location.href = '/login/';
+            return false;
+          }
           const res = response.data;
           if (res.status === 0){
             // 给list添加key
@@ -280,7 +284,7 @@ class ManageContainer extends React.Component {
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>暂无试卷</div></div> }}
+            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} alt="" /><div>暂无试卷</div></div> }}
           />
           {
             this.state.list.length === 0 ?

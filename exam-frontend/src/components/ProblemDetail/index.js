@@ -1,5 +1,5 @@
 import React,{ Component } from 'react';
-import { Modal, Radio, Checkbox, Input, Spin, Button } from 'antd';
+import { Modal, Radio, Checkbox, Spin, Button } from 'antd';
 import './index.scss';
 export default class ProblemDetail extends Component {
   state = {
