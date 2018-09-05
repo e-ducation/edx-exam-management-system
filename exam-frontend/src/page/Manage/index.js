@@ -284,7 +284,7 @@ class ManageContainer extends React.Component {
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>暂无试卷</div></div> }}
+            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} alt="" /><div>暂无试卷</div></div> }}
           />
           {
             this.state.list.length === 0 ?
