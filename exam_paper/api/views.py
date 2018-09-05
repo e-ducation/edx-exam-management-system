@@ -33,7 +33,7 @@ from exam_paper.api.serializers import (
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
 )
-from exam_paper.models import ExamPaper
+from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE
 from exam_paper.utils import response_format
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -54,6 +54,12 @@ search = openapi.Parameter(
     'search',
     openapi.IN_QUERY,
     description="search text",
+    type=openapi.TYPE_INTEGER
+)
+problem_type = openapi.Parameter(
+    'problem_type',
+    openapi.IN_QUERY,
+    description="problem type filter ",
     type=openapi.TYPE_INTEGER
 )
 section_id = openapi.Parameter(
@@ -233,7 +239,7 @@ class ExamPaperFixedCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateMo
 
     @swagger_auto_schema(request_body=fix_exampaper)
     def create(self, request, *args, **kwargs):
-        request.data['create_type'] = "fixed"
+        request.data['create_type'] = PAPER_CREATE_TYPE[0][0]
         request.data['creator'] = request.user.id
 
         serializer = self.get_serializer(data=request.data)
@@ -250,6 +256,10 @@ class ExamPaperFixedCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateMo
     @swagger_auto_schema(request_body=fix_exampaper)
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
+
+        request.data['create_type'] = PAPER_CREATE_TYPE[0][0]
+        request.data['creator'] = request.user.id
+
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -314,7 +324,7 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
         return ExamPaper.objects.filter(creator=user)
 
     def create(self, request, *args, **kwargs):
-        request.data['create_type'] = "random"
+        request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
 
         serializer = self.get_serializer(data=request.data)
@@ -339,6 +349,10 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
+
+        request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
+        request.data['creator'] = request.user.id
+
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
@@ -433,7 +447,7 @@ class BlocksProblemsListAPIView(APIView):
 
     @swagger_auto_schema(
         operation_description='get courses problem list',
-        manual_parameters=[page, page_size, search],
+        manual_parameters=[page, page_size, search, problem_type],
         responses={
             200: openapi.Schema(
                 title='response',
@@ -473,7 +487,7 @@ class BlocksProblemsListAPIView(APIView):
         payload = {
             'block_id': block_id,
             'text': request.query_params.get('search', ''),
-            # 'problem_type': request.query_params.get('problem_type', ''),
+            'problem_type': request.query_params.get('problem_type', None),
             'page': request.query_params.get('page'),
             'page_size': request.query_params.get('page_size'),
         }
@@ -563,18 +577,37 @@ class SectionProblemTypeCountView(APIView):
     authentication_classes = (SessionAuthentication, )
     permission_classes = (IsAuthenticated, )
 
-    @swagger_auto_schema(operation_description='get section problem type count')
-    def get(self, request, section_id, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_description='get section problem type count',
+        request_body=openapi.Schema(
+            title='body',
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'section_ids': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        example=''
+                    )
+                )
+            }
+        ),
+    )
+    def post(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
+
+        section_ids = request.data.get('section_ids')
+
         url = settings.EDX_API['HOST'] + settings.EDX_API['SECTION_PROBLEM_TYPE_COUNT']
-        rep = requests.get(
+        rep = requests.post(
             url,
             headers={'Authorization': 'Bearer ' + token},
-            param={'section_id': section_id}
+            json={'section_id': section_ids}
         )
         return Response(response_format(rep.json()))
 
-class GetUserInfo(APIView):
+
+class UserInfoView(APIView):
     """
     获取用户信息
     """
@@ -583,9 +616,9 @@ class GetUserInfo(APIView):
 
     @swagger_auto_schema(operation_description='get user info')
     def get(self, request, *args, **kwargs):
-        USER_INFO_API =  'api/mobile/v0.5/my_user_info'
+        USER_INFO_API = 'api/mobile/v0.5/my_user_info'
         token = request.user.social_auth.first().extra_data['access_token']
-        url = settings.EDX_LMS_PATH+USER_INFO_API
+        url = settings.EDX_LMS_PATH + USER_INFO_API
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},

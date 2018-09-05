@@ -62,10 +62,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'ems.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'ems/build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,6 +127,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATICFILES_DIRS = [
+  os.path.join(BASE_DIR, 'ems/build/static'),
+]
+
 
 # Open edX setttings
 
@@ -135,6 +140,7 @@ EDX_API = {
     'COURSE_PROBLEMS': '/exam/problems',
     'COURSE_SECTIONS': '/exam/sections',
     'SECTION_PROBLEMS': '/exam/section/problems',
+    'SECTION_PROBLEM_TYPE_COUNT': '/exam/sections/count',
     'PROBLEM_DETAIL': '/exam/problems/detail',
     'PROBLEM_TYPES': '/exam/problem/types',
 }
