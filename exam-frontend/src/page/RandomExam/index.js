@@ -40,7 +40,28 @@ class RandomExamContainerReducer extends React.Component {
   }
 
   componentDidMount() {
+    let id = this.props.id;
 
+    if(id===undefined){
+
+    }
+    else{
+      axios.get('/api/exampapers/random/'+id+'/')
+      .then(res=>{
+
+        let data= res.data.data;
+        this.setState({
+          paperName:data.name,
+          paperIns:data.description,
+          paperpass:data.passing_ratio,
+        })
+
+
+      })
+      .catch(error=>{
+
+      })
+    }
   }
 
   //修改试卷名称
@@ -95,12 +116,12 @@ class RandomExamContainerReducer extends React.Component {
     })
 
     this.props.setRandomTable(this.props.randomTable);
-    console.log(this.props.randomTable);
+
   }
 
   //抽取分数
   onChangeGrade=(e,id,type)=>{
-    console.log(e);
+
     this.props.randomTable.map(item=>{
       if(item.id===id&&type==='multiplechoiceresponse'){
         item.multiplechoiceresponseGrade=e
@@ -256,7 +277,6 @@ class RandomExamContainerReducer extends React.Component {
   }
 
 
-
   render() {
     const inputStyle={
       width:'468px'
@@ -309,9 +329,6 @@ class RandomExamContainerReducer extends React.Component {
 
           </Modal>
         </div>
-
-
-
 
         <Sidebar/>
         <div className="text-right-left">
@@ -614,6 +631,8 @@ export default class RandomExam extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
+
+    console.log(this.props.id);
   }
 
   setShow=(isShow)=>{
@@ -641,7 +660,7 @@ export default class RandomExam extends React.Component {
       <div>
 
         <div className="container" style={containerHeight}>
-          <RandomExamContainer setShow={this.setShow} isShow={isShow} style={display}/>
+          <RandomExamContainer id={this.props.id} setShow={this.setShow} isShow={isShow} style={display}/>
 
           <SelectQuestion
             selectQuestionList={this.state.selectQuestionList}

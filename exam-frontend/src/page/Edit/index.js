@@ -456,18 +456,22 @@ export default class Edit extends React.Component {
     })
 
     let id = this.props.match.params.id;
+    if(id===undefined){
 
-    axios.get('/api/exampapers/fixed/'+id+'/')
-    .then(res=>{
+    }
+    else{
+      axios.get('/api/exampapers/fixed/'+id+'/')
+      .then(res=>{
 
-      this.setState({
-        type:res.data.data.create_type
+        this.setState({
+          type:res.data.data.create_type
+        })
+
       })
-    })
-    .catch(res=>{
+      .catch(res=>{
 
-    })
-
+      })
+    }
 
   }
 
@@ -505,7 +509,7 @@ export default class Edit extends React.Component {
               />
             </div>
             :
-            <RandomExam/>
+            <RandomExam id={this.props.match.params.id}/>
           }
         </div>
         <Footer />
