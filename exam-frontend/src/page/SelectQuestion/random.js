@@ -4,6 +4,18 @@ export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],
   }
+  componentDidMount(){
+    this.setState({
+      selectedRowKeys: this.props.selectedRowKeys,
+    })
+  }
+  componentWillReceiveProps(nextProps) {
+    if( JSON.stringify(this.props.selectedRowKeys) != JSON.stringify(nextProps.selectedRowKeys)){
+      this.setState({
+        selectedRowKeys: nextProps.selectedRowKeys,
+      })
+    }
+  }
   confirm = () => {
     const { callback } = this.props;
     const { selectedRowKeys } = this.state;
