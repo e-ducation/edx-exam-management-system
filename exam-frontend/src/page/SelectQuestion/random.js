@@ -52,6 +52,7 @@ export default class RandomBlock extends Component {
         this.setState({
           selectedRowKeys,
         })
+        this.props.countType(selectedRowKeys)
         // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({

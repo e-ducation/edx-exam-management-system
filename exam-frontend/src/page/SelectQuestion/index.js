@@ -17,6 +17,7 @@ class SelectQuestion extends Component {
     selectedRowKeys: [],
     activeChapter: '全部章节',
     activeCourse: '',
+    activeCourseName: '',
     activeQuestionType: '全部题型',
     randomLoading: false,
     quesitonLoading: false,
@@ -97,6 +98,7 @@ class SelectQuestion extends Component {
             this.setState({
               courseList: data,
               activeCourse: data[0].id,
+              activeCourseName: data[0].name,
             })
             this.getList(data[0].id);
           } else {
@@ -145,26 +147,53 @@ class SelectQuestion extends Component {
   }
   // 题型统计
   countType = (selectedRowKeys) => {
-    axios.post('/api/problems/detail/', {
-      problems:selectedRowKeys,
-    }).then(res => {
-      const list = res.data.data;
-      const counting = {
-        multiplechoiceresponse: 0,
-        choiceresponse: 0,
-        stringresponse: 0,
-      }
-      // eslint-disable-next-line
-      list.map(data => {
-        counting[data.type]++;
+    const { paperType } = this.props;
+    if(paperType === 'fixed'){
+      axios.post('/api/problems/detail/', {
+        problems:selectedRowKeys,
+      }).then(res => {
+        const list = res.data.data;
+        const counting = {
+          multiplechoiceresponse: 0,
+          choiceresponse: 0,
+          stringresponse: 0,
+        }
+        // eslint-disable-next-line
+        list.map(data => {
+          counting[data.type]++;
+        })
+        this.setState({
+          counting
+        })
+        console.log(counting)
+      }).catch(error => {
+        console.log(error)
       })
-      this.setState({
-        counting
+    } else {
+      axios.post('/api/sections/problems/count/',{
+        section_ids:selectedRowKeys
       })
-      console.log(counting)
-    }).catch(error => {
-      console.log(error)
-    })
+      .then(res=>{
+        const list = res.data.data;
+        // eslint-disable-next-line
+        const counting = {
+          multiplechoiceresponse: 0,
+          choiceresponse: 0,
+          stringresponse: 0,
+        }
+        list.map(data=>{
+          counting['multiplechoiceresponse']+= data['multiplechoiceresponse']
+          counting['choiceresponse']+= data['choiceresponse']
+          counting['stringresponse']+= data['stringresponse']
+        })
+        this.setState({
+          counting,
+        })
+      })
+      .catch(error=>{
+
+      })
+    }
   }
   // 回调设置勾选的题目
   onSelect = (selectedRowKeys) => {
@@ -238,10 +267,11 @@ class SelectQuestion extends Component {
     }
   }
   // 切换课程
-  changeCourse = (course) => {
+  changeCourse = (course, name) => {
     this.getList(course)
     this.setState({
       activeCourse: course,
+      activeCourseName: name,
     })
   }
   // 题目列表数据更新
@@ -251,9 +281,18 @@ class SelectQuestion extends Component {
     this.setState({
       quesitonLoading: true,
     })
+    const that = this;
+    const CancelToken = axios.CancelToken;
+    if (this.searchAjax){
+      this.searchAjax();
+    }
     const block = params.block_id === undefined ? activeCourse : params.block_id;
     axios.get(`/api/xblocks/${block}/problems/`, {
         params,
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
       })
       .then( (res) => {
         const { data } = res.data;
@@ -261,24 +300,70 @@ class SelectQuestion extends Component {
           questionList: data,
           quesitonLoading: false,
         })
-        console.log(data)
+        // console.log(data)
       })
       .catch(function (error) {
-        console.log(error);
+        // console.log(error);
       });
     // const { callback } = this.props;
     // const { selectedRowKeys,totalAcount } = this.state;
   }
+  // 搜索课程
+  searchCourse = (e) => {
+    const that = this;
+    const CancelToken = axios.CancelToken;
+    if (this.searchAjax){
+      this.searchAjax();
+    }
+    axios.get('/api/courses/',{
+        params: {
+          search: e.target.value,
+        },
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
+
+      })
+      .then( (res) => {
+        if (res.data.status === 0) {
+          const { data }  = res.data;
+          if (data.length > 0) {
+            this.setState({
+              courseList: data,
+            })
+          } else {
+            this.setState({
+              courseList: [],
+            })
+          }
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  }
   render() {
-    const {courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
+    const { activeCourseName, courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
     const { paperType, selectQuestionList, selectSectionList} = this.props;
+    // console.log(this.props)
+    // 固定与随机的counting区别
+    // const counting = paperType === 'fixed' ? this.state.counting : this.props.counting;
+
     return (
       <div style={this.props.style}>
         <div className="qs-container">
-          <Breadcrumb style={{ margin: '20px 0' }}>
+          <Breadcrumb style={{ margin: '0 0 20px 0' }}>
             <Breadcrumb.Item>
               <Icon type="folder-open" style={{ marginRight: '5px' }} />
-              <span>首页</span>
+              <span>
+              {
+                paperType === 'fixed' ?
+                '编辑固定试题'
+                :
+                '编辑随机试题'
+              }
+              </span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="folder-open" style={{ marginRight: '5px' }} />
@@ -289,19 +374,19 @@ class SelectQuestion extends Component {
           <div className="select-scope">选择范围</div>
           <div className="sidebar">
             <div style={{ textAlign: 'center', margin: '8px 0' }}>
-              <Input prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
+              <Input onChange={this.searchCourse} prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
             </div>
             <ul className="course-list">
               {
                  // 课程列表
                 courseList.map(data => {
-                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id)}>{data.name}</li>
+                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id, data.name)}>{data.name}</li>
                 })
               }
             </ul>
           </div>
           <div className="main">
-            <div className="course-name">大数据分析</div>
+            <div className="course-name">{activeCourseName}</div>
             {
               paperType === 'fixed' ?
               // 固定出题
@@ -324,6 +409,7 @@ class SelectQuestion extends Component {
                 activeCourse={activeCourse} // 选中的课程ID
                 sectionList={sectionList}   // 章节列表
                 callback={this.sectionSelect}
+                countType={this.countType}
               />
             }
             <div style={{padding: '10px 0'}}>
@@ -368,12 +454,26 @@ class SelectQuestion extends Component {
 const mapStateToProps = (state) => {
   const { fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
-  const selectSectionList = randomTable.map(data => data.id);
+  const counting = {
+    multiplechoiceresponse: 0,
+    choiceresponse: 0,
+    stringresponse: 0,
+  };
+  const selectSectionList = randomTable.map(data => {
+    // counting[data.]
+    counting['multiplechoiceresponse']+= data['multiplechoiceresponse']
+    counting['choiceresponse']+= data['choiceresponse']
+    counting['stringresponse']+= data['stringresponse']
+    console.log(data)
+    return data.id;
+  });
+
   return {
     selectQuestionList,
     selectSectionList,
     fixedTable,
     randomTable,
+    counting
   }
 }
 
