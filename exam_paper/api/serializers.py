@@ -123,7 +123,7 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             exam_paper.__dict__.update(**validated_data)
             exam_paper.save()
-            exam_paper.problems.all().delete()
+            exam_paper.rules.all().delete()
             for rule_data in rules_data:
                 if rule_data.get('id'):
                     rule_data.pop('id')

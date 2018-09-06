@@ -326,6 +326,7 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
     def create(self, request, *args, **kwargs):
         request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
+
         rules = request.data['subject']
         new_rules = []
         for rule in rules:
@@ -353,6 +354,7 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
                 },
             ]
         request.data['rules'] = new_rules
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -367,7 +369,19 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
         rules = serializer.data['rules']
 
         data = serializer.data
-        data['rules'] = [(name, list(group)) for name, group in groupby(rules, lambda x: x['section_name'])]
+
+        subject = []
+        for name, group in groupby(rules, lambda x: x['section_name']):
+            section_rule = {
+                'name': name,
+            }
+            for rule in group:
+                section_rule['id'] = rule['problem_section_id']
+                section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
+                section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
+            subject.append(section_rule)
+        data['subject'] = subject
+
         return Response(response_format(data))
 
     def update(self, request, *args, **kwargs):
@@ -375,6 +389,34 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
 
         request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
+
+        rules = request.data['subject']
+        new_rules = []
+        for rule in rules:
+            new_rules += [
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'choiceresponse',
+                    'problem_num': rule['choiceresponseNumber'],
+                    'grade': rule['choiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'multiplechoiceresponse',
+                    'problem_num': rule['multiplechoiceresponseNumber'],
+                    'grade': rule['multiplechoiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'stringresponse',
+                    'problem_num': rule['stringresponseNumber'],
+                    'grade': rule['stringresponseGrade']
+                },
+            ]
+        request.data['rules'] = new_rules
 
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
