@@ -68,14 +68,15 @@ class HomeContainer extends React.Component {
           <div style={{marginTop:'30px'}}>
             <div className="home-guide">
               <span>1</span>
-              <h3>创建</h3>
+              <h3>创建试卷</h3>
               <p>· 选取题目或出题范围</p>
               <p>· 完善试卷信息</p>
               <p>· 创建试卷成功！</p>
+
             </div>
             <div className="home-guide">
               <span>2</span>
-              <h3>创建</h3>
+              <h3>创建考试任务</h3>
               <p>· 选择本场考试使用的试卷</p>
               <p>· 设置考试时间和参加人员</p>
               <p>· 发布考试任务</p>
