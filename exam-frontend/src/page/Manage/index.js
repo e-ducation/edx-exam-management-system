@@ -192,7 +192,15 @@ class ManageContainer extends React.Component {
         dataIndex: 'name',
         width: '29%',
         render: (text, record) => (
-          <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+          <span>
+            {
+              record.create_type === 'fixed' ?
+                <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+              :
+                <span>{text}</span>
+            }
+          </span>
+
         )
       }, {
         title: '选题方式',
@@ -223,29 +231,15 @@ class ManageContainer extends React.Component {
         width: '14%',
         render: (text, record, index) => (
           <span>
-            {
-              record.is_creator
-            }
-            {
-              true ?
-                <span>
-                  <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="复制">
-                    <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="删除">
-                    <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
-                  </Tooltip>
-                </span>
-              :
-                <span>
-                  <Icon type="edit" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                  <Icon type="copy" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD', margin:'0 10px'}} />
-                  <Icon type="delete" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                </span>
-            }
+            <Tooltip title="编辑">
+              <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="复制">
+              <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="删除">
+              <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
+            </Tooltip>
           </span>
         )
       }

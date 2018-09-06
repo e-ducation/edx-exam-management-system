@@ -44,7 +44,7 @@ export default class Header extends React.Component {
             {
               !share &&
               <div className="link-menu">
-                <a className="text-link" href="/">
+                <a className="text-link" href="http://dev.ems.cms.ngrok.elitemc.cn:8000/">
                   课程管理<i className="iconfont" style={{verticalAlign:'middle', fontSize:'14px',marginLeft: '10px' }}>&#xe62a;</i>
                 </a>
               </div>
