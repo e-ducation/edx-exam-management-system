@@ -56,8 +56,38 @@ class RandomExamContainerReducer extends React.Component {
           paperpass:data.passing_ratio,
         })
 
+        let sectionID=[];
+
+        data.subject.map(item=>{
+          sectionID.push(item.id);
+        })
+
+
+        axios.post('/api/sections/problems/count/',{
+          section_ids:sectionID
+        })
+        .then(res=>{
+          console.log(res.data.data);
+
+          data.subject.map((item,index)=>{
+            item["choiceresponse"]=res.data.data[index].choiceresponse;
+            item["multiplechoiceresponse"]=res.data.data[index].multiplechoiceresponse;
+            item["stringresponse"]=res.data.data[index].stringresponse;
+          })
+
+          console.log(data.subject);
+
+          this.props.setRandomTable(data.subject);
+        })
+        .catch(error=>{
+
+        })
+
+
+        this.props.setRandomTable(data.subject);
 
       })
+
       .catch(error=>{
 
       })
@@ -248,24 +278,52 @@ class RandomExamContainerReducer extends React.Component {
 
   //保存随机试卷
   saveRandomExam=(e)=>{
-    if(this.state.paperName===""){
-      this.warning();
+
+    if(this.props.id===undefined){
+
+      if(this.state.paperName===""){
+        this.warning();
+      }
+      else{
+
+        axios.post('/api/exampapers/random/',{
+          name:this.state.paperName,
+          description:this.state.paperIns,
+          passing_ratio:this.state.paperpass,
+          subject:this.props.randomTable
+        })
+        .then(res=>{
+          console.log(res);
+          window.location.href="/#/manage";
+        })
+        .catch(error=>{
+
+        })
+      }
     }
+
     else{
+      if(this.state.paperName===""){
+        this.warning();
+      }
+      else{
+        console.log(this.props.randomTable);
+        axios.put('/api/exampapers/random/'+this.props.id+'/',{
+          name:this.state.paperName,
+          description:this.state.paperIns,
+          passing_ratio:this.state.paperpass,
+          subject:this.props.randomTable
+        })
+        .then(res=>{
+          console.log(res);
+          window.location.href="/#/manage";
+          this.props.randomTable.length=0;
+          this.props.setRandomTable(this.props.randomTable);
+        })
+        .catch(error=>{
 
-      axios.post('/api/exampapers/random/',{
-        name:this.state.paperName,
-        description:this.state.paperIns,
-        passing_ratio:this.state.paperpass,
-        subject:this.props.randomTable
-      })
-      .then(res=>{
-        console.log(res);
-        window.location.href="/#/manage";
-      })
-      .catch(error=>{
-
-      })
+        })
+      }
     }
   }
 
@@ -658,6 +716,12 @@ export default class RandomExam extends React.Component {
     }
     return (
       <div>
+        {
+          this.props.id===undefined ?
+          <Header showShadow={this.state.showShadow} />
+          :
+          null
+        }
 
         <div className="container" style={containerHeight}>
           <RandomExamContainer id={this.props.id} setShow={this.setShow} isShow={isShow} style={display}/>
@@ -671,6 +735,12 @@ export default class RandomExam extends React.Component {
           />
 
         </div>
+        {
+          this.props.id===undefined ?
+          <Footer />
+          :
+          null
+        }
 
       </div>
     );

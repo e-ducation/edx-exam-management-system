@@ -38,6 +38,8 @@ class EditContainerReducer extends React.Component {
   }
   componentDidMount() {
     this.getExamPaper();
+
+    console.log(window.location.pathname);
   }
 
   //修改试卷名称
@@ -230,6 +232,7 @@ class EditContainerReducer extends React.Component {
 
     localStorage.setItem("paper",JSON.stringify(data))
 
+
     window.open("http://localhost:3000/#/preview/storage");
   }
 
@@ -253,11 +256,11 @@ class EditContainerReducer extends React.Component {
 
           <Breadcrumb>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
@@ -497,7 +500,7 @@ export default class Edit extends React.Component {
 
           {
             this.state.type==="fixed" ?
-            <div>
+            <div style={{display: 'flex',width: '100%',maxWidth: '1180px',minWidth: '992px'}}>
               <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
               <SelectQuestion
