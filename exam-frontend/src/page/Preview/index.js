@@ -63,8 +63,13 @@ class PreviewContainer extends React.Component{
     axios.get('/api/exampapers/' + id + '/')
       .then(function (response) {
         const res = response.data;
-        const {name, passing_grade, problems, total_grade, total_problem_num, description } = res.data;
+        const {name, passing_grade, problems, total_grade, total_problem_num, description, create_type } = res.data;
         if (res.status === 0){
+          if (create_type === 'random'){
+            message.error('随机试卷不可预览')
+            return false;
+          }
+
           that.setState({
             name,
             passing_grade,
