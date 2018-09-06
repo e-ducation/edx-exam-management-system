@@ -54,7 +54,7 @@ search = openapi.Parameter(
     'search',
     openapi.IN_QUERY,
     description="search text",
-    type=openapi.TYPE_INTEGER
+    type=openapi.TYPE_STRING
 )
 problem_type = openapi.Parameter(
     'problem_type',
@@ -327,6 +327,34 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
         request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
 
+        rules = request.data['subject']
+        new_rules = []
+        for rule in rules:
+            new_rules += [
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'choiceresponse',
+                    'problem_num': rule['choiceresponseNumber'],
+                    'grade': rule['choiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'multiplechoiceresponse',
+                    'problem_num': rule['multiplechoiceresponseNumber'],
+                    'grade': rule['multiplechoiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'stringresponse',
+                    'problem_num': rule['stringresponseNumber'],
+                    'grade': rule['stringresponseGrade']
+                },
+            ]
+        request.data['rules'] = new_rules
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
@@ -335,16 +363,25 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
-        response = super(ExamPaperRandomCreateViewSet, self).create(request, args, kwargs)
-        return response
-
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         rules = serializer.data['rules']
 
         data = serializer.data
-        data['rules'] = [(name, list(group)) for name, group in groupby(rules, lambda x: x['section_name'])]
+
+        subject = []
+        for name, group in groupby(rules, lambda x: x['section_name']):
+            section_rule = {
+                'name': name,
+            }
+            for rule in group:
+                section_rule['id'] = rule['problem_section_id']
+                section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
+                section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
+            subject.append(section_rule)
+        data['subject'] = subject
+
         return Response(response_format(data))
 
     def update(self, request, *args, **kwargs):
@@ -352,6 +389,34 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
 
         request.data['create_type'] = PAPER_CREATE_TYPE[1][0]
         request.data['creator'] = request.user.id
+
+        rules = request.data['subject']
+        new_rules = []
+        for rule in rules:
+            new_rules += [
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'choiceresponse',
+                    'problem_num': rule['choiceresponseNumber'],
+                    'grade': rule['choiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'multiplechoiceresponse',
+                    'problem_num': rule['multiplechoiceresponseNumber'],
+                    'grade': rule['multiplechoiceresponseGrade']
+                },
+                {
+                    'problem_section_id': rule['id'],
+                    'section_name': rule['name'],
+                    'problem_type': 'stringresponse',
+                    'problem_num': rule['stringresponseNumber'],
+                    'grade': rule['stringresponseGrade']
+                },
+            ]
+        request.data['rules'] = new_rules
 
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
@@ -372,6 +437,7 @@ class CoursesListAPIView(APIView):
 
     @swagger_auto_schema(
         operation_description='get courses list',
+        manual_parameters=[search],
         responses={
             200: openapi.Schema(
                 title='response',
@@ -393,7 +459,13 @@ class CoursesListAPIView(APIView):
     def get(self, request, *args, **kwargs):
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_API['HOST'] + settings.EDX_API['COURSES']
-        rep = requests.get(url, headers={'Authorization': 'Bearer ' + token})
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params={
+                'title': request.query_params.get('search')
+            }
+        )
         return Response(response_format(rep.json()))
 
 
