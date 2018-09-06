@@ -257,11 +257,11 @@ class ManageContainer extends React.Component {
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
