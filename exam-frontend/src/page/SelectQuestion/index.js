@@ -354,7 +354,7 @@ class SelectQuestion extends Component {
       <div style={this.props.style}>
         <div className="qs-container">
           <Breadcrumb style={{ margin: '0 0 20px 0' }}>
-            <Breadcrumb.Item>
+            <Breadcrumb.Item onClick={() => {this.props.setShow(false)}}>
             <Icon type="edit" style={{marginRight: '5px'}} />
               <span>
               {
