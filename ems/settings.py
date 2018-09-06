@@ -63,12 +63,16 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'ems.urls'
-
+LOGIN_URL = 'login/'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'ems/build')],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'build'),
+            os.path.join(BASE_DIR, 'ems/build'),
+            os.path.join(BASE_DIR, 'exam-frontend/build')
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -134,7 +138,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-  os.path.join(BASE_DIR, 'ems/build/static'),
+    os.path.join(BASE_DIR, 'build/static'),
+    os.path.join(BASE_DIR, 'ems/build/static'),
+    os.path.join(BASE_DIR, 'exam-frontend/build/static'),
 ]
 
 

@@ -86,10 +86,12 @@ fix_exampaper = openapi.Schema(
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
                     'content': openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
-                }
+                },
+                required=['grade', 'problem_id']
             )
         )
     },
+    required=['name', 'problems', 'passing_ratio']
 )
 
 
@@ -237,7 +239,9 @@ class ExamPaperFixedCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateMo
         user = self.request.user
         return ExamPaper.objects.filter(creator=user)
 
-    @swagger_auto_schema(request_body=fix_exampaper)
+    @swagger_auto_schema(
+        request_body=fix_exampaper,
+    )
     def create(self, request, *args, **kwargs):
         request.data['create_type'] = PAPER_CREATE_TYPE[0][0]
         request.data['creator'] = request.user.id
@@ -286,22 +290,22 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
     POST /api/exampaper/random/
     ```
     {
-      "rules": [
-        {
-            "problem_section_id": "hogwarts+101+201801+type@sequential+block@0f6d6d4b762342218cc30cfe14b7e587",
-            "problem_type": "choiceresponse",
-            "problem_num": 1,
-            "grade": 5
-        },
-        {
-            "problem_section_id": "hogwarts+101+201801+type@sequential+block@0f6d6d4b762342218cc30cfe14b7e587",
-            "problem_type": "multiplechoiceresponse",
-            "problem_num": 1,
-            "grade": 5
-        }
-      ],
-      "name": "期中考试 random",
-      "description": "大家冷静一下"
+        "name": "期中考试 random",
+        "description": "大家冷静一下",
+        "passing_ratio": 60,
+        "subject": [{
+            "id": "hello+hello+20180101+type@sequential+block@c3056700551049eb9767b71a8072f295",
+            "name": "1.1 大数据与数据科学",
+            "choiceresponse": 1,
+            "choiceresponseGrade": 1,
+            "choiceresponseNumber": 0,
+            "multiplechoiceresponse": 5,
+            "multiplechoiceresponseGrade": 1,
+            "multiplechoiceresponseNumber": 0,
+            "stringresponse": 1,
+            "stringresponseGrade": 1,
+            "stringresponseNumber": 0
+        }]
     }
     ```
 
@@ -592,7 +596,8 @@ class ProblemsDetailAPIView(APIView):
                         example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'
                     )
                 )
-            }
+            },
+            required=['problems']
         ),
         responses={
             200: openapi.Schema(
@@ -660,9 +665,10 @@ class SectionProblemTypeCountView(APIView):
                     items=openapi.Schema(
                         type=openapi.TYPE_STRING,
                         example=''
-                    )
+                    ),
                 )
-            }
+            },
+            required=['section_ids']
         ),
     )
     def post(self, request, *args, **kwargs):
