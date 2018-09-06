@@ -39,6 +39,10 @@ class RandomExamContainerReducer extends React.Component {
     super(props);
   }
 
+  componentWillUnmount(){
+    this.props.randomTable.length=0;
+    this.props.setRandomTable(this.props.randomTable);
+  }
   componentDidMount() {
     let id = this.props.id;
 
@@ -93,6 +97,8 @@ class RandomExamContainerReducer extends React.Component {
       })
     }
   }
+
+
 
   //修改试卷名称
   onChangePaperName=(e)=>{
@@ -334,6 +340,59 @@ class RandomExamContainerReducer extends React.Component {
     });
   }
 
+  confirmData=(type)=>{
+    confirm({
+      title: '提示',
+      content: '您的数据还未保存，确定离开此页面',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk:()=>{
+
+        this.setState({
+          paperName:"",
+          paperIns:"",
+        })
+        for(var key in this.props.fixedTable){
+          delete this.props.fixedTable[key];
+        }
+        if(type==="首页"){
+          window.location.href="/#/";
+        }
+        else{
+          window.location.href="/#/manage";
+        }
+
+      },
+      onCancel:()=>{
+
+      },
+    });
+  }
+  //点击返回
+  checkData=(type)=>{
+    console.log(this.props.fixedTable);
+    if(type==="首页"){
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/";
+      }
+      else{
+        this.confirmData("首页");
+      }
+    }
+
+    else{
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/manage";
+      }
+      else{
+        this.confirmData("试卷管理");
+      }
+    }
+
+  }
+
+
 
   render() {
     const inputStyle={
@@ -392,17 +451,17 @@ class RandomExamContainerReducer extends React.Component {
         <div className="text-right-left">
 
           <Breadcrumb>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+          <Breadcrumb.Item onClick={this.checkData.bind(this,"首页")}>
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"试卷管理")}>
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="edit" style={{marginRight: '5px'}} />
-              <span>编辑试卷</span>
+              <span>编辑随机试卷</span>
             </Breadcrumb.Item>
           </Breadcrumb>
 
@@ -457,7 +516,7 @@ class RandomExamContainerReducer extends React.Component {
                     {
                     this.props.randomTable.map((item,index)=>{
                       return(
-                        <div class="random-exam" key={item.id} style={{marginBottom:'10px'}}>
+                        <div className="random-exam" key={item.id} style={{marginBottom:'10px'}}>
                         <div className="courseName">
                         <span className="examtype-name">{item.name}</span>
                         <Tooltip title="删除" className="delete-right">

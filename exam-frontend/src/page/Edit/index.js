@@ -8,16 +8,12 @@ import RandomExam from '../RandomExam';
 import './index.scss';
 import $ from "jquery";
 import axios from 'axios';
-
 import SelectQuestion from '../SelectQuestion'
-
 import MoveTable from './moveTable'
 import { setFixedTable } from '../../model/action'
 
-
-// const RadioGroup = Radio.Group;
 const { TextArea } = Input;
-
+const confirm = Modal.confirm;
 
 
 class EditContainerReducer extends React.Component {
@@ -45,7 +41,7 @@ class EditContainerReducer extends React.Component {
   //修改试卷名称
   onChangePaperName=(e)=>{
     this.setState({
-      paperName:e.target.value
+      paperName:e.target.value.replace(/(^\s*)|(\s*$)/g, "")
     })
 
   }
@@ -108,7 +104,6 @@ class EditContainerReducer extends React.Component {
             saveVisible:true
           })
           //跳转页面
-
           window.location.href="/#/manage";
         })
         .catch(error=>{
@@ -232,8 +227,59 @@ class EditContainerReducer extends React.Component {
 
     localStorage.setItem("paper",JSON.stringify(data))
 
+    window.open("/#/preview/storage")
+  }
 
-    window.open("http://localhost:3000/#/preview/storage");
+  confirmData=(type)=>{
+    confirm({
+      title: '提示',
+      content: '您的数据还未保存，确定离开此页面',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk:()=>{
+
+        this.setState({
+          paperName:"",
+          paperIns:"",
+        })
+        for(var key in this.props.fixedTable){
+          delete this.props.fixedTable[key];
+        }
+        if(type==="首页"){
+          window.location.href="/#/";
+        }
+        else{
+          window.location.href="/#/manage";
+        }
+
+      },
+      onCancel:()=>{
+
+      },
+    });
+  }
+  //点击返回
+  checkData=(type)=>{
+    console.log(this.props.fixedTable);
+    if(type==="首页"){
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/";
+      }
+      else{
+        this.confirmData("首页");
+      }
+    }
+
+    else{
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/manage";
+      }
+      else{
+        this.confirmData("试卷管理");
+      }
+    }
+
   }
 
   render() {
@@ -255,21 +301,21 @@ class EditContainerReducer extends React.Component {
         <div className="text-right-left">
 
           <Breadcrumb>
-            <Breadcrumb.Item>
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"首页")}>
               <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
-            <Breadcrumb.Item>
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"试卷管理")}>
               <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="edit" style={{marginRight: '5px'}} />
-              <span>编辑试卷</span>
+              <span>编辑固定试卷</span>
             </Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="edit-paper">编辑试卷</div>
+          <div className="edit-paper">编辑固定试卷</div>
 
           <div className="edit-box">
             <div className="label-box">

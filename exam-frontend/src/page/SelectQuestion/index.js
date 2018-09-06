@@ -355,7 +355,7 @@ class SelectQuestion extends Component {
         <div className="qs-container">
           <Breadcrumb style={{ margin: '0 0 20px 0' }}>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{ marginRight: '5px' }} />
+            <Icon type="edit" style={{marginRight: '5px'}} />
               <span>
               {
                 paperType === 'fixed' ?
@@ -366,7 +366,7 @@ class SelectQuestion extends Component {
               </span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{ marginRight: '5px' }} />
+              <Icon type="select" theme="outlined" style={{ marginRight: '5px' }} />
               <span>选择范围</span>
             </Breadcrumb.Item>
           </Breadcrumb>
