@@ -6,6 +6,7 @@ help: ## display help message
 
 install: ## Install Python requirements
 	pip install -r requirements.txt
+	cd exam-frontend && npm i
 
 dev.makemigrations: ## Generate migrations
 	python manage.py makemigrations
@@ -15,3 +16,4 @@ dev.migrate: ## Execute migrate
 
 dev.up: ## Run develop server
 	python manage.py runserver 0.0.0.0:8111
+
