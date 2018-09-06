@@ -18,10 +18,6 @@ class HomeContainer extends React.Component {
     const that = this;
     axios.get('/api/user/info/')
       .then(function (response) {
-        if (response.status === 403){
-          window.location.href = '/login/';
-          return false;
-        }
         const res = response.data;
         if (res.status === 0){
           that.setState({
