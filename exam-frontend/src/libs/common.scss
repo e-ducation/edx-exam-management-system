@@ -2,13 +2,12 @@ html,body{
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,"Helvetica Neue", Helvetica,Tahoma，Arial, "PingFang SC", "Hiragino Sans GB",
 "Heiti SC", "Microsoft YaHei", "WenQuanYi Micro Hei",SimHei，sans-serif;
 }
-
 @font-face {
   font-family: 'iconfont';  /* project id 683888 */
-  src: url('/font/iconfont.eot'),
-  url('/font/iconfont.woff') format('woff'),
-  url('/font/iconfont.ttf') format('truetype'),
-  url('/font/iconfont.svg') format('svg');
+  src: url('/static/font/iconfont.eot'),
+  url('/static/font/iconfont.woff') format('woff'),
+  url('/static/font/iconfont.ttf') format('truetype'),
+  url('/static/font/iconfont.svg') format('svg');
 }
 
 .iconfont{
@@ -40,7 +39,6 @@ html,body{
     width: 100%;
     position: fixed;
     top: 0;
-    border-bottom: 1px solid $border;
     z-index: 999;
     background-color: rgba(256,256,256,0.9);
   }
@@ -51,7 +49,7 @@ html,body{
     line-height: 60px;
     font-size: 20px;
     padding: 0 15px;
-    
+
   }
   .header-logo{
     display:inline-block;
@@ -108,38 +106,41 @@ html,body{
   position: absolute;
   bottom:0 ;
 }
-.text-link{
-  color: $title;
-}
-.text-link:hover, .text-link:focus{
-  color: $blue;
-  text-decoration: none;
-}
-//浮动
-.text-left{ 
+
+// sidebar
+.text-left{
   width: 152px;
-  .tags-box{ 
+  .tags-box{
     width: 120px;
     margin-right: 32px;
-    li{ 
+    li{
       height: 32px;
       line-height: 32px;
-      text-align: center;
-      color: $font;
-      background:#faf5fa;
-      border-radius: 4px;
-      margin-bottom: 4px;
+      background:#faf7fa;
+      border-radius: 3px;
+      margin-bottom: 5px;
+      padding-left:10px;
       cursor: pointer;
+
+      a{
+        color:$title;
+        display: inline-block;
+        width: 100%;
+        height: 100%;
+      }
     }
-    li.tag-current{ 
+    li.tag-current{
       color: #fff;
       background: $blue;
+      a{
+        color: #fff;
+      }
     }
   }
 }
 .text-right-left{
   flex:1;
-  .ant-breadcrumb{ 
-    margin-top: 0;       
+  .ant-breadcrumb{
+    margin-top: 0;
   }
 }

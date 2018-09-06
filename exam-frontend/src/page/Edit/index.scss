@@ -35,13 +35,10 @@ $blue_active: #1da6f3;
   height: 40px;
   line-height: 40px;
   padding-left: 20px;
-  div{
+  >div{
     >span{
       margin-right: 18px;
       display: inline-block;
-    }
-    >span:nth-of-type(3){
-      width: 150px;
     }
   }
 
@@ -77,7 +74,7 @@ $blue_active: #1da6f3;
 
 .inputBox{
   width: 68px;
-  height: 32px;
+  height: 36px;
   line-height: 32px;
   float: right;
   .inputLeft{
@@ -124,4 +121,26 @@ $blue_active: #1da6f3;
   width:100%;
   display:flex;
   display:-webkit-flex;
+}
+.editbtn{
+  width: 170px;
+  margin: 24px auto;
+  button:first-child{
+    float: left;
+  }
+  button:last-child{
+    float: right;
+  }
+}
+
+.editExam .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-tbody > tr > td{
+  vertical-align: middle;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.editExam .ant-table-small{
+  border-radius: 4px
+}
+.input-padding .ant-input-number-input{
+  padding: 0 4px;
 }

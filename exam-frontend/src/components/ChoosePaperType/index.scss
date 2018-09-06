@@ -1,0 +1,48 @@
+@import '../../default.scss';
+// 试卷管理
+.block-fix, .block-random{
+  display: inline-block;
+  width: 50%;
+  vertical-align: text-top;
+  text-align: center;
+  padding: 20px;
+  cursor: pointer;
+  .icon{
+    font-size: 35px;
+  }
+  div{
+    width:90px;
+    height:90px;
+    border-radius: 45px;
+    background: #f5f7fa;
+    text-align: center;
+    line-height: 100px;
+    margin: 0 auto 20px;
+  }
+  h3{
+    font-size:16px;
+    margin-bottom: 5px;
+  }
+}
+.block-fix .icon{
+  color: $blue;
+}
+.block-random .icon{
+  color: #04b2a2;
+}
+.block-fix:hover{
+  div{
+    background:$blue;
+  }
+  .icon{
+    color: #fff;
+  }
+}
+.block-random:hover{
+  div{
+    background: #04b2a2;
+  }
+  .icon{
+    color:#fff;
+  }
+}
