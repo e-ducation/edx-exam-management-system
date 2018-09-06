@@ -61,7 +61,7 @@ export default class RandomBlock extends Component {
       }),
     };
     return(
-      <div>
+      <div className="random">
         <Table
           bordered={true}
           rowSelection={stochasticRowSelection}
@@ -70,6 +70,7 @@ export default class RandomBlock extends Component {
           size="small"
           rowKey="id"
           loading={loading}
+          pagination={{showTotal: (z)=> `共${z}条记录`}}
         />
       </div>
     )

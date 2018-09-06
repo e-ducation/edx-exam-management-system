@@ -1,6 +1,6 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Dropdown, Menu, Button } from 'antd';
+import { Table, Input, Pagination, Icon, Dropdown, Menu, Button } from 'antd';
 import { problemsType } from '../../utils';
 import ProblemDetail from '../../components/ProblemDetail';
 
@@ -189,12 +189,28 @@ export default class FixedQustion extends Component{
           bordered={true}
           rowSelection={rowSelection}
           columns={columns}
-          pagination={{ current: page,pageSize: 10, total: questionList.count, onChange:(page) => { this.setState({page}, () => {this.getQuestionData()})} }}
+          pagination={false}
+          // pagination={{ current: page,pageSize: 10, total: questionList.count, onChange:(page) => { this.setState({page}, () => {this.getQuestionData()})} }}
           dataSource={questionList.results}
           size="small"
           rowKey="id"
           loading={loading}
         />
+        {
+          questionList.count > 0 &&
+          <div className="table-page">
+            <span className="page-total">共{ questionList.count }条记录</span>
+            <Pagination
+              size="small"
+              current={page}
+              total={questionList.count}
+              onChange={(page) => { this.setState({page}, () => {this.getQuestionData()})} }
+              pageSize={10}
+              className="page-num"
+            />
+          </div>
+        }
+
       </div>
     )
   }
