@@ -22,7 +22,7 @@ class ExamPaperMixin(object):
 
 
 class ExamPaperProblemsSerializer(serializers.ModelSerializer):
-    content = serializers.JSONField()
+    content = serializers.JSONField(required=True)
 
     class Meta:
         model = ExamPaperProblems
@@ -44,8 +44,8 @@ class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
 
     class Meta:
         model = ExamPaper
-        fields = ('name', 'description', 'total_problem_num', 'total_grade', 'passing_grade',
-                  'creator', 'problems')
+        fields = ('name', 'description', 'create_type', 'passing_grade',
+                  'total_problem_num', 'total_grade', 'creator', 'problems')
 
 
 class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
