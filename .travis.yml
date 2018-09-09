@@ -11,7 +11,3 @@ script:
 git:
   depth: 1
 
-branches:
-  only:
-  - feature-travis 
-
