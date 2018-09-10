@@ -1,8 +1,20 @@
 import React, { Component } from 'react';
-import { Table, Button } from 'antd';
+import { Table } from 'antd';
 export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],
+  }
+  componentDidMount(){
+    this.setState({
+      selectedRowKeys: this.props.selectedRowKeys,
+    })
+  }
+  componentWillReceiveProps(nextProps) {
+    if( JSON.stringify(this.props.selectedRowKeys) !== JSON.stringify(nextProps.selectedRowKeys)){
+      this.setState({
+        selectedRowKeys: nextProps.selectedRowKeys,
+      })
+    }
   }
   confirm = () => {
     const { callback } = this.props;
@@ -40,6 +52,7 @@ export default class RandomBlock extends Component {
         this.setState({
           selectedRowKeys,
         })
+        this.props.countType(selectedRowKeys)
         // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({
@@ -48,7 +61,7 @@ export default class RandomBlock extends Component {
       }),
     };
     return(
-      <div>
+      <div className="random">
         <Table
           bordered={true}
           rowSelection={stochasticRowSelection}
@@ -57,6 +70,7 @@ export default class RandomBlock extends Component {
           size="small"
           rowKey="id"
           loading={loading}
+          pagination={{showTotal: (z)=> `共${z}条记录`}}
         />
       </div>
     )

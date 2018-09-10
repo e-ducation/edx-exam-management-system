@@ -1,7 +1,6 @@
 
 import React, { Component } from 'react';
-import { Table, Input, Icon, Dropdown, Menu, Button } from 'antd';
-import axios from 'axios';
+import { Table, Input, Pagination, Icon, Dropdown, Menu, Button } from 'antd';
 import { problemsType } from '../../utils';
 import ProblemDetail from '../../components/ProblemDetail';
 
@@ -21,12 +20,12 @@ export default class FixedQustion extends Component{
     })
   }
   componentWillReceiveProps(nextProps) {
-    if( JSON.stringify(this.props.selectedRowKeys) != JSON.stringify(nextProps.selectedRowKeys)){
+    if( JSON.stringify(this.props.selectedRowKeys) !== JSON.stringify(nextProps.selectedRowKeys)){
       this.setState({
         selectedRowKeys: nextProps.selectedRowKeys,
       })
     }
-    if (this.props.activeCourse != nextProps.activeCourse){
+    if (this.props.activeCourse !== nextProps.activeCourse){
       this.setState({
         activeQuestionType: '全部',
         activeChapter: '全部',
@@ -41,9 +40,9 @@ export default class FixedQustion extends Component{
       page,
       page_size: 10,
     };
-    if (activeChapter != '全部') params['block_id'] = activeChapter;
-    if (keySearch != null) params['search'] = keySearch;
-    if (activeQuestionType != '全部') params['problem_type'] = activeQuestionType;
+    if (activeChapter !== '全部') params['block_id'] = activeChapter;
+    if (keySearch !== null) params['search'] = keySearch;
+    if (activeQuestionType !== '全部') params['problem_type'] = activeQuestionType;
     getList(params);
   }
   // 题型选择
@@ -54,10 +53,11 @@ export default class FixedQustion extends Component{
     }, () => {
       this.getQuestionData();
     });
+    return true;
   }
   // 章节选择
   handleCMenuClick = (v) => {
-    console.log(v)
+    // console.log(v)
     this.setState({
       activeChapter: v.key,
       activeChapterName: v.item.props.children,
@@ -67,7 +67,7 @@ export default class FixedQustion extends Component{
     });
   }
   handleSearch = (e) => {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     this.setState({
       keySearch: e.target.value,
       page: 1,
@@ -99,7 +99,7 @@ export default class FixedQustion extends Component{
           selectedRowKeys,
         });
         this.props.countType(selectedRowKeys)
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+        // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({
         disabled: record.name === 'Disabled User', // Column configuration not to be checked
@@ -121,7 +121,7 @@ export default class FixedQustion extends Component{
             problem_id: id,
             content,
           }
-          // co
+          // eslint-disable-next-line
           return (<a onClick={this.ProblemDetail.showModal.bind(this, data)} href="javascript:;">{text}</a>)
         },
       }, {
@@ -133,7 +133,7 @@ export default class FixedQustion extends Component{
     const cmenu = (
       <Menu onClick={this.handleCMenuClick}>
         {
-          activeChapter != '全部' &&
+          activeChapter !== '全部' &&
           <Menu.Item key="全部">全部章节</Menu.Item>
         }
         {
@@ -146,7 +146,7 @@ export default class FixedQustion extends Component{
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         {
-          activeQuestionType != '全部' &&
+          activeQuestionType !== '全部' &&
           <Menu.Item key="全部">全部</Menu.Item>
         }
         <Menu.Item key="multiplechoiceresponse">单选题</Menu.Item>
@@ -159,12 +159,12 @@ export default class FixedQustion extends Component{
         <div>
            <Dropdown overlay={menu}>
             <Button>
-              { activeQuestionType == '全部' ? activeQuestionType : problemsType[activeQuestionType] } <Icon type="down" />
+              { activeQuestionType === '全部' ? activeQuestionType : problemsType[activeQuestionType] } <Icon type="down" />
             </Button>
           </Dropdown>
           <Dropdown overlay={cmenu}>
             <Button  style={{marginLeft:'4px', width: '150px', overflow:'hidden',textOverflow: 'ellipsis'}}>
-              <span>{ activeChapter == '全部' ? '全部章节' : activeChapterName }</span><Icon type="down" />
+              <span>{ activeChapter === '全部' ? '全部章节' : activeChapterName }</span><Icon type="down" />
             </Button>
           </Dropdown>
           <div style={{ textAlign: 'center',display:'inline-block',marginLeft: '35px',marginTop:'-1px'}}>
@@ -189,12 +189,28 @@ export default class FixedQustion extends Component{
           bordered={true}
           rowSelection={rowSelection}
           columns={columns}
-          pagination={{ current: page,pageSize: 10, total: questionList.count, onChange:(page) => { this.setState({page}, () => {this.getQuestionData()})} }}
+          pagination={false}
+          // pagination={{ current: page,pageSize: 10, total: questionList.count, onChange:(page) => { this.setState({page}, () => {this.getQuestionData()})} }}
           dataSource={questionList.results}
           size="small"
           rowKey="id"
           loading={loading}
         />
+        {
+          questionList.count > 0 &&
+          <div className="table-page">
+            <span className="page-total">共{ questionList.count }条记录</span>
+            <Pagination
+              size="small"
+              current={page}
+              total={questionList.count}
+              onChange={(page) => { this.setState({page}, () => {this.getQuestionData()})} }
+              pageSize={10}
+              className="page-num"
+            />
+          </div>
+        }
+
       </div>
     )
   }

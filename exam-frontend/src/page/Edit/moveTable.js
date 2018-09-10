@@ -239,7 +239,7 @@ class DragSortingTable extends React.Component {
 
 
   showDeleteConfirm=(id)=>{
-    console.log(id)
+
     confirm({
       title: 'Are you sure delete this task?',
       content: 'Some descriptions',
@@ -402,12 +402,19 @@ class DragSortingTable extends React.Component {
 
 
         <div style={{marginBottom:'10px'}}>
-          <Button type="primary" onClick={() => {this.props.setShow(true)}}>添加试题</Button>
+          <Button type="primary" onClick={() => {this.props.setShow(true)}}>
+          <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62f;</i>
+          添加试题
+          </Button>
           {
             this.props.fixHasNumArr.length === 0 ?
-              <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
+              <Button type="primary" disabled style={{marginLeft:'10px'}}>
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe631;</i>
+              批量设置分值</Button>
             :
-              <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+              <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>
+              <i className="iconfont" style={{lineHeight: '16px', fontSize:'16px',marginRight: '5px'}}>&#xe631;</i>
+              批量设置分值</Button>
           }
 
         </div>

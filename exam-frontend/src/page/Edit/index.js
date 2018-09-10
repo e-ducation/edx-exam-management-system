@@ -4,19 +4,16 @@ import { Input,Button,Breadcrumb,Icon,InputNumber,Modal,message} from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
+import RandomExam from '../RandomExam';
 import './index.scss';
 import $ from "jquery";
 import axios from 'axios';
-
 import SelectQuestion from '../SelectQuestion'
-
 import MoveTable from './moveTable'
 import { setFixedTable } from '../../model/action'
 
-
-// const RadioGroup = Radio.Group;
 const { TextArea } = Input;
-
+const confirm = Modal.confirm;
 
 
 class EditContainerReducer extends React.Component {
@@ -32,21 +29,19 @@ class EditContainerReducer extends React.Component {
     selectSectionList: []
   }
 
-  constructor(props) {
-    super(props);
-
-  }
   componentWillMount(){
     this.props.setFixedTable({})
   }
   componentDidMount() {
     this.getExamPaper();
+
+    console.log(window.location.pathname);
   }
 
   //修改试卷名称
   onChangePaperName=(e)=>{
     this.setState({
-      paperName:e.target.value
+      paperName:e.target.value.replace(/(^\s*)|(\s*$)/g, "")
     })
 
   }
@@ -81,7 +76,7 @@ class EditContainerReducer extends React.Component {
 
     //是否有分值
     fixPaper.map(item=>{
-      if(item.grade == undefined){
+      if(item.grade === undefined){
         this.warningGrade();
         return false;
       }
@@ -96,7 +91,7 @@ class EditContainerReducer extends React.Component {
         saveVisible:true
       })
 
-      if(this.props.id==undefined){
+      if(this.props.id===undefined){
         axios.post('/api/exampapers/fixed/',{
           passing_ratio:this.state.paperpass,
           problems:fixPaper,
@@ -109,7 +104,6 @@ class EditContainerReducer extends React.Component {
             saveVisible:true
           })
           //跳转页面
-
           window.location.href="/#/manage";
         })
         .catch(error=>{
@@ -136,6 +130,7 @@ class EditContainerReducer extends React.Component {
           //跳转页面
 
           window.location.href="/#/manage";
+
         })
         .catch(error=>{
           //按钮可点击
@@ -178,7 +173,7 @@ class EditContainerReducer extends React.Component {
     let id = this.props.id
 
 
-    if(id==undefined){
+    if(id===undefined){
 
     }
     else{
@@ -186,7 +181,7 @@ class EditContainerReducer extends React.Component {
       axios.get('/api/exampapers/fixed/'+id+'/')
       .then(res=>{
         let data = res.data.data
-        const { fixedTable } = this.props;
+
         const fetchData = {}
 
         data.problems.map((item,index) => {
@@ -232,7 +227,59 @@ class EditContainerReducer extends React.Component {
 
     localStorage.setItem("paper",JSON.stringify(data))
 
-    window.open("http://localhost:3000/#/preview/storage");
+    window.open("/#/preview/storage")
+  }
+
+  confirmData=(type)=>{
+    confirm({
+      title: '提示',
+      content: '您的数据还未保存，确定离开此页面',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk:()=>{
+
+        this.setState({
+          paperName:"",
+          paperIns:"",
+        })
+        for(var key in this.props.fixedTable){
+          delete this.props.fixedTable[key];
+        }
+        if(type==="首页"){
+          window.location.href="/#/";
+        }
+        else{
+          window.location.href="/#/manage";
+        }
+
+      },
+      onCancel:()=>{
+
+      },
+    });
+  }
+  //点击返回
+  checkData=(type)=>{
+    console.log(this.props.fixedTable);
+    if(type==="首页"){
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/";
+      }
+      else{
+        this.confirmData("首页");
+      }
+    }
+
+    else{
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/manage";
+      }
+      else{
+        this.confirmData("试卷管理");
+      }
+    }
+
   }
 
   render() {
@@ -248,29 +295,27 @@ class EditContainerReducer extends React.Component {
 
     let subLength = this.props.fixHasNumArr.length;
 
-    console.log(this.props.fixHasNumArr);
-
     return (
       <div style={this.props.style} className="displayFlx">
         <Sidebar/>
         <div className="text-right-left">
 
           <Breadcrumb>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"首页")}>
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"试卷管理")}>
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="edit" style={{marginRight: '5px'}} />
-              <span>编辑试卷</span>
+              <span>编辑固定试卷</span>
             </Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="edit-paper">编辑试卷</div>
+          <div className="edit-paper">编辑固定试卷</div>
 
           <div className="edit-box">
             <div className="label-box">
@@ -387,16 +432,18 @@ const mapStateToProps = (state) => {
     return sum;
   });
 
+  sum = sum.toFixed(2);
+
   let singleChioceNum=0;
   let mulChioceNum=0;
   let exericeChioceNum=0;
 
 
   fixHasNumArr.forEach(item=>{
-    if(item.problem_type=="choiceresponse"){
+    if(item.problem_type==="choiceresponse"){
       mulChioceNum++
     }
-    else if(item.problem_type=="multiplechoiceresponse"){
+    else if(item.problem_type==="multiplechoiceresponse"){
       singleChioceNum++
     }
     else{
@@ -437,6 +484,7 @@ export default class Edit extends React.Component {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
     showShadow: false,
     isShow:false,
+    type:"fixed"
   }
 
   setShow=(isShow)=>{
@@ -455,6 +503,25 @@ export default class Edit extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
+
+    let id = this.props.match.params.id;
+    if(id===undefined){
+
+    }
+    else{
+      axios.get('/api/exampapers/fixed/'+id+'/')
+      .then(res=>{
+
+        this.setState({
+          type:res.data.data.create_type
+        })
+
+      })
+      .catch(res=>{
+
+      })
+    }
+
   }
 
 
@@ -476,16 +543,23 @@ export default class Edit extends React.Component {
         <Header showShadow={this.state.showShadow} />
         <div className="container" style={containerHeight}>
 
-          <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
-          <SelectQuestion
-            selectQuestionList={this.state.selectQuestionList}
-            setShow={this.setShow}
-            setFixedList={this.setFixedList}
-            paperType="fixed" // random || fixed
-            style={selectdispaly}
-          />
+          {
+            this.state.type==="fixed" ?
+            <div style={{display: 'flex',width: '100%',maxWidth: '1180px',minWidth: '992px'}}>
+              <EditContainer style={display} id={this.props.match.params.id} setShow={this.setShow} isShow={isShow}/>
 
+              <SelectQuestion
+                selectQuestionList={this.state.selectQuestionList}
+                setShow={this.setShow}
+                setFixedList={this.setFixedList}
+                paperType="fixed" // random || fixed
+                style={selectdispaly}
+              />
+            </div>
+            :
+            <RandomExam id={this.props.match.params.id}/>
+          }
         </div>
         <Footer />
       </div>

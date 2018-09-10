@@ -9,6 +9,7 @@ import { setFixedTable,setRandomTable } from '../../model/action'
 import './index.scss';
 import $ from "jquery";
 import axios from 'axios';
+import none from "../../assets/images/none.png";
 const RadioGroup = Radio.Group;
 
 
@@ -28,35 +29,76 @@ class RandomExamContainerReducer extends React.Component {
     value: 1,
     saveVisible:true,
     randomPaper:[],
+    allGrade:1,
+    multiplechoiceresponseGrade:1,
+    choiceresponseGrade:1,
+    stringresponseGrade:1,
   }
 
   constructor(props) {
     super(props);
   }
 
-  componentDidMount() {
-
+  componentWillUnmount(){
+    this.props.randomTable.length=0;
+    this.props.setRandomTable(this.props.randomTable);
   }
+  componentDidMount() {
+    let id = this.props.id;
 
-  componentWillReceiveProps(nextProps){
-    if(nextProps.randomArr){
-
-      axios.post('/api/sections/problems/count/',{
-        section_ids:nextProps.randomArr
-      })
-      .then(res=>{
-
-        this.setState({
-          randomPaper:res.data.data
-        })
-      })
-      .catch(res=>{
-        console.log(res);
-      })
+    if(id===undefined){
 
     }
-    console.log(this.state.randomPaper);
+    else{
+      axios.get('/api/exampapers/random/'+id+'/')
+      .then(res=>{
+
+        let data= res.data.data;
+        this.setState({
+          paperName:data.name,
+          paperIns:data.description,
+          paperpass:data.passing_ratio,
+        })
+
+        let sectionID=[];
+
+        data.subject.map(item=>{
+          sectionID.push(item.id);
+        })
+
+
+        axios.post('/api/sections/problems/count/',{
+          section_ids:sectionID
+        })
+        .then(res=>{
+          console.log(res.data.data);
+
+          data.subject.map((item,index)=>{
+            item["choiceresponse"]=res.data.data[index].choiceresponse;
+            item["multiplechoiceresponse"]=res.data.data[index].multiplechoiceresponse;
+            item["stringresponse"]=res.data.data[index].stringresponse;
+          })
+
+          console.log(data.subject);
+
+          this.props.setRandomTable(data.subject);
+        })
+        .catch(error=>{
+
+        })
+
+
+        this.props.setRandomTable(data.subject);
+
+      })
+
+      .catch(error=>{
+
+      })
+    }
   }
+
+
 
   //修改试卷名称
   onChangePaperName=(e)=>{
@@ -95,15 +137,109 @@ class RandomExamContainerReducer extends React.Component {
     });
   }
 
-  onChange=(value)=>{
-    console.log('changed', value);
+  //抽取数量
+  onChangeNumber=(e,id,type)=>{
+    this.props.randomTable.map(item=>{
+      if(item.id===id&&type==='multiplechoiceresponse'){
+        item.multiplechoiceresponseNumber=e
+      }
+      if(item.id===id&&type==='choiceresponse'){
+        item.choiceresponseNumber=e
+      }
+      if(item.id===id&&type==='stringresponse'){
+        item.stringresponseNumber=e
+      }
+    })
+
+    this.props.setRandomTable(this.props.randomTable);
+
+  }
+
+  //抽取分数
+  onChangeGrade=(e,id,type)=>{
+
+    this.props.randomTable.map(item=>{
+      if(item.id===id&&type==='multiplechoiceresponse'){
+        item.multiplechoiceresponseGrade=e
+      }
+      if(item.id===id&&type==='choiceresponse'){
+        item.choiceresponseGrade=e
+      }
+      if(item.id===id&&type==='stringresponse'){
+        item.stringresponseGrade=e
+      }
+    })
+
+    this.props.setRandomTable(this.props.randomTable);
+
+    console.log(this.props.randomTable);
+
+  }
+
+
+  //统一设置分数
+
+  onChangeAllGrade=(e)=>{
+    this.setState({
+      allGrade:e,
+    })
+  }
+
+  onChangeSomeGrade=(e,type)=>{
+    if(type==="multiplechoiceresponseGrade"){
+      this.setState({
+        multiplechoiceresponseGrade:e
+      })
+    }
+    if(type==="choiceresponseGrade"){
+      this.setState({
+        choiceresponseGrade:e
+      })
+    }
+    if(type==="stringresponseGrade"){
+      this.setState({
+        stringresponseGrade:e
+      })
+    }
   }
 
   settingHandleOk = (e) => {
-    console.log(e);
+
+    if(this.state.value===1){
+
+      this.props.randomTable.map(item=>{
+
+        item.multiplechoiceresponseGrade=this.state.allGrade
+
+        item.choiceresponseGrade=this.state.allGrade
+
+        item.stringresponseGrade=this.state.allGrade
+
+      })
+
+      this.props.setRandomTable(this.props.randomTable);
+
+    }
+
+    else{
+      this.props.randomTable.map(item=>{
+
+        item.multiplechoiceresponseGrade=this.state.multiplechoiceresponseGrade
+
+        item.choiceresponseGrade=this.state.choiceresponseGrade
+
+        item.stringresponseGrade=this.state.stringresponseGrade
+
+      })
+
+      this.props.setRandomTable(this.props.randomTable);
+
+    }
+
     this.setState({
       settingScoreVisible: false,
     });
+
   }
 
   settingHandleCancel = (e) => {
@@ -114,16 +250,9 @@ class RandomExamContainerReducer extends React.Component {
   }
 
   //删除
+
   seleteSection=(id)=>{
-    delete this.props.fixedTable[id];
 
-    this.props.setFixedTable(this.props.fixedTable);
-
-  }
-
-
-
-  showDeleteConfirm=(id)=>{
     confirm({
       title: 'Are you sure delete this task?',
       content: 'Some descriptions',
@@ -131,10 +260,108 @@ class RandomExamContainerReducer extends React.Component {
       okType: 'danger',
       cancelText: '取消',
       onOk:()=>{
-        //删除并回推数据
-        delete this.props.fixedTable[id];
+        this.props.randomTable.map((item,index)=>{
 
-        this.props.setFixedTable(this.props.fixedTable);
+          if(item.id===id){
+            this.props.randomTable.splice(index,1);
+          }
+
+        })
+        this.props.setRandomTable(this.props.randomTable);
+      },
+      onCancel:()=>{
+        console.log(231)
+      },
+    });
+  }
+
+  settingOnChange=(e)=>{
+    this.setState({
+      value:e.target.value,
+    })
+  }
+
+
+  //保存随机试卷
+  saveRandomExam=(e)=>{
+
+    if(this.props.id===undefined){
+
+      if(this.state.paperName===""){
+        this.warning();
+      }
+      else{
+
+        axios.post('/api/exampapers/random/',{
+          name:this.state.paperName,
+          description:this.state.paperIns,
+          passing_ratio:this.state.paperpass,
+          subject:this.props.randomTable
+        })
+        .then(res=>{
+          console.log(res);
+          window.location.href="/#/manage";
+        })
+        .catch(error=>{
+
+        })
+      }
+    }
+
+    else{
+      if(this.state.paperName===""){
+        this.warning();
+      }
+      else{
+        console.log(this.props.randomTable);
+        axios.put('/api/exampapers/random/'+this.props.id+'/',{
+          name:this.state.paperName,
+          description:this.state.paperIns,
+          passing_ratio:this.state.paperpass,
+          subject:this.props.randomTable
+        })
+        .then(res=>{
+          console.log(res);
+          window.location.href="/#/manage";
+          this.props.randomTable.length=0;
+          this.props.setRandomTable(this.props.randomTable);
+        })
+        .catch(error=>{
+
+        })
+      }
+    }
+  }
+
+  warning=()=>{
+    Modal.warning({
+      title: '提示',
+      content: '试卷名称不能为空！',
+    });
+  }
+
+  confirmData=(type)=>{
+    confirm({
+      title: '提示',
+      content: '您的数据还未保存，确定离开此页面',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk:()=>{
+
+        this.setState({
+          paperName:"",
+          paperIns:"",
+        })
+        for(var key in this.props.fixedTable){
+          delete this.props.fixedTable[key];
+        }
+        if(type==="首页"){
+          window.location.href="/#/";
+        }
+        else{
+          window.location.href="/#/manage";
+        }
 
       },
       onCancel:()=>{
@@ -142,6 +369,29 @@ class RandomExamContainerReducer extends React.Component {
       },
     });
   }
+  //点击返回
+  checkData=(type)=>{
+    console.log(this.props.fixedTable);
+    if(type==="首页"){
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/";
+      }
+      else{
+        this.confirmData("首页");
+      }
+    }
+
+    else{
+      if(this.state.paperName==""&&this.state.paperIns==""&&JSON.stringify(this.props.fixedTable) == "{}"){
+        window.location.href="/#/manage";
+      }
+      else{
+        this.confirmData("试卷管理");
+      }
+    }
+
+  }
+
 
 
   render() {
@@ -149,13 +399,10 @@ class RandomExamContainerReducer extends React.Component {
       width:'468px'
     }
 
-
-
     const Length = (
       <span style={{position:'absolute',right:'8px',bottom:'8px',fontSize:'12px',color:'#ccc'}}>{this.state.paperInsLength}/500</span>
     )
 
-    var randomArrData=[];
 
     return (
       <div style={this.props.style} className="displayFlx">
@@ -172,32 +419,27 @@ class RandomExamContainerReducer extends React.Component {
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber min={0.01} max={100} step={0.01} value={this.state.allGrade} onChange={(event)=>this.onChangeAllGrade(event)} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <Radio value={2}>按题型</Radio>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>单选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber min={0.01} max={100} step={0.01} value={this.state.multiplechoiceresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'multiplechoiceresponseGrade')} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>多选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber min={0.01} max={100} step={0.01} value={this.state.choiceresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'choiceresponseGrade')} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
-              <div style={{margin:'6px 0px 12px 23px'}}>
-                <span style={{width:'80px',display:'inline-block'}}>判断题</span>
-                <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
-                <span style={{marginLeft:'6px'}}>分</span>
-              </div>
+
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>填空题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0} max={10} step={0.1} onChange={this.onChange} />
+                <InputNumber min={0.01} max={100} step={0.01} value={this.state.stringresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'stringresponseGrade')} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
             </RadioGroup>
@@ -205,24 +447,21 @@ class RandomExamContainerReducer extends React.Component {
           </Modal>
         </div>
 
-
-
-
         <Sidebar/>
         <div className="text-right-left">
 
           <Breadcrumb>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+          <Breadcrumb.Item onClick={this.checkData.bind(this,"首页")}>
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
-            <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+            <Breadcrumb.Item onClick={this.checkData.bind(this,"试卷管理")}>
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="edit" style={{marginRight: '5px'}} />
-              <span>编辑试卷</span>
+              <span>编辑随机试卷</span>
             </Breadcrumb.Item>
           </Breadcrumb>
 
@@ -257,80 +496,132 @@ class RandomExamContainerReducer extends React.Component {
             <div className="label-box">
               <div style={{lineHeight:'32px'}}>试题列表</div>
               <div>
-              <div style={{marginBottom:'10px'}}>
+                <div style={{marginBottom:'10px'}}>
 
-                <Button type="primary" onClick={()=>this.props.setShow(true)} >添加 </Button>
+                  <Button type="primary" onClick={()=>this.props.setShow(true)} >添加 </Button>
 
-                {
-                  this.props.randomArr.length === 0 ?
-                    <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
-                  :
-                    <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
-                }
-              </div>
+                  {
+                    this.props.randomTable.length === 0 ?
+                      <Button type="primary" disabled style={{marginLeft:'10px'}}>批量设置分值</Button>
+                    :
+                      <Button type="primary" style={{marginLeft:'10px'}} onClick={this.showModal}>批量设置分值</Button>
+                  }
+                </div>
               <div>
-                {
-                   this.state.randomPaper.map((item,index)=>{
-                    return(
-                      <div class="random-exam" key={item.id} style={{marginBottom:'10px'}}>
-                      <div className="courseName">
-                      <span className="examtype-name">{item.name}</span>
-                      <Tooltip title="删除" className="delete-right">
-                        <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} />
-                      </Tooltip>
-                    </div>
-                      <ul className="question-type">
-                        <li className="type">选择题</li>
-                        <li className="question-addnumber">共<a>{item.multiplechoiceresponse}</a>题</li>
-                        <li className="question-number">
-                          <div>
-                            <span style={{marginRight:'30px'}}>抽题数目</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                        <li className="question-score">
-                          <div>
-                            <span style={{marginRight:'30px'}}>单题分数</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                      </ul>
-                      <ul className="question-type">
-                        <li className="type">多选题</li>
-                        <li className="question-addnumber">共<a>{item.choiceresponse}</a>题</li>
-                        <li className="question-number">
-                          <div>
-                            <span style={{marginRight:'30px'}}>抽题数目</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                        <li className="question-score">
-                          <div>
-                            <span style={{marginRight:'30px'}}>单题分数</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                      </ul>
-                      <ul className="question-type">
-                        <li className="type">填空题</li>
-                        <li className="question-addnumber">共<a>120</a>题</li>
-                        <li className="question-number">
-                          <div>
-                            <span style={{marginRight:'30px'}}>抽题数目</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                        <li className="question-score">
-                          <div>
-                            <span style={{marginRight:'30px'}}>单题分数</span>
-                            <InputNumber min={0.01} max={100} step={0.01} onChange={this.onChange} />
-                          </div>
-                        </li>
-                      </ul>
-                    </div>
-                    )
 
-                  })
+
+                {
+                  this.props.randomTable.length>0 ?
+                  <div>
+                    {
+                    this.props.randomTable.map((item,index)=>{
+                      return(
+                        <div className="random-exam" key={item.id} style={{marginBottom:'10px'}}>
+                        <div className="courseName">
+                        <span className="examtype-name">{item.name}</span>
+                        <Tooltip title="删除" className="delete-right">
+                          <Icon type="delete" onClick={this.seleteSection.bind(this,item.id)} className="icon-red" style={{fontSize:'16px'}} />
+                        </Tooltip>
+                      </div>
+                        <ul className="question-type">
+                          <li className="type">单选题</li>
+                          <li className="question-addnumber">共<a>{item.multiplechoiceresponse}</a>题</li>
+                          <li className="question-number">
+                            <div>
+                              <span style={{marginRight:'30px'}}>抽题数目</span>
+
+                              {
+                                item.multiplechoiceresponse===0 ?
+                                <InputNumber disabled min={0} max={item.multiplechoiceresponse} defaultValue={0} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse')} />
+                                :
+                                <InputNumber min={0} max={item.multiplechoiceresponse} value={item.multiplechoiceresponseNumber} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                          <li className="question-score">
+                            <div>
+                              <span style={{marginRight:'30px'}}>单题分数</span>
+
+                              {
+                                item.multiplechoiceresponse===0 ?
+                                <InputNumber disabled min={0.01} max={100} step={0.01} defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'multiplechoiceresponse')} />
+                                :
+                                <InputNumber min={0.01} max={100} step={0.01} value={item.multiplechoiceresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'multiplechoiceresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                        </ul>
+                        <ul className="question-type">
+                          <li className="type">多选题</li>
+                          <li className="question-addnumber">共<a>{item.choiceresponse}</a>题</li>
+                          <li className="question-number">
+                            <div>
+                              <span style={{marginRight:'30px'}}>抽题数目</span>
+
+                              {
+                                item.choiceresponse==0 ?
+                                <InputNumber disabled min={0} max={item.choiceresponse} step={1} defaultValue={0} onChange={(event)=>this.onChangeNumber(event,item.id,'choiceresponse')} />
+                                :
+                                <InputNumber min={0} max={item.choiceresponse} step={1} value={item.choiceresponseNumber} onChange={(event)=>this.onChangeNumber(event,item.id,'choiceresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                          <li className="question-score">
+                            <div>
+                              <span style={{marginRight:'30px'}}>单题分数</span>
+
+                              {
+                                item.choiceresponse===0 ?
+                                <InputNumber disabled min={0.01} max={100} step={0.01}  defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'choiceresponse')} />
+                                :
+                                <InputNumber min={0.01} max={100} step={0.01}  value={item.choiceresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'choiceresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                        </ul>
+                        <ul className="question-type">
+                          <li className="type">填空题</li>
+                          <li className="question-addnumber">共<a>{item.stringresponse}</a>题</li>
+                          <li className="question-number">
+                            <div>
+                              <span style={{marginRight:'30px'}}>抽题数目</span>
+
+                              {
+                                item.stringresponse===0 ?
+                                <InputNumber disabled min={0} max={item.choiceresponse} step={1} defaultValue={0} onChange={(event)=>this.onChangeNumber(event,item.id,'stringresponse')} />
+                                :
+                                <InputNumber min={0} max={item.choiceresponse} step={1} value={item.stringresponseNumber} onChange={(event)=>this.onChangeNumber(event,item.id,'stringresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                          <li className="question-score">
+                            <div>
+                              <span style={{marginRight:'30px'}}>单题分数</span>
+                              {
+                                item.stringresponse===0 ?
+                                <InputNumber disabled min={0.01} max={100} step={0.01} defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'stringresponse')} />
+                                :
+                                <InputNumber min={0.01} max={100} step={0.01} value={item.stringresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'stringresponse')} />
+                              }
+
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                      )
+                    })
+                    }
+                  </div>
+                  :
+                  <div className="examnodata">
+                    <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
+                    <p style={{textAlign:'center'}}>暂无数据</p>
+                  </div>
 
                 }
               </div>
@@ -343,27 +634,23 @@ class RandomExamContainerReducer extends React.Component {
                       <span className="first-span">题型</span>
                       <span>单选题</span>
                       <span>多选题</span>
-                      <span>判断题</span>
                       <span>填空题</span>
                   </div>
                   <div className="total-block">
                       <span className="first-span">已选数量</span>
-                      <span className="number">25</span>
-                      <span className="number">30</span>
-                      <span className="number">40</span>
-                      <span className="number">44</span>
+                      <span className="number">{this.props.multiplechoiceresponseNumber}</span>
+                      <span className="number">{this.props.choiceresponseNumber}</span>
+                      <span className="number">{this.props.stringresponseNumber}</span>
                   </div>
                   <div className="pass-per">
                     <div>
-                      <span>总题型：{this.state.paper.length}</span>
-                      <span>总分：{this.state.paper.length}</span>
+                      <span>总题数：{this.props.sumAll}</span>
+                      <span>总分：{this.props.sumGrade}</span>
                       <span>
                         <span style={{marginRight:'6px'}}>及格线*</span>
                         <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
                         <span style={{marginLeft:'6px'}}>%</span>
-
                       </span>
-
                       <span>（及格分60=总分100分*及格线60%）</span>
                     </div>
                   </div>
@@ -371,9 +658,9 @@ class RandomExamContainerReducer extends React.Component {
               </div>
 
               {
-                this.props.randomArr.length>0 ?
+                this.props.randomTable.length>0 ?
                 <div className="editbtn" style={{width:'64px'}}>
-                  <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveRandomExam}>保存</Button>
+                  <Button type="primary" onClick={this.saveRandomExam}>保存</Button>
                 </div>
                 :
                 <div className="editbtn" style={{width:'64px'}}>
@@ -397,18 +684,41 @@ class RandomExamContainerReducer extends React.Component {
 const mapStateToProps = (state) => {
   const {fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
-  const randomArr=[];
 
-  for (let i in randomTable) {
-    randomArr.push(randomTable[i]);
-  }
+  //抽题数目
+
+
+
+  let multiplechoiceresponseNumber=0,
+      choiceresponseNumber=0,
+      stringresponseNumber=0,
+      multiplechoiceresponseGrade=0,
+      choiceresponseGrade=0,
+      stringresponseGrade=0;
+
+  randomTable.map(item=>{
+    multiplechoiceresponseNumber+=item.multiplechoiceresponseNumber;
+    choiceresponseNumber+=item.choiceresponseNumber;
+    stringresponseNumber+=item.stringresponseNumber;
+    multiplechoiceresponseGrade+=item.multiplechoiceresponseNumber*item.multiplechoiceresponseGrade;
+    choiceresponseGrade+=item.choiceresponseNumber*item.choiceresponseGrade;
+    stringresponseGrade+=item.stringresponseNumber*item.stringresponseGrade;
+  })
+
+  let sumAll=multiplechoiceresponseNumber+choiceresponseNumber+stringresponseNumber;
+  let sumGrade = multiplechoiceresponseGrade+choiceresponseGrade+stringresponseGrade;
+  sumGrade = sumGrade.toFixed(2)
 
 
   return {
     selectQuestionList,
     fixedTable,
     randomTable,
-    randomArr,
+    multiplechoiceresponseNumber,
+    choiceresponseNumber,
+    stringresponseNumber,
+    sumAll,
+    sumGrade,
   }
 }
 
@@ -438,6 +748,8 @@ export default class RandomExam extends React.Component {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
+
+    console.log(this.props.id);
   }
 
   setShow=(isShow)=>{
@@ -463,9 +775,15 @@ export default class RandomExam extends React.Component {
     }
     return (
       <div>
-        <Header showShadow={this.state.showShadow} />
+        {
+          this.props.id===undefined ?
+          <Header showShadow={this.state.showShadow} />
+          :
+          null
+        }
+
         <div className="container" style={containerHeight}>
-          <RandomExamContainer setShow={this.setShow} isShow={isShow} style={display}/>
+          <RandomExamContainer id={this.props.id} setShow={this.setShow} isShow={isShow} style={display}/>
 
           <SelectQuestion
             selectQuestionList={this.state.selectQuestionList}
@@ -476,7 +794,13 @@ export default class RandomExam extends React.Component {
           />
 
         </div>
-        <Footer />
+        {
+          this.props.id===undefined ?
+          <Footer />
+          :
+          null
+        }
+
       </div>
     );
   }
