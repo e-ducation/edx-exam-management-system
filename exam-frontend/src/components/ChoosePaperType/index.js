@@ -27,17 +27,17 @@ export default class choosePaperType extends Component {
       >
         <div className="block-fix" onClick={this.createFixPaper}>
           <div>
-            <i className="iconfont icon" style={{ fontSize: '40px'}}>&#xe641;</i>
+            <Icon type="edit" className="icon"/>
           </div>
           <h3>固定试题</h3>
-          <p>所有考生的试题相同，试题的顺序可以固定，也可以打乱。</p>
+          <p>所有考生的试题相同，试题的顺序可以固定，也可以打乱</p>
         </div>
         <div className="block-random" onClick={this.createRandomPaper}>
           <div>
-            <i className="iconfont icon">&#xe632;</i>
+            <Icon type="edit" className="icon" />
           </div>
           <h3>随机试题</h3>
-          <p>设置试题抽取规则，随机生成试卷，每个考生的试卷都不同。</p>
+          <p>设置试题抽取规则，随机生成试卷，</p>
         </div>
       </Modal>
     );

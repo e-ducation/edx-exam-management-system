@@ -31,7 +31,6 @@ export default class ProblemDetail extends Component {
         visible={this.state.visible}
         destroyOnClose={true}
         width="600px"
-        onCancel={this.hideModal}
         footer={[<Button key="cancel" type="primary" onClick={this.hideModal}>确定</Button>]}
       >
         {

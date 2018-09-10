@@ -51,11 +51,11 @@ class HomeContainer extends React.Component {
         <div className="text-right-left home">
           <p style={{ margin: '10px 0 20px'}}>{this.state.username}，欢迎来到考试管理系统，您可以在这里管理您的试卷和发布考试任务。</p>
           <div className="home-create" onClick={this.showModal}>
-            <i className="iconfont home-icon" style={{color:'#37c591'}}>&#xe62e;</i>
+            <Icon type="edit" className="home-icon" style={{color:'#37c591'}}/>
             <div>我要创建试卷</div>
           </div>
           <div className="home-create">
-            <i className="iconfont home-icon" style={{color:'#95cd5b'}}>&#xe66b;</i>
+            <Icon type="edit" className="home-icon" style={{color:'#95cd5b'}}/>
             <div>我要创建考试任务</div>
           </div>
           <h1 className="home-header">流程指引</h1>
@@ -69,17 +69,17 @@ class HomeContainer extends React.Component {
             <div className="home-guide">
               <span>1</span>
               <h3>创建试卷</h3>
-              <p className="home-p"><span>·</span>选取题目或出题范围</p>
-              <p className="home-p"><span>·</span>完善试卷信息</p>
-              <p className="home-p"><span>·</span>创建试卷成功！</p>
+              <p>· 选取题目或出题范围</p>
+              <p>· 完善试卷信息</p>
+              <p>· 创建试卷成功！</p>
 
             </div>
             <div className="home-guide">
               <span>2</span>
               <h3>创建考试任务</h3>
-              <p className="home-p"><span>·</span>选择本场考试使用的试卷</p>
-              <p className="home-p"><span>·</span>设置考试时间和参加人员</p>
-              <p className="home-p"><span>·</span>发布考试任务</p>
+              <p>· 选择本场考试使用的试卷</p>
+              <p>· 设置考试时间和参加人员</p>
+              <p>· 发布考试任务</p>
             </div>
             <div className="home-guide">
               <span>3</span>

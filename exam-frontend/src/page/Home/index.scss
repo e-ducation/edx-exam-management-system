@@ -5,7 +5,7 @@
     .home-create{
       display: inline-block;
       width:150px;
-      height:115px;
+      height:110px;
       background: #f8fcff;
       border: 1px solid #cbe8f8;
       text-align: center;
@@ -19,9 +19,8 @@
       background: #ebf6fd;
     }
     .home-icon{
-      font-size: 40px;
-      margin: 10px 0 18px;
-      display: inline-block;
+      font-size: 45px;
+      margin: 10px 0;
     }
     .home-header{
       margin: 50px 0 30px;
@@ -65,18 +64,6 @@
       p{
         text-align: left;
         line-height: 1.5;
-      }
-      .home-p{
-        text-indent: 13px;
-        position: relative;
-      }
-      .home-p span{
-        width: 4px;
-        height: 4px;
-        background: $font;
-        position: absolute;
-        top: 8px;
-        left: 0;
       }
     }
   }
