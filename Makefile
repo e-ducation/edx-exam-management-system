@@ -9,7 +9,7 @@ install: ## Install requirements
 	cd exam-frontend && npm i
 
 dev.makemigrations: ## Generate migrations
-	python manage.py makemigrations
+	python manage.py makemigrations exam_paper
 
 dev.migrate: ## Execute migrate
 	python manage.py migrate
