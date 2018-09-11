@@ -144,3 +144,6 @@ $blue_active: #1da6f3;
 .input-padding .ant-input-number-input{
   padding: 0 4px;
 }
+.editExam .ant-table-small > .ant-table-content > .ant-table-body > table > .ant-table-tbody > tr > td:nth-of-type(2){
+  text-align: left;
+}
