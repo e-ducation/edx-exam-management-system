@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Table, Input, Pagination, Icon, Dropdown, Menu, Button } from 'antd';
 import { problemsType } from '../../utils';
 import ProblemDetail from '../../components/ProblemDetail';
-
+import none from "../../assets/images/none.png";
 export default class FixedQustion extends Component{
   state = {
     activeCourse: '',
@@ -195,6 +195,7 @@ export default class FixedQustion extends Component{
           size="small"
           rowKey="id"
           loading={loading}
+          locale={{ emptyText: <div style={{marginBottom: '35px'}}><img src={none} style={{width: '125px', margin: '30px 0 20px'}} alt="" /><div>暂无数据</div></div> }}
         />
         {
           questionList.count > 0 &&
