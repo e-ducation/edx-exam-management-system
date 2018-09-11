@@ -255,7 +255,7 @@ class ManageContainer extends React.Component {
               <span>试卷管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px'}}>试卷管理</h1>
+          <h1 style={{ margin: '25px 0 20px', fontSize:'16px'}}>试卷管理</h1>
           <Table
             columns={columns}
             dataSource={this.state.list}
@@ -291,14 +291,14 @@ class ManageContainer extends React.Component {
                   className="page-num"
                 />
                 <span className="page-size">
-                  {  !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '每页显示' : '' }
+                  每页显示
                   <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
                     <Select.Option value="10">10</Select.Option>
                     <Select.Option value="20">20</Select.Option>
                     <Select.Option value="30">30</Select.Option>
                     <Select.Option value="50">50</Select.Option>
                   </Select>
-                  { !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '条' : 'items per page' }
+                  条
                 </span>
               </div>
           }
