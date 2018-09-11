@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 from __future__ import unicode_literals
 
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -48,7 +50,9 @@ class ExamPaperProblems(TimeStampedModel):
     problem_id = models.CharField(max_length=255, db_index=True)
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE)
     grade = models.DecimalField(max_digits=5, decimal_places=2,
-                                validators=[MinValueValidator(0.01), MaxValueValidator(100.00)])
+                                validators=[
+                                    MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                    MaxValueValidator(Decimal(100))])
     content = JSONField()
 
 
@@ -60,4 +64,6 @@ class ExamPaperCreateRule(TimeStampedModel):
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE)
     problem_num = models.IntegerField(default=0)
     grade = models.DecimalField(max_digits=5, decimal_places=2, default=1.00,
-                                validators=[MinValueValidator(0.01), MaxValueValidator(100.00)])
+                                validators=[
+                                    MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                    MaxValueValidator(Decimal(100))])
