@@ -20,7 +20,6 @@ const confirm = Modal.confirm;
 
 class RandomExamContainerReducer extends React.Component {
   state={
-    loading:true,
     paperName:"",
     paperIns:"",
     paper:[],
@@ -34,6 +33,8 @@ class RandomExamContainerReducer extends React.Component {
     multiplechoiceresponseGrade:1,
     choiceresponseGrade:1,
     stringresponseGrade:1,
+    value01True:false,
+    value02True:true,
   }
 
   constructor(props) {
@@ -223,6 +224,16 @@ class RandomExamContainerReducer extends React.Component {
     })
   }
 
+  onAllGradeBlur=(e,grade)=>{
+
+    if(grade===undefined){
+      console.log(1);
+      this.setState({
+        allGrade:0.01
+      })
+    }
+  }
+
   onChangeSomeGrade=(e,type)=>{
     if(type==="multiplechoiceresponseGrade"){
       this.setState({
@@ -237,6 +248,32 @@ class RandomExamContainerReducer extends React.Component {
     if(type==="stringresponseGrade"){
       this.setState({
         stringresponseGrade:e
+      })
+    }
+  }
+
+  onSingleBlur=(e,grade)=>{
+
+    if(grade===undefined){
+
+      this.setState({
+        multiplechoiceresponseGrade:0.01
+      })
+    }
+  }
+
+  onMuiBlur=(e,grade)=>{
+    if(grade===undefined){
+      this.setState({
+        choiceresponseGrade:0.01
+      })
+    }
+  }
+
+  exericeGrade=(e,grade)=>{
+    if(grade===undefined){
+      this.setState({
+        stringresponseGrade:0.01
       })
     }
   }
@@ -315,6 +352,20 @@ class RandomExamContainerReducer extends React.Component {
   }
 
   settingOnChange=(e)=>{
+
+    if(e.target.value===1){
+      this.setState({
+        value01True:false,
+        value02True:true
+      })
+    }
+    else{
+      this.setState({
+        value01True:true,
+        value02True:false
+      })
+    }
+
     this.setState({
       value:e.target.value,
     })
@@ -472,27 +523,39 @@ class RandomExamContainerReducer extends React.Component {
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0.01} max={100} step={0.01} value={this.state.allGrade} onChange={(event)=>this.onChangeAllGrade(event)} />
+                <InputNumber disabled={this.state.value01True} min={0.01} max={100} step={0.01} value={this.state.allGrade}
+                onChange={(event)=>this.onChangeAllGrade(event)}
+                onBlur={(event)=>{this.onAllGradeBlur(event,this.state.allGrade)}}
+                />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <Radio value={2}>按题型</Radio>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>单选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0.01} max={100} step={0.01} value={this.state.multiplechoiceresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'multiplechoiceresponseGrade')} />
+                <InputNumber disabled={this.state.value02True} min={0.01} max={100} step={0.01} value={this.state.multiplechoiceresponseGrade}
+                onChange={(event)=>this.onChangeSomeGrade(event,'multiplechoiceresponseGrade')}
+                onBlur={(event)=>{this.onSingleBlur(event,this.state.multiplechoiceresponseGrade)}}
+                />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>多选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0.01} max={100} step={0.01} value={this.state.choiceresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'choiceresponseGrade')}/>
+                <InputNumber disabled={this.state.value02True} min={0.01} max={100} step={0.01} value={this.state.choiceresponseGrade}
+                onChange={(event)=>this.onChangeSomeGrade(event,'choiceresponseGrade')}
+                onBlur={(event)=>{this.onMuiBlur(event,this.state.choiceresponseGrade)}}
+                />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
 
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>填空题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber min={0.01} max={100} step={0.01} value={this.state.stringresponseGrade} onChange={(event)=>this.onChangeSomeGrade(event,'stringresponseGrade')} />
+                <InputNumber disabled={this.state.value02True} min={0.01} max={100} step={0.01} value={this.state.stringresponseGrade}
+                onChange={(event)=>this.onChangeSomeGrade(event,'stringresponseGrade')}
+                onBlur={(event)=>{this.exericeGrade(event,this.state.stringresponseGrade)}}
+                />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
             </RadioGroup>
@@ -575,7 +638,7 @@ class RandomExamContainerReducer extends React.Component {
                     {
                     this.props.randomTable.map((item,index)=>{
                       return(
-                        <div className="random-exam" loading={this.state.loading} key={item.id} style={{marginBottom:'10px'}}>
+                        <div className="random-exam" key={item.id} style={{marginBottom:'10px'}}>
                         <div className="courseName">
                         <span className="examtype-name">{item.name}</span>
                         <Tooltip title="删除" className="delete-right">
@@ -593,7 +656,7 @@ class RandomExamContainerReducer extends React.Component {
                                 item.multiplechoiceresponse===0 ?
                                 <InputNumber disabled min={0} max={item.multiplechoiceresponse} precision={1} defaultValue={0} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse',item.multiplechoiceresponse)} />
                                 :
-                                <InputNumber min={0} max={item.multiplechoiceresponse} value={item.multiplechoiceresponseNumber} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse')} onBlur={(event)=>this.onBlurNumber(event,item.id,'multiplechoiceresponse')} />
+                                <InputNumber min={0} max={item.multiplechoiceresponse} value={item.multiplechoiceresponseNumber} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse')} />
                               }
 
                             </div>
@@ -677,7 +740,7 @@ class RandomExamContainerReducer extends React.Component {
                     }
                   </div>
                   :
-                  <div className="examnodata" loading={this.state.loading}>
+                  <div className="examnodata">
                     <img src={none} style={{display:'block',width:'167px',height:'auto',margin:'42px auto 10px auto'}} />
                     <p style={{textAlign:'center'}}>暂无数据</p>
                   </div>
@@ -710,7 +773,7 @@ class RandomExamContainerReducer extends React.Component {
                         <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
                         <span style={{marginLeft:'6px'}}>%</span>
                       </span>
-                      <span>（及格分60=总分100分*及格线60%）</span>
+                      <span>（及格分{(this.props.sumGrade*(this.state.paperpass*0.01)).toFixed('2')}=总分{this.props.sumGrade}分*{this.state.paperpass}及格线%）</span>
                     </div>
                   </div>
                 </div>

@@ -137,7 +137,9 @@ class DragSortingTable extends React.Component {
     allGrade:1,
     singleGrade:1,
     MuiGrade:1,
-    exericeGrade:1
+    exericeGrade:1,
+    value01True:false,
+    value02True:true,
   }
 
   components = {
@@ -164,8 +166,28 @@ class DragSortingTable extends React.Component {
     })
 
     this.props.setFixedTable(this.props.fixedTable);
+    console.log(this.props.fixHasNumArr);
+  }
+
+  //失去焦点
+  onsingleBlur=(e,id)=>{
+
+
+    this.props.fixHasNumArr.map(item=>{
+      if(item.problem_id==id){
+        if(item.grade===undefined){
+          item.grade=0.01
+          this.props.fixedTable[id].grade=0.01
+        }
+      }
+    })
+
+    this.props.setFixedTable(this.props.fixedTable);
 
   }
+
+
+
 
   settingHandleOk = (e) => {
 
@@ -241,11 +263,12 @@ class DragSortingTable extends React.Component {
   showDeleteConfirm=(id)=>{
 
     confirm({
-      title: 'Are you sure delete this task?',
-      content: 'Some descriptions',
+      title: '提示',
+      content: '确定删除此题目',
       okText: '确定',
       okType: 'danger',
       cancelText: '取消',
+      iconType:'exclamation-circle exclamation-red',
       onOk:()=>{
         //删除并回推数据
         delete this.props.fixedTable[id];
@@ -264,6 +287,20 @@ class DragSortingTable extends React.Component {
 
   //批量设置分数
   settingOnChange=(e)=>{
+
+    if(e.target.value==1){
+      this.setState({
+        value01True:false,
+        value02True:true
+      })
+    }
+    else{
+      this.setState({
+        value01True:true,
+        value02True:false
+      })
+    }
+
     this.setState({
       value:e.target.value,
     })
@@ -271,10 +308,31 @@ class DragSortingTable extends React.Component {
 
   //修改全部分数
   onAllGradeChange=(e)=>{
+
     this.setState({
       allGrade:e
     })
+
   }
+
+  onAllGradeBlur=(e,grade)=>{
+
+    if(grade===undefined){
+      console.log(1);
+      this.setState({
+        allGrade:0.01
+      })
+    }
+  }
+  //整数
+  formatterInteger=(value, max, min)=> {
+    value = value.toString().replace(/\$\s?|([^\d]*)/g, '');
+    if (parseInt(value) > max || parseInt(value) < min) {
+      value = value.substring(0, value.length-1);
+    }
+    return value;
+  }
+
 
   //修改单选题
   onSingleChange=(e)=>{
@@ -283,6 +341,19 @@ class DragSortingTable extends React.Component {
     })
   }
 
+  onSingleBlur=(e,grade)=>{
+
+    if(grade===undefined){
+
+      this.setState({
+        singleGrade:0.01
+      })
+    }
+  }
+
+
+
+
   //修改多选题的分数
   onMuiChange=(e)=>{
     this.setState({
@@ -290,11 +361,27 @@ class DragSortingTable extends React.Component {
     })
   }
 
+  onMuiBlur=(e,grade)=>{
+    if(grade===undefined){
+      this.setState({
+        MuiGrade:0.01
+      })
+    }
+  }
+
   //修改填空题的分数
   onExericeChange=(e)=>{
     this.setState({
       exericeGrade:e
     })
+  }
+
+  exericeGrade=(e,grade)=>{
+    if(grade===undefined){
+      this.setState({
+        exericeGrade:0.01
+      })
+    }
   }
 
 
@@ -344,7 +431,9 @@ class DragSortingTable extends React.Component {
         title: '分值',
         dataIndex: '',
         render:(text,record)=>(
-          <InputNumber className="input-padding" min={0.01} max={100} step={0.01} value={record.grade} onChange={(event)=>{this.onsingleChange(event,record.problem_id)}} />
+          <InputNumber className="input-padding" min={0.01} max={100} step={0.01} value={record.grade}
+          onChange={(event)=>{this.onsingleChange(event,record.problem_id)}}
+          onBlur={(event)=>{this.onsingleBlur(event,record.problem_id)}} />
         )
       },{
         width:'7.6%',
@@ -366,6 +455,12 @@ class DragSortingTable extends React.Component {
             visible={this.state.settingScoreVisible}
             onOk={this.settingHandleOk}
             onCancel={this.settingHandleCancel}
+            footer={[
+              <Button key="取消" onClick={this.settingHandleCancel}>取消</Button>,
+              <Button key="确定" type="primary"  onClick={this.settingHandleOk}>
+                确定
+              </Button>
+            ]}
           >
             <p>批量设置的分值将覆盖掉之前设置的分值，请谨慎操作。</p>
             <RadioGroup onChange={this.settingOnChange} value={this.state.value} name="radiogroup" style={{marginTop:'10px'}}>
@@ -373,26 +468,26 @@ class DragSortingTable extends React.Component {
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>所有题目</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onAllGradeChange(event)}} />
+                <InputNumber className="input-padding" disabled={this.state.value01True} min={0.01} max={100} step={0.01} value={this.state.allGrade} onChange={(event)=>{this.onAllGradeChange(event)}} onBlur={(event)=>{this.onAllGradeBlur(event,this.state.allGrade)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <Radio value={2}>按题型</Radio>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>单选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onSingleChange(event)}} />
+                <InputNumber className="input-padding" disabled={this.state.value02True}  min={0.01} max={100} step={0.01} value={this.state.singleGrade} onChange={(event)=>{this.onSingleChange(event)}} onBlur={(event)=>{this.onSingleBlur(event,this.state.singleGrade)}} />
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 12px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>多选题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onMuiChange(event)}} />
+                <InputNumber className="input-padding" disabled={this.state.value02True}  min={0.01} max={100} step={0.01} value={this.state.MuiGrade} onChange={(event)=>{this.onMuiChange(event)}} onBlur={(event)=>{this.onMuiBlur(event,this.state.MuiGrade)}}/>
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
               <div style={{margin:'6px 0px 6px 23px'}}>
                 <span style={{width:'80px',display:'inline-block'}}>填空题</span>
                 <span style={{marginRight:'6px'}}>每题</span>
-                <InputNumber className="input-padding" min={0.01} max={100} step={0.01} defaultValue={1.0} onChange={(event)=>{this.onExericeChange(event)}} />
+                <InputNumber className="input-padding" disabled={this.state.value02True} min={0.01} max={100} step={0.01} value={this.state.exericeGrade} onChange={(event)=>{this.onExericeChange(event)}} onBlur={(event)=>{this.onExericeBlur(event,this.state.exericeGrade)}}/>
                 <span style={{marginLeft:'6px'}}>分</span>
               </div>
             </RadioGroup>
