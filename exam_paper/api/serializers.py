@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 from decimal import Decimal
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.compat import MaxValueValidator, MinValueValidator
 
 from exam_paper.models import ExamPaper, ExamPaperProblems, ExamPaperCreateRule
 
@@ -23,6 +24,10 @@ class ExamPaperMixin(object):
 
 class ExamPaperProblemsSerializer(serializers.ModelSerializer):
     content = serializers.JSONField(required=True)
+    grade = serializers.DecimalField(max_digits=5, decimal_places=2,
+                                     validators=[
+                                         MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                         MaxValueValidator(Decimal(100))])
 
     class Meta:
         model = ExamPaperProblems
@@ -30,6 +35,10 @@ class ExamPaperProblemsSerializer(serializers.ModelSerializer):
 
 
 class ExamPaperCreateRuleSerializer(serializers.ModelSerializer):
+    grade = serializers.DecimalField(max_digits=5, decimal_places=2, default=1.00,
+                                     validators=[
+                                         MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                         MaxValueValidator(Decimal(100))])
 
     class Meta:
         model = ExamPaperCreateRule
@@ -65,7 +74,10 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
     problems = ExamPaperProblemsSerializer(many=True)
     description = serializers.CharField(required=False)
-    passing_ratio = serializers.IntegerField(default=60)
+    passing_ratio = serializers.IntegerField(default=60,
+                                             validators=[
+                                                 MinValueValidator(1),
+                                                 MaxValueValidator(100)])
 
     class Meta:
         model = ExamPaper
@@ -101,6 +113,10 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
 class ExamPaperRandomSerializer(serializers.ModelSerializer):
     rules = ExamPaperCreateRuleSerializer(many=True)
+    passing_ratio = serializers.IntegerField(default=60,
+                                             validators=[
+                                                 MinValueValidator(1),
+                                                 MaxValueValidator(100)])
 
     class Meta:
         model = ExamPaper
