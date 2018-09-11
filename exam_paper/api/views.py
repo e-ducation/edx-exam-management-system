@@ -125,7 +125,7 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
     filter_backends = (filters.SearchFilter, filters.OrderingFilter)
     search_fields = ('name',)
     ordering_fields = ('created',)
-    ordering = ('created',)
+    ordering = ('-created',)
 
     def get_queryset(self):
         user = self.request.user

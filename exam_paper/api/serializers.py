@@ -117,6 +117,7 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
                                              validators=[
                                                  MinValueValidator(1),
                                                  MaxValueValidator(100)])
+    description = serializers.CharField(required=False)
 
     class Meta:
         model = ExamPaper
