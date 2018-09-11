@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Table } from 'antd';
+import none from "../../assets/images/none.png";
 export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],
@@ -38,10 +39,6 @@ export default class RandomBlock extends Component {
         dataIndex: 'multiple',
       },
       {
-        title: '判断题',
-        dataIndex: 'checking',
-      },
-      {
         title: '填空题',
         dataIndex: 'completion',
       },
@@ -71,6 +68,7 @@ export default class RandomBlock extends Component {
           rowKey="id"
           loading={loading}
           pagination={{showTotal: (z)=> `共${z}条记录`}}
+          locale={{ emptyText: <div style={{marginBottom: '35px'}}><img src={none} style={{width: '125px', margin: '30px 0 20px'}} alt="" /><div>暂无数据</div></div> }}
         />
       </div>
     )
