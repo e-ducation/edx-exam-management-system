@@ -344,7 +344,7 @@ class EditContainerReducer extends React.Component {
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'32px'}}>试题列表</div>
+              <div style={{lineHeight:'32px'}}>试题列表*</div>
               <div>
 
                 <MoveTable setShow={this.props.setShow}/>
