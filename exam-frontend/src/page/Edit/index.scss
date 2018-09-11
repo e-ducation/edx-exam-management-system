@@ -143,4 +143,11 @@ $blue_active: #1da6f3;
 }
 .input-padding .ant-input-number-input{
   padding: 0 4px;
+  padding-right: 24px;
+}
+.ant-input-number{
+  width: 76px;
+}
+.ant-modal-body .ant-input-number-input{
+  padding-right: 24px;
 }
