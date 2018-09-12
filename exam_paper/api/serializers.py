@@ -6,6 +6,7 @@ from decimal import Decimal
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework.compat import MaxValueValidator, MinValueValidator
+from rest_framework.exceptions import ValidationError
 
 from exam_paper.models import ExamPaper, ExamPaperProblems, ExamPaperCreateRule
 
@@ -86,6 +87,8 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         problems_data = validated_data.pop('problems')
+        if not problems_data:
+            raise ValidationError('problems may not be blank.')
         exam_paper = ExamPaper.objects.create(**validated_data)
         with transaction.atomic():
             for problem_data in problems_data:
@@ -97,6 +100,8 @@ class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
     def update(self, exam_paper, validated_data):
         problems_data = validated_data.pop('problems')
+        if not problems_data:
+            raise ValidationError('problems may not be blank.')
         with transaction.atomic():
             exam_paper.__dict__.update(**validated_data)
             exam_paper.save()
@@ -126,6 +131,8 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         rules_data = validated_data.pop('rules')
+        if not rules_data:
+            raise ValidationError('rules may not be blank.')
         exam_paper = ExamPaper.objects.create(**validated_data)
         with transaction.atomic():
             for rule_data in rules_data:
@@ -137,6 +144,8 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
 
     def update(self, exam_paper, validated_data):
         rules_data = validated_data.pop('rules')
+        if not rules_data:
+            raise ValidationError('ruels may not be blank.')
         with transaction.atomic():
             exam_paper.__dict__.update(**validated_data)
             exam_paper.save()
