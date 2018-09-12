@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Table, Input, Pagination, Icon, Dropdown, Menu, Button } from 'antd';
 import { problemsType } from '../../utils';
 import ProblemDetail from '../../components/ProblemDetail';
-
+import none from "../../assets/images/none.png";
 export default class FixedQustion extends Component{
   state = {
     activeCourse: '',
@@ -147,7 +147,7 @@ export default class FixedQustion extends Component{
       <Menu onClick={this.handleMenuClick}>
         {
           activeQuestionType !== '全部' &&
-          <Menu.Item key="全部">全部</Menu.Item>
+          <Menu.Item key="全部">全部题型</Menu.Item>
         }
         <Menu.Item key="multiplechoiceresponse">单选题</Menu.Item>
         <Menu.Item key="choiceresponse">多选题</Menu.Item>
@@ -159,7 +159,7 @@ export default class FixedQustion extends Component{
         <div>
            <Dropdown overlay={menu}>
             <Button>
-              { activeQuestionType === '全部' ? activeQuestionType : problemsType[activeQuestionType] } <Icon type="down" />
+              { activeQuestionType === '全部' ? '全部题型' : problemsType[activeQuestionType] } <Icon type="down" />
             </Button>
           </Dropdown>
           <Dropdown overlay={cmenu}>
@@ -195,6 +195,7 @@ export default class FixedQustion extends Component{
           size="small"
           rowKey="id"
           loading={loading}
+          locale={{ emptyText: <div style={{marginBottom: '35px'}}><img src={none} style={{width: '125px', margin: '30px 0 20px'}} alt="" /><div>暂无数据</div></div> }}
         />
         {
           questionList.count > 0 &&

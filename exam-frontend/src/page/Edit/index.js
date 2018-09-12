@@ -38,6 +38,15 @@ class EditContainerReducer extends React.Component {
     console.log(window.location.pathname);
   }
 
+  //整数
+  formatterInteger=(value, max, min)=> {
+    value = value.toString().replace(/\$\s?|([^\d]*)/g, '');
+    if (parseInt(value) > max || parseInt(value) < min) {
+      value = value.substring(0, value.length-1);
+    }
+    return value;
+  }
+
   //修改试卷名称
   onChangePaperName=(e)=>{
     this.setState({
@@ -54,10 +63,15 @@ class EditContainerReducer extends React.Component {
   }
   //修改及格线数值
   onChangePass=(e)=>{
+    if(e==""){
+      e=1
+    }
     this.setState({
-      paperpass:e
+      paperpass:this.formatterInteger(e,100,1)
     })
   }
+
+
   //keyup事件
   inputNumberPass=(e)=>{
     let value = e.target.value;
@@ -112,7 +126,7 @@ class EditContainerReducer extends React.Component {
             saveVisible:true
           })
           //提示错误
-          message.warning('This is message of warning');
+          message.warning('服务器忙，请重试');
         })
       }
       else{
@@ -373,7 +387,7 @@ class EditContainerReducer extends React.Component {
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
-                        <span>（及格分60=总分100分*及格线60%）</span>
+                        <span>（及格分{(this.props.sum*this.state.paperpass*0.01).toFixed('2')}=总分{this.props.sum}分*{this.state.paperpass}及格线%）</span>
                       </div>
                     </div>
 
@@ -382,16 +396,16 @@ class EditContainerReducer extends React.Component {
 
                 {/* 是否可以预览以及保存，保存提交方法saveFixExam */}
                 {
-                  this.props.fixHasNumArr.length>0 ?
+                  this.state.paperName=="" ?
+                  <div className="editbtn">
+                    <Button disabled>预览试卷</Button>
+                    <Button type="primary" disabled>保存</Button>
+                  </div>
+                  :
                   <div className="editbtn">
                     <Button onClick={this.seeExamPaper}>预览试卷</Button>
                     <Button type="primary" disabled={this.state.saveVisible} onClick={this.saveFixExam}>保存</Button>
                   </div>
-                  :
-                  <div className="editbtn">
-                    <Button disabled>预览试卷</Button>
-                    <Button type="primary" disabled>保存</Button>
-                    </div>
                 }
 
               </div>
@@ -427,12 +441,18 @@ const mapStateToProps = (state) => {
 
   let sum =0;
 
+
   fixHasNumArr.map(item=>{
-    sum+=item.grade;
-    return sum;
+
+    sum+=parseFloat(item.grade);
+
   });
 
-  sum = sum.toFixed(2);
+  if(sum.toString().length>6){
+    sum=sum.toFixed('2');
+  }
+
+
 
   let singleChioceNum=0;
   let mulChioceNum=0;
