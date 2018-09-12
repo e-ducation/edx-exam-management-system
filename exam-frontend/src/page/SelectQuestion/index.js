@@ -312,6 +312,9 @@ class SelectQuestion extends Component {
   searchCourse = (e) => {
     const that = this;
     const CancelToken = axios.CancelToken;
+    this.setState({
+      courseSearch: e.target.value,
+    })
     if (this.searchAjax){
       this.searchAjax();
     }
@@ -346,10 +349,9 @@ class SelectQuestion extends Component {
   render() {
     const { activeCourseName, courseList, activeCourse, sectionList, questionList,randomLoading, quesitonLoading, counting } = this.state;
     const { paperType, selectQuestionList, selectSectionList} = this.props;
+    const sum = counting['multiplechoiceresponse'] + counting['stringresponse']+ counting['choiceresponse'];
     // console.log(this.props)
     // 固定与随机的counting区别
-    // const counting = paperType === 'fixed' ? this.state.counting : this.props.counting;
-
     return (
       <div style={this.props.style}>
         <div className="qs-container">
@@ -367,16 +369,35 @@ class SelectQuestion extends Component {
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <Icon type="select" theme="outlined" style={{ marginRight: '5px' }} />
-              <span>选择范围</span>
+              <span>
+                {
+                  paperType === 'fixed' ?
+                  '选择题目'
+                  :
+                  '选择范围'
+                }
+
+              </span>
             </Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="select-scope">选择范围</div>
+          <div className="select-scope">
+            {
+              paperType === 'fixed' ?
+              '选择题目'
+              :
+              '选择范围'
+            }
+          </div>
           <div className="sidebar">
             <div style={{ textAlign: 'center', margin: '8px 0' }}>
               <Input onChange={this.searchCourse} prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
             </div>
             <ul className="course-list">
+              {
+                courseList.length == 0 && this.state.courseSearch != '' &&
+                <div className="no-search">没有找到与"<span style={{color: '#0692e1'}}>{this.state.courseSearch}</span>"相关的课程</div>
+              }
               {
                  // 课程列表
                 courseList.map(data => {
@@ -436,11 +457,11 @@ class SelectQuestion extends Component {
             <div style={{padding: '10px',textAlign: 'center'}}>
               {
                 paperType === 'fixed' ?
-                <Button type="primary" onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                <Button type="primary" disabled={sum == 0} onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
                   选好了
                 </Button>
                 :
-                <Button type="primary" onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                <Button type="primary" disabled={sum == 0}  onClick={() => { this.random.confirm();this.props.setShow(false)}}>
                   选好了
                 </Button>
               }
@@ -454,17 +475,8 @@ class SelectQuestion extends Component {
 const mapStateToProps = (state) => {
   const { fixedTable, randomTable } = state;
   const selectQuestionList = Object.keys(fixedTable);
-  const counting = {
-    multiplechoiceresponse: 0,
-    choiceresponse: 0,
-    stringresponse: 0,
-  };
+
   const selectSectionList = randomTable.map(data => {
-    // counting[data.]
-    counting['multiplechoiceresponse']+= data['multiplechoiceresponse']
-    counting['choiceresponse']+= data['choiceresponse']
-    counting['stringresponse']+= data['stringresponse']
-    console.log(data)
     return data.id;
   });
 
@@ -473,7 +485,6 @@ const mapStateToProps = (state) => {
     selectSectionList,
     fixedTable,
     randomTable,
-    counting
   }
 }
 

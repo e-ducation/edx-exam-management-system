@@ -139,7 +139,7 @@ class PreviewContainer extends React.Component{
             <div className="preview-block" style={{ textAlign: 'center' }}>
               <h1 style={{ fontSize: '16px'}}>{ name }</h1>
               <h2 style={{ margin: '20px 0'}}>共{ total_problem_num }题目<span style={{ margin: '0 10px'}}>试题总分: {total_grade}分</span>及格分: {passing_grade}分</h2>
-              <p>{description}</p>
+              <p style={{ textAlign: 'left'}}>{description}</p>
             </div>
             {
               problems.map((item, index) => {
@@ -207,7 +207,8 @@ class PreviewContainer extends React.Component{
                                   <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
                                   <Input.TextArea
                                     autosize={{ minRows: 1, maxRows: 6 }}
-                                    style={{ width: '400px', display:'inline-block', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                    style={{ width: '385px', display:'inline-block', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                    maxLength="2000"
                                   />
                                 </div>
 

@@ -37,7 +37,7 @@ export default class Header extends React.Component {
           <div className="header-content">
             <a href="/" style={{color:'rgba(0, 0, 0, 0.65)'}}>
               <div className="header-logo">
-                <i className="iconfont" style={{ color: '#fff', lineHeight: '20px', fontSize:'22px' }}>&#xe601;</i>
+                <i className="iconfont" style={{ color: '#fff', fontSize:'20px' }}>&#xe62c;</i>
               </div>
               <span className="logo-text">考试管理系统</span>
             </a>
