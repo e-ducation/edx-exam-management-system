@@ -186,7 +186,6 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
 
         exam_paper.pk = None
         exam_paper.name = name + DUPLICATE_SUFFIX
-        exam_paper.pk = None
         exam_paper.created = timezone.now()
         exam_paper.modified = timezone.now()
         exam_paper.creator = self.request.user
@@ -517,7 +516,11 @@ class CourseSectionsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class BlocksProblemsListAPIView(APIView):
@@ -578,7 +581,11 @@ class BlocksProblemsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class ProblemsDetailAPIView(APIView):
@@ -624,7 +631,11 @@ class ProblemsDetailAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             json=post_data
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class ProblemsTypesAPIView(APIView):

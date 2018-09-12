@@ -20,3 +20,5 @@ dev.build: ## build react app
 dev.up: ## Run develop server
 	python manage.py runserver 0.0.0.0:8111
 
+dev.update: | install dev.makemigrations dev.migrate dev.build ## update server
+
