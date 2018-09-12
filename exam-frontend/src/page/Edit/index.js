@@ -387,7 +387,7 @@ class EditContainerReducer extends React.Component {
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
-                        <span>（及格分{(this.props.sum*this.state.paperpass*0.01).toFixed('2')}=总分{this.props.sum}分*{this.state.paperpass}及格线%）</span>
+                        <span>（及格分{(this.props.sum*this.state.paperpass*0.01).toFixed('2')}=总分{this.props.sum}分*及格线{this.state.paperpass}%）</span>
                       </div>
                     </div>
 

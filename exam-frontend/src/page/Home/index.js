@@ -71,7 +71,7 @@ class HomeContainer extends React.Component {
               <h3>创建试卷</h3>
               <p className="home-p"><span>·</span>选取题目或出题范围</p>
               <p className="home-p"><span>·</span>完善试卷信息</p>
-              <p className="home-p"><span>·</span>创建试卷成功！</p>
+              <p className="home-p"><span>·</span>创建试卷成功</p>
 
             </div>
             <div className="home-guide">
