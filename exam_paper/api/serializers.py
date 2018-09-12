@@ -74,7 +74,7 @@ class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
 class ExamPaperFixedSerializer(serializers.ModelSerializer):
 
     problems = ExamPaperProblemsSerializer(many=True)
-    description = serializers.CharField(required=False)
+    description = serializers.CharField(required=False, allow_blank=True)
     passing_ratio = serializers.IntegerField(default=60,
                                              validators=[
                                                  MinValueValidator(1),
@@ -122,7 +122,7 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
                                              validators=[
                                                  MinValueValidator(1),
                                                  MaxValueValidator(100)])
-    description = serializers.CharField(required=False)
+    description = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = ExamPaper
