@@ -32,15 +32,15 @@ export default class RandomBlock extends Component {
         render: text => <a href="javascript:;">{text}</a>,
       }, {
         title: '单选题',
-        dataIndex: 'radio',
+        dataIndex: 'multiplechoiceresponse',
       },
       {
         title: '多选题',
-        dataIndex: 'multiple',
+        dataIndex: 'choiceresponse',
       },
       {
         title: '填空题',
-        dataIndex: 'completion',
+        dataIndex: 'stringresponse',
       },
     ];
     const stochasticRowSelection = {
