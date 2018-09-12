@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 
 from django.db import transaction
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -185,6 +186,11 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
 
         exam_paper.pk = None
         exam_paper.name = name + DUPLICATE_SUFFIX
+        exam_paper.pk = None
+        exam_paper.created = timezone.now()
+        exam_paper.modified = timezone.now()
+        exam_paper.creator = self.request.user
+
         exam_paper.save()
 
         with transaction.atomic():
