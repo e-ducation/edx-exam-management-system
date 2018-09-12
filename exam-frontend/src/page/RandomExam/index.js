@@ -654,7 +654,7 @@ class RandomExamContainerReducer extends React.Component {
 
                               {
                                 item.multiplechoiceresponse===0 ?
-                                <InputNumber disabled min={0} max={item.multiplechoiceresponse} precision={1} defaultValue={0} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse',item.multiplechoiceresponse)} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0} max={item.multiplechoiceresponse} value={item.multiplechoiceresponseNumber} step={1} onChange={(event)=>this.onChangeNumber(event,item.id,'multiplechoiceresponse')} />
                               }
@@ -667,7 +667,7 @@ class RandomExamContainerReducer extends React.Component {
 
                               {
                                 item.multiplechoiceresponse===0 ?
-                                <InputNumber disabled min={0.01} max={100} step={0.01} defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'multiplechoiceresponse')} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0.01} max={100} step={0.01} value={item.multiplechoiceresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'multiplechoiceresponse')} onBlur={(event)=>this.onBlurGrade(event,item.id,'multiplechoiceresponse')} />
                               }
@@ -684,7 +684,7 @@ class RandomExamContainerReducer extends React.Component {
 
                               {
                                 item.choiceresponse==0 ?
-                                <InputNumber disabled min={0} max={item.choiceresponse} step={1} defaultValue={0} onChange={(event)=>this.onChangeNumber(event,item.id,'choiceresponse')} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0} max={item.choiceresponse} step={1} value={item.choiceresponseNumber} onChange={(event)=>this.onChangeNumber(event,item.id,'choiceresponse')} />
                               }
@@ -697,7 +697,7 @@ class RandomExamContainerReducer extends React.Component {
 
                               {
                                 item.choiceresponse===0 ?
-                                <InputNumber disabled min={0.01} max={100} step={0.01}  defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'choiceresponse')} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0.01} max={100} step={0.01}  value={item.choiceresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'choiceresponse')} onBlur={(event)=>this.onBlurGrade(event,item.id,'choiceresponse')}/>
                               }
@@ -714,7 +714,7 @@ class RandomExamContainerReducer extends React.Component {
 
                               {
                                 item.stringresponse===0 ?
-                                <InputNumber disabled min={0} max={item.choiceresponse} step={1} defaultValue={0} onChange={(event)=>this.onChangeNumber(event,item.id,'stringresponse')} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0} max={item.choiceresponse} step={1} value={item.stringresponseNumber} onChange={(event)=>this.onChangeNumber(event,item.id,'stringresponse')} />
                               }
@@ -726,7 +726,7 @@ class RandomExamContainerReducer extends React.Component {
                               <span style={{marginRight:'30px'}}>单题分数</span>
                               {
                                 item.stringresponse===0 ?
-                                <InputNumber disabled min={0.01} max={100} step={0.01} defaultValue={1} onChange={(event)=>this.onChangeGrade(event,item.id,'stringresponse')} />
+                                <InputNumber disabled />
                                 :
                                 <InputNumber min={0.01} max={100} step={0.01} value={item.stringresponseGrade} onChange={(event)=>this.onChangeGrade(event,item.id,'stringresponse')} onBlur={(event)=>this.onBlurGrade(event,item.id,'stringresponse')} />
                               }

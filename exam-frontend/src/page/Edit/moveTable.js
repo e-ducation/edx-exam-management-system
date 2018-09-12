@@ -352,8 +352,6 @@ class DragSortingTable extends React.Component {
   }
 
 
-
-
   //修改多选题的分数
   onMuiChange=(e)=>{
     this.setState({
