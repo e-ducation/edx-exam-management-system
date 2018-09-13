@@ -480,7 +480,7 @@ class RandomExamContainerReducer extends React.Component {
     }
 
     else{
-      if(this.state.paperName==""&&this.state.paperIns==""&&this.props.randomTablelength===0){
+      if(this.state.paperName==""&&this.state.paperIns==""&&this.props.randomTable.length===0){
         window.location.href="/#/manage";
       }
       else{
@@ -581,7 +581,7 @@ class RandomExamContainerReducer extends React.Component {
             </Breadcrumb.Item>
           </Breadcrumb>
 
-          <div className="edit-paper">编辑试卷</div>
+          <div className="edit-paper">编辑随机试卷</div>
 
           <div className="edit-box">
             <div className="label-box">
@@ -610,7 +610,7 @@ class RandomExamContainerReducer extends React.Component {
               </div>
             </div>
             <div className="label-box">
-              <div style={{lineHeight:'32px'}}>试题列表</div>
+              <div style={{lineHeight:'32px'}}>抽题规则</div>
               <div>
                 <div style={{marginBottom:'10px'}}>
 
@@ -773,7 +773,7 @@ class RandomExamContainerReducer extends React.Component {
                         <InputNumber className="input-padding" min={1} max={100} step={1} value={this.state.paperpass} onChange={(event)=>{this.onChangePass(event)}} />
                         <span style={{marginLeft:'6px'}}>%</span>
                       </span>
-                      <span>（及格分{(this.props.sumGrade*(this.state.paperpass*0.01)).toFixed('2')}=总分{this.props.sumGrade}分*{this.state.paperpass}及格线%）</span>
+                      <span>（及格分{(this.props.sumGrade*(this.state.paperpass*0.01)).toFixed('2')}=总分{this.props.sumGrade}分*及格线{this.state.paperpass}%）</span>
                     </div>
                   </div>
                 </div>
