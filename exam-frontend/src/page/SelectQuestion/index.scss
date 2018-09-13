@@ -20,14 +20,16 @@
     width: 206px;
     left: 0;
     position: absolute;
-    height: 540px;
-    ;
+    // height: 540px;
+    height: 100%;
     box-sizing: border-box;
     border: 1px solid #e5e9ed;
   }
   .course-list {
-    height: 480px;
+    height: 100%;
     overflow: auto;
+    padding-bottom: 48px;
+    box-sizing: border-box;
     li {
       cursor: pointer;
       height: 40px; // width: 208px;
