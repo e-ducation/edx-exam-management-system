@@ -82,7 +82,7 @@ fix_exampaper = openapi.Schema(
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'sequence': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    'sequence': openapi.Schema(type=openapi.TYPE_STRING, example=5),
                     'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
