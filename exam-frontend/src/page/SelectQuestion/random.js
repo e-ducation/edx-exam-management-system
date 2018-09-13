@@ -58,7 +58,7 @@ export default class RandomBlock extends Component {
       }),
     };
     return(
-      <div className="random">
+      <div className="random page">
         <Table
           bordered={true}
           rowSelection={stochasticRowSelection}

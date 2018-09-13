@@ -199,7 +199,7 @@ export default class FixedQustion extends Component{
         />
         {
           questionList.count > 0 &&
-          <div className="table-page">
+          <div className="table-page page">
             <span className="page-total">共{ questionList.count }条记录</span>
             <Pagination
               size="small"
