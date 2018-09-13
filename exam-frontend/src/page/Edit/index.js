@@ -115,7 +115,7 @@ class EditContainerReducer extends React.Component {
         .then(res=>{
           //按钮可点击
           this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //跳转页面
           window.location.href="/#/manage";
@@ -123,7 +123,7 @@ class EditContainerReducer extends React.Component {
         .catch(error=>{
            //按钮可点击
            this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //提示错误
           message.warning('服务器忙，请重试');
@@ -149,10 +149,10 @@ class EditContainerReducer extends React.Component {
         .catch(error=>{
           //按钮可点击
           this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //提示错误
-          message.warning('This is message of warning');
+          message.warning('服务器忙，请重试');
        })
       }
 
