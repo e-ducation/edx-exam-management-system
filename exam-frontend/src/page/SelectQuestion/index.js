@@ -389,82 +389,85 @@ class SelectQuestion extends Component {
               '选择范围'
             }
           </div>
-          <div className="sidebar">
-            <div style={{ textAlign: 'center', margin: '8px 0' }}>
-              <Input onChange={this.searchCourse} prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
-            </div>
-            <ul className="course-list">
-              {
-                courseList.length == 0 && this.state.courseSearch != '' &&
-                <div className="no-search">没有找到与"<span style={{color: '#0692e1'}}>{this.state.courseSearch}</span>"相关的课程</div>
-              }
-              {
-                 // 课程列表
-                courseList.map(data => {
-                  return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id, data.name)}>{data.name}</li>
-                })
-              }
-            </ul>
-          </div>
-          <div className="main">
-            <div className="course-name">{activeCourseName}</div>
-            {
-              paperType === 'fixed' ?
-              // 固定出题
-              <FixedQuestion
-                selectedRowKeys={selectQuestionList}
-                ref={node => this.fixed = node}
-                getList={this.getQuestionData} // 列表数据获取回调函数
-                activeCourse={activeCourse} // 选中的课程ID
-                sectionList={sectionList}   // 章节列表
-                questionList={questionList} // 问题
-                callback={this.onSelect}    // 回调函数
-                loading={quesitonLoading}
-                countType={this.countType}
-                />
-              :
-              <RandomQuestion
-                selectedRowKeys={selectSectionList}
-                ref={node => this.random = node}
-                loading={randomLoading}
-                activeCourse={activeCourse} // 选中的课程ID
-                sectionList={sectionList}   // 章节列表
-                callback={this.sectionSelect}
-                countType={this.countType}
-              />
-            }
-            <div style={{padding: '10px 0'}}>
-              <div>已选<span style={{ color: '#0692e1' }}>
-                {
-                  counting['multiplechoiceresponse']+counting['choiceresponse']+counting['stringresponse']
-                }
-              </span>题</div>
-              <div className="total">
-                <div className="total-block total-top">
-                  <span className="first-span">题型</span>
-                  <span>单选题</span>
-                  <span>多选题</span>
-                  <span>填空题</span>
-                </div>
-                <div className="total-block">
-                  <span className="first-span">已选数量</span>
-                  <span className="number">{counting['multiplechoiceresponse']}</span>
-                  <span className="number">{counting['choiceresponse']}</span>
-                  <span className="number">{counting['stringresponse']}</span>
-                </div>
+          <div style={{position: 'relative'}}>
+
+            <div className="sidebar">
+              <div style={{ textAlign: 'center', margin: '8px 0' }}>
+                <Input onChange={this.searchCourse} prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />} placeholder="请输入关键字" style={{ width: "190px" }} />
               </div>
+              <ul className="course-list">
+                {
+                  courseList.length == 0 && this.state.courseSearch != '' &&
+                  <div className="no-search">没有找到与"<span style={{color: '#0692e1'}}>{this.state.courseSearch}</span>"相关的课程</div>
+                }
+                {
+                  // 课程列表
+                  courseList.map(data => {
+                    return <li key={data.id} className={activeCourse === data.id ? 'active': ''} onClick={this.changeCourse.bind(this, data.id, data.name)}>{data.name}</li>
+                  })
+                }
+              </ul>
             </div>
-            <div style={{padding: '10px',textAlign: 'center'}}>
+            <div className="main">
+              <div className="course-name">{activeCourseName}</div>
               {
                 paperType === 'fixed' ?
-                <Button type="primary" disabled={sum == 0} onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
-                  选好了
-                </Button>
+                // 固定出题
+                <FixedQuestion
+                  selectedRowKeys={selectQuestionList}
+                  ref={node => this.fixed = node}
+                  getList={this.getQuestionData} // 列表数据获取回调函数
+                  activeCourse={activeCourse} // 选中的课程ID
+                  sectionList={sectionList}   // 章节列表
+                  questionList={questionList} // 问题
+                  callback={this.onSelect}    // 回调函数
+                  loading={quesitonLoading}
+                  countType={this.countType}
+                  />
                 :
-                <Button type="primary" disabled={sum == 0}  onClick={() => { this.random.confirm();this.props.setShow(false)}}>
-                  选好了
-                </Button>
+                <RandomQuestion
+                  selectedRowKeys={selectSectionList}
+                  ref={node => this.random = node}
+                  loading={randomLoading}
+                  activeCourse={activeCourse} // 选中的课程ID
+                  sectionList={sectionList}   // 章节列表
+                  callback={this.sectionSelect}
+                  countType={this.countType}
+                />
               }
+              <div style={{padding: '10px 0'}}>
+                <div>已选<span style={{ color: '#0692e1' }}>
+                  {
+                    counting['multiplechoiceresponse']+counting['choiceresponse']+counting['stringresponse']
+                  }
+                </span>题</div>
+                <div className="total">
+                  <div className="total-block total-top">
+                    <span className="first-span">题型</span>
+                    <span>单选题</span>
+                    <span>多选题</span>
+                    <span>填空题</span>
+                  </div>
+                  <div className="total-block">
+                    <span className="first-span">已选数量</span>
+                    <span className="number">{counting['multiplechoiceresponse']}</span>
+                    <span className="number">{counting['choiceresponse']}</span>
+                    <span className="number">{counting['stringresponse']}</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding: '10px',textAlign: 'center'}}>
+                {
+                  paperType === 'fixed' ?
+                  <Button type="primary" disabled={sum == 0} onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                    选好了
+                  </Button>
+                  :
+                  <Button type="primary" disabled={sum == 0}  onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                    选好了
+                  </Button>
+                }
+              </div>
             </div>
           </div>
         </div>

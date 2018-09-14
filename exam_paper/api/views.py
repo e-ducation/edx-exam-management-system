@@ -9,6 +9,7 @@ import requests
 from django.conf import settings
 
 from django.db import transaction
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -81,7 +82,7 @@ fix_exampaper = openapi.Schema(
             items=openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
-                    'sequence': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
+                    'sequence': openapi.Schema(type=openapi.TYPE_STRING, example=5),
                     'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
@@ -185,6 +186,10 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
 
         exam_paper.pk = None
         exam_paper.name = name + DUPLICATE_SUFFIX
+        exam_paper.created = timezone.now()
+        exam_paper.modified = timezone.now()
+        exam_paper.creator = self.request.user
+
         exam_paper.save()
 
         with transaction.atomic():
@@ -511,7 +516,11 @@ class CourseSectionsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class BlocksProblemsListAPIView(APIView):
@@ -572,7 +581,11 @@ class BlocksProblemsListAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             params=payload
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class ProblemsDetailAPIView(APIView):
@@ -618,7 +631,11 @@ class ProblemsDetailAPIView(APIView):
             headers={'Authorization': 'Bearer ' + token},
             json=post_data
         )
-        return Response(response_format(rep.json()))
+        if rep.status_code == 400:
+            return Response(response_format(status=rep.json().get('code'),
+                                            msg=rep.json().get('msg')))
+        else:
+            return Response(response_format(rep.json()))
 
 
 class ProblemsTypesAPIView(APIView):

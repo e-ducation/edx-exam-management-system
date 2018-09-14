@@ -1,4 +1,7 @@
 # edX Exam Management System
+[![Build Status](https://travis-ci.org/e-ducation/edx-exam-management-system.svg?branch=master)](https://travis-ci.org/e-ducation/edx-exam-management-system)
+
+
 这个项目是允许使用Open edX进行授课的老师从所授的几门课程中，指定题目或根据条件抽取习题形成试卷，安排学生账号进行考试，查看考试成绩。
 
 ## Getting Start
