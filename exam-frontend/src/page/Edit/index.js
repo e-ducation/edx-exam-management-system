@@ -115,7 +115,7 @@ class EditContainerReducer extends React.Component {
         .then(res=>{
           //按钮可点击
           this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //跳转页面
           window.location.href="/#/manage";
@@ -123,7 +123,7 @@ class EditContainerReducer extends React.Component {
         .catch(error=>{
            //按钮可点击
            this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //提示错误
           message.warning('服务器忙，请重试');
@@ -149,10 +149,10 @@ class EditContainerReducer extends React.Component {
         .catch(error=>{
           //按钮可点击
           this.setState({
-            saveVisible:true
+            saveVisible:false
           })
           //提示错误
-          message.warning('This is message of warning');
+          message.warning('服务器忙，请重试');
        })
       }
 
@@ -387,7 +387,7 @@ class EditContainerReducer extends React.Component {
                           <span style={{marginLeft:'6px'}}>%</span>
 
                         </span>
-                        <span>（及格分{(this.props.sum*this.state.paperpass*0.01).toFixed('2')}=总分{this.props.sum}分*{this.state.paperpass}及格线%）</span>
+                        <span>（及格分{(this.props.sum*this.state.paperpass*0.01).toFixed('2')}=总分{this.props.sum}分*及格线{this.state.paperpass}%）</span>
                       </div>
                     </div>
 
