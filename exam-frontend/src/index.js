@@ -8,21 +8,21 @@ import { Provider } from 'react-redux';
 import { createStore } from 'redux';
 import  reducer from './model/reducers';
 import { Popover } from 'antd';
+import Cookies from 'js-cookie';
 let store = createStore(reducer)
 axios.defaults.withCredentials = true
 // 基础服务器
-const baseURL = 'http://ems.ngrok.elitemc.cn';
-<<<<<<< HEAD
-const AUTH_TOKEN = '8gNzWj2eVjaoSTV7rYdJaw7WEwnHC07F1KbQVU8YDZGuxlPBY487LRzGzVxhhSnb';
-=======
-const AUTH_TOKEN = 'x4VtrWLhAQwH7qIp3QXMGcFxqfnF8SUaXSnxFZide1kj9M1Kil1z0YacMvHg8QK7';
->>>>>>> dev
+let baseURL = '';
+let AUTH_TOKEN = '';
+// 判断环境变量如果是开发模式设置
+if(process.env.NODE_ENV == 'development'){
+    baseURL = 'http://ems.ngrok.elitemc.cn';
+    AUTH_TOKEN = 'KrbZzZg9PtYDOqc8prAGjAtVS45SYTYy85Q5ymANKCXs5b22mZTUYrO99BN7uHdQ';
+  } else {
+    AUTH_TOKEN = Cookies.get('csrftoken');
+}
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.common['X-CSRFToken'] = AUTH_TOKEN;
-// import registerServiceWorker from './registerServiceWorker';
-console.log(store.getState())
-
-console.log(Router)
 ReactDOM.render(
   <HashRouter>
     <Provider store={store}>

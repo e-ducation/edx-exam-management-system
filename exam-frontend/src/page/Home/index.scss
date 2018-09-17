@@ -5,7 +5,7 @@
     .home-create{
       display: inline-block;
       width:150px;
-      height:110px;
+      height:115px;
       background: #f8fcff;
       border: 1px solid #cbe8f8;
       text-align: center;
@@ -19,13 +19,15 @@
       background: #ebf6fd;
     }
     .home-icon{
-      font-size: 45px;
-      margin: 10px 0;
+      font-size: 40px;
+      margin: 10px 0 18px;
+      display: inline-block;
     }
     .home-header{
-      margin: 50px 0 30px;
+      margin: 20px 0 20px;
       border-bottom: 1px solid $border;
       padding-bottom: 15px;
+      font-size: 16px;
     }
     .home-process{
       display: inline-block;
@@ -64,6 +66,18 @@
       p{
         text-align: left;
         line-height: 1.5;
+      }
+      .home-p{
+        text-indent: 13px;
+        position: relative;
+      }
+      .home-p span{
+        width: 4px;
+        height: 4px;
+        background: $font;
+        position: absolute;
+        top: 8px;
+        left: 0;
       }
     }
   }

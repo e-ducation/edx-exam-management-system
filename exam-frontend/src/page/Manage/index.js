@@ -48,7 +48,6 @@ class ManageContainer extends React.Component {
           that.searchAjax = c
         })
       }).then(function (response) {
-          console.log(response)
           const res = response.data;
           if (res.status === 0){
             // 给list添加key
@@ -124,7 +123,7 @@ class ManageContainer extends React.Component {
 
   // 3. 预览试卷
   previewPaper = (id) => {
-    window.open("/#/preview?id=" + id)
+    window.open("/#/preview/" + id)
   }
 
   // 4. 复制试卷
@@ -160,8 +159,8 @@ class ManageContainer extends React.Component {
         axios.delete('/api/exampapers/' + id + '/')
         .then(function (response) {
           const res = response.data;
-          if (res.status === 200){
-            message.error('删除成功');
+          if (res.status === 0){
+            message.success('删除成功');
             that.getList();
           } else {
             message.error('删除失败');
@@ -189,7 +188,15 @@ class ManageContainer extends React.Component {
         dataIndex: 'name',
         width: '29%',
         render: (text, record) => (
-          <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+          <span>
+            {
+              record.create_type === 'fixed' ?
+                <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
+              :
+                <span>{text}</span>
+            }
+          </span>
+
         )
       }, {
         title: '选题方式',
@@ -220,29 +227,15 @@ class ManageContainer extends React.Component {
         width: '14%',
         render: (text, record, index) => (
           <span>
-            {
-              record.is_creator
-            }
-            {
-              true ?
-                <span>
-                  <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="复制">
-                    <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="删除">
-                    <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
-                  </Tooltip>
-                </span>
-              :
-                <span>
-                  <Icon type="edit" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                  <Icon type="copy" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD', margin:'0 10px'}} />
-                  <Icon type="delete" style={{fontSize:'16px', cursor: 'not-allowed', color: '#AAB2BD'}} />
-                </span>
-            }
+            <Tooltip title="编辑">
+              <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="复制">
+              <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
+            </Tooltip>
+            <Tooltip title="删除">
+              <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
+            </Tooltip>
           </span>
         )
       }
@@ -254,15 +247,15 @@ class ManageContainer extends React.Component {
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <Icon type="folder-open" style={{marginRight: '5px'}} />
+              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px'}}>试卷管理</h1>
+          <h1 style={{ margin: '25px 0 20px', fontSize:'16px'}}>试卷管理</h1>
           <Table
             columns={columns}
             dataSource={this.state.list}
@@ -281,28 +274,35 @@ class ManageContainer extends React.Component {
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '150px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} /><div>No files.</div></div> }}
+            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} alt="" /><div>暂无试卷</div></div> }}
           />
-          <div className="page">
-            <Pagination
-              size="small"
-              current={this.state.pageCurrent}
-              total={this.state.pageTotal}
-              onChange={this.handlePageChange}
-              pageSize={this.state.pageSize}
-              className="page-num"
-            />
-            <span className="page-size">
-              {  !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '每页显示' : '' }
-              <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
-                <Select.Option value="10">10</Select.Option>
-                <Select.Option value="20">20</Select.Option>
-                <Select.Option value="30">30</Select.Option>
-                <Select.Option value="50">50</Select.Option>
-              </Select>
-              { !!$('#locale')[0] && $('#locale').val() === 'zh-cn' ? '条' : 'items per page' }
-            </span>
-          </div>
+          {
+            this.state.list.length === 0 ?
+              null
+            :
+              <div className="page">
+                <span className="page-total">共{ this.state.pageTotal }条记录</span>
+                <Pagination
+                  size="small"
+                  current={this.state.pageCurrent}
+                  total={this.state.pageTotal}
+                  onChange={this.handlePageChange}
+                  pageSize={this.state.pageSize}
+                  className="page-num"
+                />
+                <span className="page-size">
+                  每页显示
+                  <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
+                    <Select.Option value="10">10</Select.Option>
+                    <Select.Option value="20">20</Select.Option>
+                    <Select.Option value="30">30</Select.Option>
+                    <Select.Option value="50">50</Select.Option>
+                  </Select>
+                  条
+                </span>
+              </div>
+          }
+
         </div>
         <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
       </div>

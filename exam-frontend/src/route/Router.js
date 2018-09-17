@@ -21,7 +21,7 @@ export default class Main extends Component {
         <Route path='/new/fix' component={Edit} />
         <Route path='/new/random' component={RandomExam} />
         <Route path='/manage' component={Manage} />
-        <Route path='/preview' component={Preview} />
+        <Route path='/preview/:id' component={Preview} />
       </Switch>
     </main>)
   }

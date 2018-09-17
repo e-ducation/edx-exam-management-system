@@ -1,8 +1,21 @@
 import React, { Component } from 'react';
-import { Table, Button } from 'antd';
+import { Table } from 'antd';
+import none from "../../assets/images/none.png";
 export default class RandomBlock extends Component {
   state = {
     selectedRowKeys: [],
+  }
+  componentDidMount(){
+    this.setState({
+      selectedRowKeys: this.props.selectedRowKeys,
+    })
+  }
+  componentWillReceiveProps(nextProps) {
+    if( JSON.stringify(this.props.selectedRowKeys) !== JSON.stringify(nextProps.selectedRowKeys)){
+      this.setState({
+        selectedRowKeys: nextProps.selectedRowKeys,
+      })
+    }
   }
   confirm = () => {
     const { callback } = this.props;
@@ -19,19 +32,15 @@ export default class RandomBlock extends Component {
         render: text => <a href="javascript:;">{text}</a>,
       }, {
         title: '单选题',
-        dataIndex: 'radio',
+        dataIndex: 'multiplechoiceresponse',
       },
       {
         title: '多选题',
-        dataIndex: 'multiple',
-      },
-      {
-        title: '判断题',
-        dataIndex: 'checking',
+        dataIndex: 'choiceresponse',
       },
       {
         title: '填空题',
-        dataIndex: 'completion',
+        dataIndex: 'stringresponse',
       },
     ];
     const stochasticRowSelection = {
@@ -40,6 +49,7 @@ export default class RandomBlock extends Component {
         this.setState({
           selectedRowKeys,
         })
+        this.props.countType(selectedRowKeys)
         // console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
       },
       getCheckboxProps: record => ({
@@ -48,7 +58,7 @@ export default class RandomBlock extends Component {
       }),
     };
     return(
-      <div>
+      <div className="random page">
         <Table
           bordered={true}
           rowSelection={stochasticRowSelection}
@@ -57,6 +67,8 @@ export default class RandomBlock extends Component {
           size="small"
           rowKey="id"
           loading={loading}
+          pagination={{showTotal: (z)=> `共${z}条记录`}}
+          locale={{ emptyText: <div style={{marginBottom: '35px'}}><img src={none} style={{width: '125px', margin: '30px 0 20px'}} alt="" /><div>暂无数据</div></div> }}
         />
       </div>
     )
