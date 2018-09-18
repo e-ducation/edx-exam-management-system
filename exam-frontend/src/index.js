@@ -6,7 +6,7 @@ import Router from './route/Router';
 import axios from 'axios';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import  reducer from './model/reducers';
+import reducer from './model/reducers';
 import { Popover } from 'antd';
 import Cookies from 'js-cookie';
 let store = createStore(reducer)
@@ -15,11 +15,11 @@ axios.defaults.withCredentials = true
 let baseURL = '';
 let AUTH_TOKEN = '';
 // 判断环境变量如果是开发模式设置
-if(process.env.NODE_ENV == 'development'){
-    baseURL = 'http://ems.ngrok.elitemc.cn';
-    AUTH_TOKEN = 'BPH6AFta7pZzh4EuG1B9r6dg0I2azuwYmCbNsTyxRvaPnMFFKf9ZEWffiydfgV90';
-  } else {
-    AUTH_TOKEN = Cookies.get('csrftoken');
+if (process.env.NODE_ENV == 'development') {
+  baseURL = 'http://ems.ngrok.elitemc.cn';
+  AUTH_TOKEN = 'KrbZzZg9PtYDOqc8prAGjAtVS45SYTYy85Q5ymANKCXs5b22mZTUYrO99BN7uHdQ';
+} else {
+  AUTH_TOKEN = Cookies.get('csrftoken');
 }
 axios.defaults.baseURL = baseURL;
 axios.defaults.headers.common['X-CSRFToken'] = AUTH_TOKEN;
