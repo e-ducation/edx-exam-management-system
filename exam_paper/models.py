@@ -27,6 +27,7 @@ TASK_STATE = (
     ('pending', 'pending'),
     ('started', 'started'),
     ('finished', 'finished'),
+    ('unavailable', 'unavailable'),
 )
 
 EXAM_RESULT = (
@@ -98,8 +99,8 @@ class ExamTask(TimeStampedModel):
 
 class ExamParticipant(TimeStampedModel):
 
-    exam_task = models.ForeignKey(ExamTask, related_name='participant')
-    participant = models.ForeignKey(User)
+    exam_task = models.ForeignKey(ExamTask, related_name='participants')
+    participant = models.ForeignKey(User, related_name='exams')
     exam_result = models.CharField(max_length=16, choices=EXAM_RESULT)
     participate_time = models.DateTimeField()
     hand_in_time = models.DateTimeField()
@@ -110,24 +111,25 @@ class ExamParticipant(TimeStampedModel):
         return result and result.get('total_grade') or 0
 
 
-class ExamParticipantAnswer(TimeStampedModel):
-
-    participant = models.ForeignKey(ExamParticipant, related_name='answer')
-    problem_id = models.CharField(max_length=255, db_index=True)
-    answer = models.TextField()
-    grade = models.DecimalField(max_digits=5, decimal_places=2,
-                                validators=[
-                                    MinValueValidator(Decimal((0, (0, 0, 1), -2))),
-                                    MaxValueValidator(Decimal(100))])
-
-
 class ExamPaperProblemsSnapShot(TimeStampedModel):
     exam_paper = models.ForeignKey(ExamTask, related_name='problems', null=True)
     sequence = models.CharField(max_length=16, default='01')
-    problem_id = models.CharField(max_length=255, db_index=True)
+    problem_block_id = models.CharField(max_length=255, db_index=True)
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE)
     grade = models.DecimalField(max_digits=5, decimal_places=2,
                                 validators=[
                                     MinValueValidator(Decimal((0, (0, 0, 1), -2))),
                                     MaxValueValidator(Decimal(100))])
     content = JSONField()
+
+
+class ExamParticipantAnswer(TimeStampedModel):
+
+    participant = models.ForeignKey(ExamParticipant, related_name='answers')
+    problem_block_id = models.CharField(max_length=255, db_index=True)
+    answer = models.TextField()
+    grade = models.DecimalField(max_digits=5, decimal_places=2,
+                                validators=[
+                                    MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                    MaxValueValidator(Decimal(100))])
+    problem = models.ForeignKey(ExamPaperProblemsSnapShot, related_name='answers')
