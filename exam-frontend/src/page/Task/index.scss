@@ -1,0 +1,21 @@
+.task {
+  .main-content {
+    flex: 1;
+    .ant-breadcrumb {
+      margin-top: 0;
+    }
+    .edit-btn {
+      position: absolute;
+      right: 0;
+      top: -13px;
+      cursor: pointer;
+    }
+  }
+  .paper-title {
+    position: relative;
+    font-size: 16px;
+    color: #2E313C;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #E6E9ED;
+  }
+}

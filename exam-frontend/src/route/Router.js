@@ -7,6 +7,7 @@ import Manage from '../page/Manage';
 import Preview from '../page/Preview';
 import Edit from '../page/Edit';
 import RandomExam from '../page/RandomExam';
+import Task from '../page/Task';
 import TextTask from '../page/TextTask';
 import Statistics from '../page/Statistics';
 // import { deflateRaw } from 'zlib';
@@ -24,6 +25,8 @@ export default class Main extends Component {
         <Route path='/new/random' component={RandomExam} />
         <Route path='/manage' component={Manage} />
         <Route path='/preview/:id' component={Preview} />
+        <Route path='/createTask' component={Task} />
+        <Route path='/task/:id' component={Task} />
         <Route path='/task' component={TextTask} />
         <Route path='/statistics' component={Statistics} />
       </Switch>
