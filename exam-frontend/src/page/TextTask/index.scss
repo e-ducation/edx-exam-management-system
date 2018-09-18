@@ -1,0 +1,31 @@
+@import '../../default.scss';
+
+// 首页
+$blue: #0692e1;
+$red: #f5222d;
+$border: #E6E9ED;
+$font: #656D78;
+$title: #2E313C;
+$note: #AAB2BD;
+$blue_hover: #1da6f3;
+$blue_active: #1da6f3;
+
+
+.diaplayIcon {
+  i{
+    color:$note !important;
+  }
+  .icon-blue,.icon-red{
+    color:$note !important;
+    &:hover{
+      color:$note !important;
+    }
+  }
+}
+
+.ant-table-tbody > tr:hover .diaplayIcon {
+  color:$note !important;
+  .icon-blue,.icon-red{
+    color:$note !important;
+  }
+}
