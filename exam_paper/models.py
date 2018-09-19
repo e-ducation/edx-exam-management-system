@@ -93,6 +93,8 @@ class ExamPaperCreateRule(TimeStampedModel):
 
 class ExamTask(TimeStampedModel):
 
+    name = models.CharField(max_length=50, help_text='考试名称')
+    exampaper = models.ForeignKey(ExamPaper, db_index=True, help_text='试卷')
     exampaper_name = models.CharField(max_length=50, help_text='试卷名称')
     exampaper_description = models.CharField(max_length=500, blank=True, help_text='试卷说明')
     exampaper_create_type = models.CharField(max_length=16, choices=PAPER_CREATE_TYPE, help_text='试卷类型')
@@ -130,6 +132,7 @@ class ExamParticipant(TimeStampedModel):
 
 
 class ExamPaperProblemsSnapShot(TimeStampedModel):
+
     exam_task = models.ForeignKey(ExamTask, related_name='problems', null=True, help_text='考试')
     sequence = models.CharField(max_length=16, default='01', help_text='序号')
     problem_block_id = models.CharField(max_length=255, db_index=True, help_text='xblock id')
