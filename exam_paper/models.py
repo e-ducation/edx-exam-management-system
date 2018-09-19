@@ -125,7 +125,7 @@ class ExamParticipant(TimeStampedModel):
         """
         考得分数
         """
-        result = self.answer.aggregate(total_grade=Sum('grade'))
+        result = self.answers.aggregate(total_grade=Sum('grade'))
         return result and result.get('total_grade') or 0
 
 
