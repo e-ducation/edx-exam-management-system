@@ -5,6 +5,7 @@ import Sidebar from '../../components/Sidebar';
 import { Breadcrumb, Icon, Button } from 'antd'
 import './index.scss';
 import Preview from './preview';
+import CreateTask from './createTask';
 export default class Task extends React.Component {
   state = {
     preview: false,
@@ -12,7 +13,7 @@ export default class Task extends React.Component {
     id: 0,
   }
   componentWillMount() {
-    console.log(this.props.match.params);
+    console.log(this.props);
     const { id } = this.props.match.params;
     if (id != undefined) {
       this.setState({
@@ -76,6 +77,7 @@ export default class Task extends React.Component {
                   <Preview />
                   :
                   <div>
+                    <CreateTask create={create} goback={() => { this.setState({ preview: true }) }} />
                     {
                       create === false &&
                       <Button onClick={() => { this.setState({ preview: true }) }}>
