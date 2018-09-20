@@ -9,3 +9,18 @@ $title: #2E313C;
 $note: #AAB2BD;
 $blue_hover: #1da6f3;
 $blue_active: #1da6f3;
+
+.statistics-icon{
+  .nohoverstatus{
+    color:$note !important;
+    &:hover{
+      color:$note !important;
+    }
+  }
+  .hashoverstatus{
+    color:$font !important;
+    &:hover{
+      color:$blue_hover !important;
+    }
+  }
+}
