@@ -42,6 +42,6 @@ schema_view = get_schema_view(
 urlpatterns = auth_urlpatterns + [
     url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     url(r'^admin/', admin.site.urls),
-    url(r'^api/', include('exam_paper.api.urls')),
+    url(r'^api/', include('exam_paper.api.urls', namespace='exam_paper')),
     url(r'^$', login_required(TemplateView.as_view(template_name='index.html'))),
 ]

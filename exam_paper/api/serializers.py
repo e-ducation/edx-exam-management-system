@@ -3,10 +3,21 @@
 from __future__ import unicode_literals
 
 from decimal import Decimal
+
+from django.contrib.auth.models import User
 from django.db import transaction
+
 from rest_framework import serializers
 from rest_framework.compat import MaxValueValidator, MinValueValidator
-from exam_paper.models import ExamPaper, ExamPaperProblems, ExamPaperCreateRule
+
+from exam_paper.models import (
+    ExamPaper,
+    ExamPaperProblems,
+    ExamPaperCreateRule,
+    ExamTask,
+    ExamParticipant,
+    ExamPaperProblemsSnapShot
+)
 
 
 class ExamPaperMixin(object):
@@ -66,7 +77,7 @@ class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
     class Meta:
         model = ExamPaper
         fields = ('id', 'name', 'create_type', 'total_problem_num',
-                  'total_grade', 'passing_grade', 'creator')
+                  'total_grade', 'passing_grade', 'creator', 'problem_statistic')
 
 
 class ExamPaperFixedSerializer(serializers.ModelSerializer):
@@ -161,3 +172,94 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
                 ExamPaperCreateRule.objects.create(exam_paper=exam_paper, **rule_serializer.validated_data)
 
         return exam_paper
+
+
+class ExamParticipantSerializer(serializers.ModelSerializer):
+    exam_result = serializers.CharField(required=False)
+    participate_time = serializers.DateTimeField(required=False)
+    hand_in_time = serializers.DateTimeField(required=False)
+
+    class Meta:
+        model = ExamParticipant
+        fields = ('participant', 'exam_result', 'participate_time', 'hand_in_time')
+
+
+class ExamTaskSerializer(serializers.ModelSerializer):
+
+    participant_num = serializers.SerializerMethodField()
+    creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    exampaper = serializers.PrimaryKeyRelatedField(queryset=ExamPaper.objects.all())
+    task_state = serializers.CharField(read_only=True)
+    participants = ExamParticipantSerializer(many=True, required=False)
+    problem_disorder = serializers.BooleanField(required=False)
+    show_answer = serializers.BooleanField(required=False)
+
+    class Meta:
+        model = ExamTask
+        fields = ('id', 'name', 'exampaper', 'exampaper_name', 'exampaper_description',
+                  'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
+                  'exampaper_total_grade', 'creator',
+                  'task_state', 'period_start', 'period_end', 'exam_time_limit',
+                  'problem_disorder', 'show_answer', 'participants', 'participant_num')
+
+    def get_participant_num(self, exam_task):
+        """
+        考试人数
+        """
+        return exam_task.participants.count()
+
+    def create(self, validated_data):
+        if 'participants' in validated_data:
+            participants = validated_data.pop('participants')
+        else:
+            participants = []
+
+        with transaction.atomic():
+            exam_task = ExamTask.objects.create(**validated_data)
+            for participant in participants:
+                ExamParticipant.objects.create(exam_task=exam_task, **participant)
+
+            exam_paper = validated_data['exampaper']
+            if exam_paper.create_type == 'fixed':
+                for problem in exam_paper.problems.all():
+                    ExamPaperProblemsSnapShot.objects.create(
+                        exam_task=exam_task,
+                        sequence=problem.sequence,
+                        problem_block_id=problem.problem_id,
+                        problem_type=problem.problem_type,
+                        grade=problem.grade,
+                        content=problem.content
+                    )
+
+        return exam_task
+
+    def update(self, exam_task, validated_data):
+        if 'participants' in validated_data:
+            participants = validated_data.pop('participants')
+        else:
+            participants = []
+
+        with transaction.atomic():
+            exam_task.__dict__.update(**validated_data)
+            exam_task.save()
+            exam_task.participants.all().delete()
+            for participant in participants:
+                if participant.get('id'):
+                    participant.pop('id')
+
+                ExamParticipant.objects.create(exam_task=exam_task, **participant)
+
+            exam_paper = validated_data['exampaper']
+            if exam_paper.create_type == 'fixed':
+                exam_task.problems.all().delete()
+                for problem in exam_paper.problems.all():
+                    ExamPaperProblemsSnapShot.objects.create(
+                        exam_task=exam_task,
+                        sequence=problem.sequence,
+                        problem_block_id=problem.problem_id,
+                        problem_type=problem.problem_type,
+                        grade=problem.grade,
+                        content=problem.content
+                    )
+
+        return exam_task

@@ -1,15 +1,16 @@
 # -*-coding:utf-8 -*-
-
 from __future__ import unicode_literals
 
 import random
+import requests
 from itertools import groupby
 
-import requests
 from django.conf import settings
-
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -33,8 +34,9 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
-)
-from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE
+    ExamTaskSerializer)
+from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE
+from exam_paper.pageinations import FormatPageNumberPagination
 from exam_paper.utils import response_format
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -584,8 +586,10 @@ class BlocksProblemsListAPIView(APIView):
         if rep.status_code == 400:
             return Response(response_format(status=rep.json().get('code'),
                                             msg=rep.json().get('msg')))
-        else:
+        elif rep.status_code == 200:
             return Response(response_format(rep.json()))
+        else:
+            return Response(rep.text)
 
 
 class ProblemsDetailAPIView(APIView):
@@ -719,3 +723,105 @@ class UserInfoView(APIView):
             headers={'Authorization': 'Bearer ' + token},
         )
         return Response(response_format(rep.json()))
+
+
+class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
+                      UpdateModelMixin, DestroyModelMixin, GenericViewSet):
+    """
+    ```
+    {
+      "name": "考试任务",
+      "exampaper": 13,
+      "exampaper_name": "test",
+      "exampaper_description": "test",
+      "exampaper_create_type": "fixed",
+      "exampaper_passing_ratio": 60,
+      "period_start": "2018-09-19T08:02:25.955Z",
+      "period_end": "2018-09-19T08:02:25.955Z",
+      "exam_time_limit": 60,
+      "participants": [
+        {
+          "participant": 1
+        }
+      ]
+    }
+    ```
+    """
+
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
+    serializer_class = ExamTaskSerializer
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter,
+                       DjangoFilterBackend,)
+    filter_fields = ('task_state', )
+    search_fields = ('name', )
+    ordering_fields = ('modified',)
+    ordering = ('-modified',)
+
+    def get_queryset(self):
+        user = self.request.user
+        return ExamTask.objects.filter(creator=user)
+
+    def create(self, request, *args, **kwargs):
+        request.data['creator'] = request.user.id
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        state_count = queryset.aggregate(
+            pending=Count('pk', filter=Q(task_state='pending')),
+            started=Count('pk', filter=Q(task_state='started')),
+            finished=Count('pk', filter=Q(task_state='finished')),
+            unavailable=Count('pk', filter=Q(task_state='unavailable')),
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            assert self.paginator is not None
+            return self.paginator.get_paginated_response(serializer.data, **state_count)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        """
+        「考试中」和「考试结束」不可编辑
+        """
+        instance = self.get_object()
+        if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
+            return Response(response_format(msg='Can not edit started task'))
+        return super(ExamTaskViewSet, self).update(request, args, kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        「考试中」和「考试结束」不可编辑
+        """
+        instance = self.get_object()
+        if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
+            return Response(response_format(msg='Can not edit started task'))
+        return super(ExamTaskViewSet, self).partial_update(request, args, kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        「考试中」的任务不能删除操作；
+        """
+        instance = self.get_object()
+        if instance.task_state == TASK_STATE[1][0]:
+            return Response(response_format(msg='Can not delete started task'))
+        return super(ExamTaskViewSet, self).destroy(request, args, kwargs)
