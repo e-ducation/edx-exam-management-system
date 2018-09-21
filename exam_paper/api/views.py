@@ -7,6 +7,7 @@ from itertools import groupby
 
 import requests
 from django.conf import settings
+from django.db.models import Q
 
 from django.db import transaction
 from django.utils import timezone
@@ -33,9 +34,12 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
+    ExamParticipantSerializer
 )
-from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE
+from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamParticipant, EXAM_RESULT
 from exam_paper.utils import response_format
+
+from ..filters import MyCustomOrdering
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -83,7 +87,8 @@ fix_exampaper = openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'sequence': openapi.Schema(type=openapi.TYPE_STRING, example=5),
-                    'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
+                    'problem_id': openapi.Schema(type=openapi.TYPE_STRING,
+                                                 example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
                     'content': openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
@@ -441,8 +446,8 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
 
 
 class CoursesListAPIView(APIView):
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get courses list',
@@ -482,8 +487,8 @@ class CourseSectionsListAPIView(APIView):
     """
     获取课程的章节列表
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get course sections list',
@@ -527,8 +532,8 @@ class BlocksProblemsListAPIView(APIView):
     """
     获取课程的题目列表
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get courses problem list',
@@ -592,8 +597,8 @@ class ProblemsDetailAPIView(APIView):
     """
     获取题目内容
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id='problem_content',
@@ -642,8 +647,8 @@ class ProblemsTypesAPIView(APIView):
     """
     获取题目类型
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get problem type',
@@ -668,8 +673,8 @@ class SectionProblemTypeCountView(APIView):
     """
     获取章节的题型统计数据
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get section problem type count',
@@ -706,8 +711,8 @@ class UserInfoView(APIView):
     """
     获取用户信息
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(operation_description='get user info')
     def get(self, request, *args, **kwargs):
@@ -719,3 +724,40 @@ class UserInfoView(APIView):
             headers={'Authorization': 'Bearer ' + token},
         )
         return Response(response_format(rep.json()))
+
+
+class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
+    """
+    retrieve: 考试人员详情接口
+
+    list: 考试人员列表接口
+    * 分页，默认单页 10 条记录
+    * 排序，默认按创建时间、降序排序， /api/exampaper?ordering=created
+    * 搜索，按「试卷名称」搜索，/api/exampaper?ordering=created?search=<exam paper title>
+    * 权限，只能看到自己的试卷
+    """
+    # authentication_classes = (
+    #     SessionAuthentication,
+    # )
+    # permission_classes = (
+    #     IsAuthenticated,
+    # )
+
+    serializer_class = ExamParticipantSerializer
+    search_fields = ('participant__username',)
+    filter_backends = (filters.SearchFilter, MyCustomOrdering,)
+    queryset = ExamParticipant.objects.all()
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        exam_result = self.request.GET.get('exam_result', '')
+        if exam_result in ('pass', 'flunk'):
+            return ExamParticipant.objects.filter(exam_result=exam_result)
+        elif exam_result == 'pending':
+            return ExamParticipant.objects.filter(exam_result=exam_result)
+        else:
+            return ExamParticipant.objects.filter(
+                Q(exam_result='pass') | Q(exam_result='flunk'))
