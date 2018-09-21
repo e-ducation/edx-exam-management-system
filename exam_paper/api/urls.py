@@ -30,10 +30,11 @@ from exam_paper.api.views import (
     ProblemsTypesAPIView,
     SectionProblemTypeCountView,
     UserInfoView,
+    ExamTaskViewSet,
 )
 
 urlpatterns = [
-    url(r'^courses/$', CoursesListAPIView.as_view()),
+    url(r'^courses/$', CoursesListAPIView.as_view(), name='course_list'),
     url(r'^courses/(?P<course_id>.+)/sections/$',
         CourseSectionsListAPIView.as_view()),
     url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
@@ -44,7 +45,8 @@ urlpatterns = [
 ]
 
 router = routers.SimpleRouter()
-router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
-router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
-router.register(r'exampapers', ExamPaperListViewSet, 'exampaper')
+router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, base_name='exam_paper_fixed')
+router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, base_name='exam_paper_random')
+router.register(r'exampapers', ExamPaperListViewSet, base_name='exam_paper')
+router.register(r'examtasks', ExamTaskViewSet, base_name='exam_task')
 urlpatterns += router.urls
