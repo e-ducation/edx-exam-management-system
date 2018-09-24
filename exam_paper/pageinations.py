@@ -21,10 +21,15 @@ class FormatPageNumberPagination(PageNumberPagination):
     page_size = 10
     max_page_size = 1000
 
-    def get_paginated_response(self, data):
-        return Response(response_format(OrderedDict([
+    def get_paginated_response(self, data, **kwargs):
+        result = [
             ('count', self.page.paginator.count),
             ('next', self.get_next_link()),
             ('previous', self.get_previous_link()),
-            ('results', data)
-        ])))
+            ('results', data),
+        ]
+
+        if kwargs:
+            result += kwargs.items()
+
+        return Response(response_format(OrderedDict(result)))
