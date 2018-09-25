@@ -20,6 +20,8 @@ from exam_paper.models import (
     ExamPaperProblemsSnapShot
 )
 
+from social_django.models import UserSocialAuth
+
 
 class ExamPaperMixin(object):
     def get_total_problem_num(self, exam_paper):
@@ -173,7 +175,8 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(read_only=True)
+    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
 
     class Meta:
         model = get_user_model()
@@ -201,6 +204,7 @@ class ExamParticipantSerializer(serializers.ModelSerializer):
     exam_result = serializers.CharField(required=False)
     participate_time = serializers.DateTimeField(required=False)
     hand_in_time = serializers.DateTimeField(required=False)
+    participant = UserSerializer()
 
     class Meta:
         model = ExamParticipant
@@ -239,7 +243,9 @@ class ExamTaskSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             exam_task = ExamTask.objects.create(**validated_data)
             for participant in participants:
-                ExamParticipant.objects.create(exam_task=exam_task, **participant)
+                # 查询用户是否存在，不存在则创建用户
+                user = Find_or_create_user(participant)
+                ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
             exam_paper = validated_data['exampaper']
             if exam_paper.create_type == 'fixed':
@@ -266,10 +272,9 @@ class ExamTaskSerializer(serializers.ModelSerializer):
             exam_task.save()
             exam_task.participants.all().delete()
             for participant in participants:
-                if participant.get('id'):
-                    participant.pop('id')
-
-                ExamParticipant.objects.create(exam_task=exam_task, **participant)
+                # 查询用户是否存在，不存在则创建用户
+                user = Find_or_create_user(participant)
+                ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
             exam_paper = validated_data['exampaper']
             if exam_paper.create_type == 'fixed':
@@ -285,3 +290,15 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                     )
 
         return exam_task
+
+
+def Find_or_create_user(participant):
+    user = UserSocialAuth.objects.filter(uid=participant['participant']['username'])
+    if user:
+        return user[0].user
+    else:
+        user_model = get_user_model()
+        new_user = user_model.objects.create(password=user_model.objects.make_random_password(),
+                                             **participant['participant'])
+        UserSocialAuth.objects.create(user=new_user, provider='edx-oidc', uid=participant['participant']['username'])
+        return new_user

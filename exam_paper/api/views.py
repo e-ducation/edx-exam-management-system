@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
-# from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -724,12 +724,31 @@ class UserInfoView(APIView):
 
     @swagger_auto_schema(operation_description='get user info')
     def get(self, request, *args, **kwargs):
-        USER_INFO_API = 'api/mobile/v0.5/my_user_info'
+        USER_INFO_API = 'api/mobile/v0.5/users'
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_LMS_PATH + USER_INFO_API
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},
+        )
+        return Response(response_format(rep.json()))
+
+class UserInfoListView(APIView):
+    """
+    获取用户信息
+    """
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(operation_description='get user info')
+    def get(self, request, *args, **kwargs):
+        USERS_INFO_API = '/exam/users'
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST']+USERS_INFO_API
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params = request.GET,
         )
         return Response(response_format(rep.json()))
 
@@ -777,7 +796,7 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
     ```
     {
       "name": "考试任务",
-      "exampaper": 13,
+      "exampaper": 1,
       "exampaper_name": "test",
       "exampaper_description": "test",
       "exampaper_create_type": "fixed",
@@ -785,9 +804,13 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
       "period_start": "2018-09-19T08:02:25.955Z",
       "period_end": "2018-09-19T08:02:25.955Z",
       "exam_time_limit": 60,
+      "exampaper_total_problem_num":1,
       "participants": [
         {
-          "participant": 1
+          "participant": {
+          	                "username": "1",
+                "email": "502464760@qq.com"
+          }
         }
       ]
     }
@@ -801,8 +824,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         IsAuthenticated,
     )
     serializer_class = ExamTaskSerializer
-    filter_backends = (filters.SearchFilter, filters.OrderingFilter,)
-                       # DjangoFilterBackend,)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter,
+                       DjangoFilterBackend,)
     filter_fields = ('task_state',)
     search_fields = ('name',)
     ordering_fields = ('modified',)

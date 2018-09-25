@@ -32,6 +32,7 @@ from exam_paper.api.views import (
     UserInfoView,
     ExamParticipantViewSet,
     ExamTaskViewSet,
+    UserInfoListView,
 )
 
 urlpatterns = [
@@ -43,6 +44,7 @@ urlpatterns = [
     url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
     url(r'^sections/problems/count/$', SectionProblemTypeCountView.as_view()),
     url(r'^user/info/$', UserInfoView.as_view()),
+    url(r'^users/$', UserInfoListView.as_view()),
 
 ]
 
