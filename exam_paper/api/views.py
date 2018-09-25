@@ -724,7 +724,7 @@ class UserInfoView(APIView):
 
     @swagger_auto_schema(operation_description='get user info')
     def get(self, request, *args, **kwargs):
-        USER_INFO_API = 'api/mobile/v0.5/users'
+        USER_INFO_API = 'api/mobile/v0.5/my_user_info'
         token = request.user.social_auth.first().extra_data['access_token']
         url = settings.EDX_LMS_PATH + USER_INFO_API
         rep = requests.get(
