@@ -244,7 +244,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
             exam_task = ExamTask.objects.create(**validated_data)
             for participant in participants:
                 # 查询用户是否存在，不存在则创建用户
-                user = Find_or_create_user(participant)
+                user = find_or_create_user(participant)
                 ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
             exam_paper = validated_data['exampaper']
@@ -273,7 +273,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
             exam_task.participants.all().delete()
             for participant in participants:
                 # 查询用户是否存在，不存在则创建用户
-                user = Find_or_create_user(participant)
+                user = find_or_create_user(participant)
                 ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
             exam_paper = validated_data['exampaper']
@@ -292,7 +292,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
         return exam_task
 
 
-def Find_or_create_user(participant):
+def find_or_create_user(participant):
     user = UserSocialAuth.objects.filter(uid=participant['participant']['username'])
     if user:
         return user[0].user
