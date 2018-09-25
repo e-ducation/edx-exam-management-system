@@ -754,21 +754,13 @@ class UserInfoListView(APIView):
 
 
 class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
-    """
-    retrieve: 考试人员详情接口
 
-    list: 考试人员列表接口
-    * 分页，默认单页 10 条记录
-    * 排序，默认按创建时间、降序排序， /api/exampaper?ordering=created
-    * 搜索，按「试卷名称」搜索，/api/exampaper?ordering=created?search=<exam paper title>
-    * 权限，只能看到自己的试卷
-    """
-    # authentication_classes = (
-    #     SessionAuthentication,
-    # )
-    # permission_classes = (
-    #     IsAuthenticated,
-    # )
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
 
     serializer_class = ExamParticipantSerializer2
     search_fields = ('participant__username',)
