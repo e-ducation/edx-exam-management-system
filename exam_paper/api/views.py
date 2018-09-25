@@ -34,9 +34,10 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
-    ExamTaskSerializer)
+    ExamTaskSerializer,
+    ExamTaskListSerializer,
+)
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE
-from exam_paper.pageinations import FormatPageNumberPagination
 from exam_paper.utils import response_format
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -792,11 +793,11 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = ExamTaskListSerializer(page, many=True)
             assert self.paginator is not None
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.ExamTaskListSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):

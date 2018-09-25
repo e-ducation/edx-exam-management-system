@@ -184,6 +184,25 @@ class ExamParticipantSerializer(serializers.ModelSerializer):
         fields = ('participant', 'exam_result', 'participate_time', 'hand_in_time')
 
 
+class ExamTaskListSerializer(serializers.ModelSerializer):
+
+    participant_num = serializers.SerializerMethodField()
+    creator = serializers.SlugRelatedField(read_only=True, slug_field='username')
+    task_state = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ExamTask
+        fields = ('id', 'name', 'creator',
+                  'task_state', 'period_start', 'period_end',
+                  'participant_num')
+
+    def get_participant_num(self, exam_task):
+        """
+        考试人数
+        """
+        return exam_task.participants.count()
+
+
 class ExamTaskSerializer(serializers.ModelSerializer):
 
     participant_num = serializers.SerializerMethodField()
