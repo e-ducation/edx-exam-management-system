@@ -740,7 +740,7 @@ class UserInfoListView(APIView):
     authentication_classes = (SessionAuthentication,)
     permission_classes = (IsAuthenticated,)
 
-    @swagger_auto_schema(operation_description='get user info')
+    @swagger_auto_schema(operation_description='get users info')
     def get(self, request, *args, **kwargs):
         USERS_INFO_API = '/exam/users'
         token = request.user.social_auth.first().extra_data['access_token']
