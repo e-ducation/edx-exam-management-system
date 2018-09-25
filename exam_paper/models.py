@@ -154,12 +154,29 @@ class ExamPaperProblemsSnapShot(TimeStampedModel):
     content = JSONField(help_text='问题内容')
 
 
+class ExamPaperCreateRuleSnapShot(TimeStampedModel):
+
+    exam_task = models.ForeignKey(ExamTask, related_name='rule_task', null=True, help_text='考试')
+    problem_section_id = models.CharField(max_length=255, null=True, blank=True, help_text='章节 xblock id')
+    section_name = models.CharField(max_length=255, help_text='章节名称')
+    problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE, help_text='问题类型')
+    problem_num = models.IntegerField(default=0, help_text='抽题数量')
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=1.00,
+                                validators=[
+                                    MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                    MaxValueValidator(Decimal(100))],
+                                help_text='分数')
+
+
 class ExamParticipantAnswer(TimeStampedModel):
     participant = models.ForeignKey(ExamParticipant, related_name='answers', help_text='考生')
-    answer = models.TextField(help_text='考生答案')
+    answer = models.TextField(help_text='考生答案', blank=True, null=True)
     grade = models.DecimalField(max_digits=5, decimal_places=2,
                                 validators=[
                                     MinValueValidator(Decimal((0, (0, 0, 1), -2))),
                                     MaxValueValidator(Decimal(100))],
                                 help_text='考生答案得分')
-    problem = models.ForeignKey(ExamPaperProblemsSnapShot, related_name='answers', help_text='问题')
+    sequence = models.CharField(max_length=16, default='01', help_text='序号')
+    problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE, help_text='问题类型')
+    content = JSONField(help_text='问题内容')
+    operate_at = models.DateTimeField(help_text='操作时间', null=True)
