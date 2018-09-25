@@ -1,7 +1,7 @@
 import React from 'react';
 import { message, Icon } from 'antd';
 import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import HeaderStudent from '../../components/HeaderStudent';
 import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
@@ -68,7 +68,7 @@ export default class HomeStudent extends React.Component {
     const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
-        <Header />
+        <HeaderStudent />
         <div className="container" style={containerHeight}>
           <HomeStudentContainer />
         </div>

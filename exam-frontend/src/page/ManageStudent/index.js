@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal, Tabs } from 'antd';
 import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import HeaderStudent from '../../components/HeaderStudent';
 import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
@@ -400,7 +400,7 @@ export default class ManageStudent extends React.Component {
     const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
-        <Header />
+        <HeaderStudent />
         <div className="container container_student" style={containerHeight}>
           <ManageStudentContainer history={this.props.history} />
         </div>

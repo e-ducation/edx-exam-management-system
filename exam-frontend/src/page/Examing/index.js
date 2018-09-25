@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon, Radio, Checkbox, Input, Button, message, Spin, Breadcrumb } from 'antd';
 import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import HeaderStudent from '../../components/HeaderStudent';
 import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
@@ -287,7 +287,7 @@ export default class Examing extends React.Component {
     const containerHeight = { minHeight: this.state.height - 186 + 'px', minWidth: '649px' }
     return (
       <div>
-        <Header changeUpBtn={this.onChangeUpBtn} />
+        <HeaderStudent changeUpBtn={this.onChangeUpBtn} />
         <div className="container container-examing" style={containerHeight}>
           <ExamingContainer showBackToTop={this.state.showBackToTop} />
         </div>
