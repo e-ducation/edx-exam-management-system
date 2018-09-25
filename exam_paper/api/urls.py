@@ -30,7 +30,9 @@ from exam_paper.api.views import (
     ProblemsTypesAPIView,
     SectionProblemTypeCountView,
     UserInfoView,
+    ExamParticipantViewSet,
     ExamTaskViewSet,
+    UserInfoListView,
 )
 
 urlpatterns = [
@@ -42,6 +44,8 @@ urlpatterns = [
     url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
     url(r'^sections/problems/count/$', SectionProblemTypeCountView.as_view()),
     url(r'^user/info/$', UserInfoView.as_view()),
+    url(r'^users/$', UserInfoListView.as_view()),
+
 ]
 
 router = routers.SimpleRouter()
@@ -49,4 +53,6 @@ router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, base_name='exa
 router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, base_name='exam_paper_random')
 router.register(r'exampapers', ExamPaperListViewSet, base_name='exam_paper')
 router.register(r'examtasks', ExamTaskViewSet, base_name='exam_task')
+router.register(r'examparticipants', ExamParticipantViewSet, 'examparticipants')
+
 urlpatterns += router.urls
