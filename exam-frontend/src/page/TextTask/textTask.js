@@ -1,11 +1,12 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Pagination, Select, message, Modal, Tabs } from 'antd';
+import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal, Tabs } from 'antd';
 import Sidebar from '../../components/Sidebar';
 import axios from 'axios';
 import './index.scss';
 import none from "../../assets/images/none.png";
 const TabPane = Tabs.TabPane;
-class StatisticsContainer extends React.Component {
+
+export default class TextTask extends React.Component {
   constructor(props) {
     super(props);
     this.searchAjax = null;
@@ -15,9 +16,8 @@ class StatisticsContainer extends React.Component {
     loading: true,
     visible: false,
     list: [
-      { name: '王铭业', phone: '13184821132', email: '13498655697@qq.com', result: '及格', grade: '100' },
-      { name: '陈嘉琪', phone: '13184821132', email: '13498655697@qq.com', result: '不及格', grade: '59' },
-      { name: '陈嘉琪', phone: '13184821132', email: '13498655697@qq.com', result: '待考', grade: '100' }
+      { status: '未开始', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' },
+      { status: '考试中', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' }
     ],
     pageCurrent: 1,
     pageTotal: 0,
@@ -34,7 +34,7 @@ class StatisticsContainer extends React.Component {
 
   // 1.1 试卷列表
   getList = () => {
-    const { pageCurrent, pageSize, search } = this.state;
+    const { pageCurrent, pageSize, search, key } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
     if (this.searchAjax) {
@@ -115,22 +115,9 @@ class StatisticsContainer extends React.Component {
     window.open("/#/preview/" + id)
   }
 
-  // 4. 复制试卷
-  copyPaper = (id) => {
-    const that = this;
-    axios.post('/api/exampapers/' + id + '/duplicate/')
-      .then(function (response) {
-        const res = response.data;
-        if (res.status === 0) {
-          that.getList();
-        } else {
-          message.error('复制失败');
-        }
-
-      })
-      .catch(function (error) {
-        message.error('复制失败')
-      });
+  // 4. 统计试卷
+  statisticsPaper = (id) => {
+    window.location.href = '/#/statistics/';
   }
 
   // 5. 删除试卷
@@ -139,13 +126,13 @@ class StatisticsContainer extends React.Component {
     Modal.confirm({
       iconType: 'exclamation-circle',
       className: 'confirm-red',
-      title: '提示',
-      content: '确定删除此试卷？',
+      title: '您确定要删除考试任务？',
+      content: '已经结束的考试任务删除后将无法恢复',
       okText: '确定',
       cancelText: '取消',
       onOk: () => {
         // 删除试卷
-        axios.delete('./api/exampapers/' + id + '/')
+        axios.delete('/api/exampapers/' + id + '/')
           .then(function (response) {
             const res = response.data;
             if (res.status === 0) {
@@ -176,17 +163,12 @@ class StatisticsContainer extends React.Component {
   }
 
 
-  statisticsUrl = (id) => {
-    window.open('/#/preview/statistics/' + id + '');
-  }
   render() {
     // 列表头
-
-
     const columns = [
       {
-        title: '姓名',
-        dataIndex: 'name',
+        title: '状态',
+        dataIndex: 'status',
         width: '10%',
         render: (text, record) => (
           <span>
@@ -200,70 +182,58 @@ class StatisticsContainer extends React.Component {
 
         )
       }, {
-        title: '电话',
-        dataIndex: 'phone',
-        width: '15%',
-      }, {
-        title: '邮箱',
-        dataIndex: 'email',
-        width: '19%',
-      }, {
-        title: '考试结果',
-        dataIndex: 'result',
-        width: '14%',
+        title: '考试任务名称',
+        dataIndex: 'name',
+        width: '26%',
         render: (text, record) => (
-          <span>
-            {
-              (
-                () => {
-                  if (record.result == "及格") {
-                    return (
-                      <span style={{ color: '#94d055' }}>及格</span>
-                    )
-                  }
-                  else if (record.result == "不及格") {
-                    return (
-                      <span style={{ color: '#f4323c' }}>不及格</span>
-                    )
-                  }
-                  else {
-                    return (
-                      <span>待审查</span>
-                    )
-                  }
-                }
-              )()
-            }
-          </span>
+          <a>{text}</a>
         )
       }, {
-        title: '考试分数',
-        dataIndex: 'grade',
-        width: '13%',
+        title: '创建人',
+        dataIndex: 'create_name',
+        width: '10%',
+      }, {
+        title: '开始时间',
+        dataIndex: 'start_time',
+        width: '16%',
+      }, {
+        title: '结束时间',
+        dataIndex: 'end_time',
+        width: '16%',
+      }, {
+        title: '考生人数',
+        dataIndex: 'number',
+        width: '9%',
       }, {
         title: '操作',
         dataIndex: 'id',
         width: '14%',
         render: (text, record, index) => (
-          <span className="statistics-icon">
+          <span>
             {
-              (
-                () => {
-                  if (record.result == "待考") {
-                    return (<i className="iconfont nohoverstatus" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }}>&#xe66d;</i>)
-                  }
-                  else {
-                    return (
-                      <Tooltip title="查看答卷">
-                        <i className="iconfont hashoverstatus" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsUrl.bind(this, record.id)}>&#xe66d;</i>
-                      </Tooltip>
-                    )
-                  }
-                }
-              )()
-            }
+              record.status == "考试中" ?
+                <span className="diaplayIcon">
+                  <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
 
+                  <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }}>&#xe642;</i>
+
+                  <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
+                </span>
+                :
+                <span>
+                  <Tooltip title="编辑">
+                    <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
+                  </Tooltip>
+                  <Tooltip title="统计">
+                    <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                  </Tooltip>
+                  <Tooltip title="删除">
+                    <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+                  </Tooltip>
+                </span>
+            }
           </span>
+
         )
       }
     ];
@@ -278,18 +248,14 @@ class StatisticsContainer extends React.Component {
         bordered
         pagination={false}
         size="small"
-        rowKey={record => record.id}
         loading={this.state.loading}
         title={() =>
-          <div style={{ overflow: 'hidden' }}>
-            <p style={{ float: 'left', marginTop: '6px' }}>
-              <span>考试名称：商务知识管理</span>
-              <span>及格线：60分（固定试卷）</span>
-            </p>
+          <div>
+            <Button type="primary" href="/#/"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
             <Input
               prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="请输入姓名/电话/邮箱"
-              style={{ width: '200px', marginLeft: '10px', float: 'right' }}
+              placeholder="请输入考试任务名称搜索"
+              style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
               onChange={this.onChangeSearch}
             />
           </div>
@@ -306,21 +272,17 @@ class StatisticsContainer extends React.Component {
               <Icon type="home" theme="outlined" style={{ fontSize: '14px', marginRight: '2px' }} />
               <span>首页</span>
             </Breadcrumb.Item>
-            <Breadcrumb.Item href="/#/task/">
-              <i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>
-              <span>考试任务</span>
-            </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <i className="iconfont" style={{ fontSize: '16px', marginRight: '8px', cursor: 'pointer' }}>&#xe642;</i>
-              <span>统计考试任务</span>
+              <i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>
+              <span>考试管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 10px', fontSize: '16px' }}>考试任务</h1>
-          <Tabs defaultActiveKey="1" onChange={this.callback} >
-            <TabPane tab={<span>应考人数（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
-            <TabPane tab={<span>待考人数（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
-            <TabPane tab={<span>合格人数（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
-            <TabPane tab={<span>不及格人数（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
+          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>考试任务</h1>
+          <Tabs defaultActiveKey="1" onChange={this.callback}>
+            <TabPane tab={<span>全部（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
+            <TabPane tab={<span>未开始（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
+            <TabPane tab={<span>考试中（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
+            <TabPane tab={<span>已结束（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
           </Tabs>
 
 
@@ -359,4 +321,3 @@ class StatisticsContainer extends React.Component {
 }
 
 
-export default StatisticsContainer;
