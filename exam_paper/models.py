@@ -6,7 +6,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import Sum, F, Count, Q
+from django.db.models import Sum, F, Count, Q, Case, When
 
 from model_utils.models import TimeStampedModel
 from jsonfield import JSONField
@@ -72,13 +72,57 @@ class ExamPaper(TimeStampedModel):
         else:
             return 0
 
+    @property
+    def problem_statistic(self):
+        if self.create_type == PAPER_CREATE_TYPE[0][0]:
+            mutiple = self.problems.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
+                multiplechoiceresponse_count=Count('problem_type'),
+                multiplechoiceresponse_grade=Sum('grade'),
+            )
+            choice = self.problems.filter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
+                choiceresponse_count=Count('pk'),
+                choiceresponse_grade=Sum('grade'),
+            )
+            string = self.problems.filter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
+                stringresponse_count=Count('pk'),
+                stringresponse_grade=Sum('grade'),
+            )
+            result = {}
+            result.update(mutiple)
+            result.update(choice)
+            result.update(string)
+
+            return result
+
+        elif self.create_type == PAPER_CREATE_TYPE[1][0]:
+            mutiple = self.rules.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
+                multiplechoiceresponse_count=Sum('problem_num'),
+                multiplechoiceresponse_count2=Sum('problem_num'),
+            )
+
+            choice = self.rules.fileter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
+                choiceresponse_count=Sum('problem_num'),
+                choiceresponse_grade=Sum(F('grade') * F('problem_num'), ),
+            )
+
+            string = self.rules.fileter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
+                stringresponse_count=Sum('problem_num', ),
+                stringresponse_grade=Sum(F('grade') * F('problem_num'), ),
+            )
+            result = {}
+            result.update(mutiple)
+            result.update(choice)
+            result.update(string)
+
+            return result
+
 
 class ExamPaperProblems(TimeStampedModel):
     exam_paper = models.ForeignKey(ExamPaper, related_name='problems', null=True, help_text='试卷')
     sequence = models.CharField(max_length=16, default='01', help_text='序号')
     problem_id = models.CharField(max_length=255, db_index=True, help_text='xblock id')
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE, help_text='问题类型')
-    grade = models.DecimalField(max_digits=5, decimal_places=2,
+    grade = models.DecimalField(max_digits=5, decimal_places=2, default=0,
                                 validators=[
                                     MinValueValidator(Decimal((0, (0, 0, 1), -2))),
                                     MaxValueValidator(Decimal(100))],
@@ -124,6 +168,50 @@ class ExamTask(TimeStampedModel):
     problem_disorder = models.BooleanField(default=False, help_text='题目乱序')
     show_answer = models.BooleanField(default=False, help_text='显示答案')
 
+    @property
+    def problem_statistic(self):
+        if self.create_type == PAPER_CREATE_TYPE[0][0]:
+            mutiple = self.problems.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
+                multiplechoiceresponse_count=Count('problem_type'),
+                multiplechoiceresponse_grade=Sum('grade'),
+            )
+            choice = self.problems.filter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
+                choiceresponse_count=Count('pk'),
+                choiceresponse_grade=Sum('grade'),
+            )
+            string = self.problems.filter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
+                stringresponse_count=Count('pk'),
+                stringresponse_grade=Sum('grade'),
+            )
+            result = {}
+            result.update(mutiple)
+            result.update(choice)
+            result.update(string)
+
+            return result
+
+        elif self.create_type == PAPER_CREATE_TYPE[1][0]:
+            mutiple = self.rules.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
+                multiplechoiceresponse_count=Sum('problem_num'),
+                multiplechoiceresponse_grade=Sum(F('grade') * F('problem_num'), ),
+            )
+
+            choice = self.rules.fileter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
+                choiceresponse_count=Sum('problem_num'),
+                choiceresponse_grade=Sum(F('grade') * F('problem_num'), ),
+            )
+
+            string = self.rules.fileter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
+                stringresponse_count=Sum('problem_num', ),
+                stringresponse_grade=Sum(F('grade') * F('problem_num'), ),
+            )
+            result = {}
+            result.update(mutiple)
+            result.update(choice)
+            result.update(string)
+
+            return result
+
 
 class ExamParticipant(TimeStampedModel):
     exam_task = models.ForeignKey(ExamTask, related_name='participants', help_text='考试')
@@ -155,8 +243,7 @@ class ExamPaperProblemsSnapShot(TimeStampedModel):
 
 
 class ExamPaperCreateRuleSnapShot(TimeStampedModel):
-
-    exam_task = models.ForeignKey(ExamTask, related_name='rule_task', null=True, help_text='考试')
+    exam_task = models.ForeignKey(ExamTask, related_name='rules', null=True, help_text='考试')
     problem_section_id = models.CharField(max_length=255, null=True, blank=True, help_text='章节 xblock id')
     section_name = models.CharField(max_length=255, help_text='章节名称')
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE, help_text='问题类型')
