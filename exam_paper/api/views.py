@@ -41,7 +41,7 @@ from exam_paper.api.serializers import (
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
 from exam_paper.utils import response_format
-
+from exam_paper.pageinations import FormatPageNumberPagination
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -751,7 +751,6 @@ class UserInfoListView(APIView):
 
 
 class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
-
     authentication_classes = (
         SessionAuthentication,
     )
@@ -763,20 +762,40 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
     search_fields = ('participant__username',)
     filter_backends = (filters.SearchFilter, MyCustomOrdering,)
     queryset = ExamParticipant.objects.all()
+    pagination_class = FormatPageNumberPagination
 
     def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        exam_result = self.request.GET.get('exam_result', '')
-        if exam_result in ('pass', 'flunk'):
-            return ExamParticipant.objects.filter(exam_result=exam_result)
-        elif exam_result == 'pending':
-            return ExamParticipant.objects.filter(exam_result=exam_result)
+        try:
+            exam_result = self.request.GET.get('exam_result', '')
+            exam_task = int(self.request.GET.get('exam_task', ''))
+        except Exception as ex:
+            exam_result = ''
+            exam_task = 0
+        specific_task = ExamParticipant.objects.filter(exam_task_id=exam_task)
+        if exam_result in ('pass', 'flunk', 'pending'):
+            return specific_task.filter(exam_result=exam_result)
         else:
-            return ExamParticipant.objects.filter(
+            return specific_task.filter(
                 Q(exam_result='pass') | Q(exam_result='flunk'))
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            assert self.paginator is not None
+            return self.paginator.get_paginated_response(serializer.data, extra_data=self.get_num_of_people())
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_num_of_people(self):
+        num_of_people = {}
+        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending').count()
+        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk').count()
+        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass').count()
+        return num_of_people
 
 
 class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
