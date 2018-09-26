@@ -24,11 +24,7 @@ export default class PreviewContainer extends React.Component {
     answerShow: false,
     pass: true,
     isStudent: false,
-<<<<<<< HEAD
     isRandom: false
-=======
-    isRandom: false,
->>>>>>> master
   }
 
   componentDidMount() {
