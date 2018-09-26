@@ -354,4 +354,3 @@ class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamPaperProblems
         fields = ('sequence', 'grade', 'problem_type', 'content')
-
