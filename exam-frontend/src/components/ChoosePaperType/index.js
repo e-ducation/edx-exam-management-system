@@ -1,5 +1,5 @@
-import React,{ Component } from 'react';
-import { Modal, Icon } from 'antd';
+import React, { Component } from 'react';
+import { Modal } from 'antd';
 import './index.scss';
 export default class choosePaperType extends Component {
   state = {
@@ -27,7 +27,7 @@ export default class choosePaperType extends Component {
       >
         <div className="block-fix" onClick={this.createFixPaper}>
           <div>
-            <i className="iconfont icon" style={{ fontSize: '40px'}}>&#xe641;</i>
+            <i className="iconfont icon" style={{ fontSize: '40px' }}>&#xe641;</i>
           </div>
           <h3>固定试题</h3>
           <p>所有考生的试题相同，试题的顺序可以固定，也可以打乱。</p>
