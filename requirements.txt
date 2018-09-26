@@ -58,7 +58,6 @@ social-auth-core==1.7.0
 strict-rfc3339==0.7
 swagger-spec-validator==2.3.1
 tox==3.2.1
-typing==3.6.6
 uritemplate==3.0.0
 urllib3==1.23
 validate-email==1.3
