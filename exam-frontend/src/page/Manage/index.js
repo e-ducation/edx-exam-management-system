@@ -9,12 +9,12 @@ import './index.scss';
 import $ from "jquery";
 import none from "../../assets/images/none.png";
 class ManageContainer extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
     this.searchAjax = null;
   }
 
-  state={
+  state = {
     loading: true,
     visible: false,
     list: [],
@@ -35,7 +35,7 @@ class ManageContainer extends React.Component {
     const { pageCurrent, pageSize, search } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
-    if (this.searchAjax){
+    if (this.searchAjax) {
       this.searchAjax();
     }
 
@@ -48,25 +48,25 @@ class ManageContainer extends React.Component {
           that.searchAjax = c
         })
       }).then(function (response) {
-          const res = response.data;
-          if (res.status === 0){
-            // 给list添加key
-            let list = res.data.results;
-            for (let i = 0; i < list.length; i++){
-              list[i].key = i;
-            }
-            that.setState({
-              list,
-              pageTotal: res.data.count,
-              loading: false,
-            })
-          } else {
-            message.error('请求失败')
-            that.setState({
-              loading: false,
-            })
+        const res = response.data;
+        if (res.status === 0) {
+          // 给list添加key
+          let list = res.data.results;
+          for (let i = 0; i < list.length; i++) {
+            list[i].key = i;
           }
-        })
+          that.setState({
+            list,
+            pageTotal: res.data.count,
+            loading: false,
+          })
+        } else {
+          message.error('请求失败')
+          that.setState({
+            loading: false,
+          })
+        }
+      })
         .catch(function (error) {
           that.setState({
             loading: false,
@@ -87,7 +87,7 @@ class ManageContainer extends React.Component {
   }
 
   // 1.3 试卷列表每页显示变更
-  handlePageSizeChange = (e) =>{
+  handlePageSizeChange = (e) => {
     this.setState({
       pageSize: e,
       pageCurrent: 1,
@@ -132,7 +132,7 @@ class ManageContainer extends React.Component {
     axios.post('/api/exampapers/' + id + '/duplicate/')
       .then(function (response) {
         const res = response.data;
-        if (res.status === 0){
+        if (res.status === 0) {
           that.getList();
         } else {
           message.error('复制失败');
@@ -157,19 +157,19 @@ class ManageContainer extends React.Component {
       onOk: () => {
         // 删除试卷
         axios.delete('/api/exampapers/' + id + '/')
-        .then(function (response) {
-          const res = response.data;
-          if (res.status === 0){
-            message.success('删除成功');
-            that.getList();
-          } else {
-            message.error('删除失败');
-          }
+          .then(function (response) {
+            const res = response.data;
+            if (res.status === 0) {
+              message.success('删除成功');
+              that.getList();
+            } else {
+              message.error('删除失败');
+            }
 
-        })
-        .catch(function (error) {
-          message.error('删除失败')
-        });
+          })
+          .catch(function (error) {
+            message.error('删除失败')
+          });
       }
     });
   }
@@ -192,7 +192,7 @@ class ManageContainer extends React.Component {
             {
               record.create_type === 'fixed' ?
                 <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
-              :
+                :
                 <span>{text}</span>
             }
           </span>
@@ -203,7 +203,7 @@ class ManageContainer extends React.Component {
         dataIndex: 'create_type',
         width: '14%',
         render: (text) => (
-          <span>{ text === 'fixed' ? '固定试题' : '随机试题'}</span>
+          <span>{text === 'fixed' ? '固定试题' : '随机试题'}</span>
         )
       }, {
         title: '试题数',
@@ -228,13 +228,13 @@ class ManageContainer extends React.Component {
         render: (text, record, index) => (
           <span>
             <Tooltip title="编辑">
-              <Icon type="edit" className="icon-blue" style={{fontSize:'16px'}} onClick={this.editPaper.bind(this, record.id)} />
+              <Icon type="edit" className="icon-blue" style={{ fontSize: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
             </Tooltip>
             <Tooltip title="复制">
-              <Icon type="copy" className="icon-blue" style={{fontSize:'16px', margin:'0 10px'}} onClick={this.copyPaper.bind(this, record.id)} />
+              <Icon type="copy" className="icon-blue" style={{ fontSize: '16px', margin: '0 10px' }} onClick={this.copyPaper.bind(this, record.id)} />
             </Tooltip>
             <Tooltip title="删除">
-              <Icon type="delete" className="icon-red" style={{fontSize:'16px'}} onClick={this.deletePaper.bind(this, record.id)} />
+              <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
             </Tooltip>
           </span>
         )
@@ -247,15 +247,15 @@ class ManageContainer extends React.Component {
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
-              <Icon type="home" theme="outlined" style={{fontSize:'14px',marginRight: '2px'}}/>
+              <Icon type="home" theme="outlined" style={{ fontSize: '14px', marginRight: '2px' }} />
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <i className="iconfont" style={{fontSize:'12px',marginRight: '5px'}}>&#xe62e;</i>
+              <i className="iconfont" style={{ fontSize: '12px', marginRight: '5px' }}>&#xe62e;</i>
               <span>试卷管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px', fontSize:'16px'}}>试卷管理</h1>
+          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>试卷管理</h1>
           <Table
             columns={columns}
             dataSource={this.state.list}
@@ -269,19 +269,19 @@ class ManageContainer extends React.Component {
                 <Input
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
                   placeholder="请输入关键字"
-                  style={{width:'200px', marginLeft: '10px', position:'relative', top: '1px'}}
+                  style={{ width: '200px', marginLeft: '10px', position: 'relative', top: '1px' }}
                   onChange={this.onChangeSearch}
                 />
               </div>
             }
-            locale={{ emptyText: <div style={{marginBottom: '100px'}}><img src={none} style={{width: '125px', margin: '60px 0 20px'}} alt="" /><div>暂无试卷</div></div> }}
+            locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
           />
           {
             this.state.list.length === 0 ?
               null
-            :
+              :
               <div className="page">
-                <span className="page-total">共{ this.state.pageTotal }条记录</span>
+                <span className="page-total">共{this.state.pageTotal}条记录</span>
                 <Pagination
                   size="small"
                   current={this.state.pageCurrent}
@@ -292,7 +292,7 @@ class ManageContainer extends React.Component {
                 />
                 <span className="page-size">
                   每页显示
-                  <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px'}}>
+                  <Select defaultValue="10" size="small" onChange={this.handlePageSizeChange} style={{ margin: '0 5px' }}>
                     <Select.Option value="10">10</Select.Option>
                     <Select.Option value="20">20</Select.Option>
                     <Select.Option value="30">30</Select.Option>
@@ -316,7 +316,7 @@ export default class Manage extends React.Component {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
   }
 
-  componentDidMount(){
+  componentDidMount() {
     const that = this;
 
     $(window).resize(() => {
@@ -327,7 +327,7 @@ export default class Manage extends React.Component {
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
         <Header />

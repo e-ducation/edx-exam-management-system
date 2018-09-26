@@ -24,7 +24,11 @@ export default class PreviewContainer extends React.Component {
     answerShow: false,
     pass: true,
     isStudent: false,
+<<<<<<< HEAD
     isRandom: false
+=======
+    isRandom: false,
+>>>>>>> master
   }
 
   componentDidMount() {
@@ -69,40 +73,38 @@ export default class PreviewContainer extends React.Component {
       })
       return false;
     }
-    //统计页面
+    // 1. 统计页面
     if (id.split('/')[0] === "statistics") {
 
       //获取数据
       axios.get('/api/' + id + '/')
         .then((res) => {
-
-
           this.setState({
             isStatistics: true,
           })
         })
         .catch((error) => {
-
         })
-
     }
-    //编辑时候
+
+    // 2. 编辑时候
     if (id.split('/')[0] === "edit") {
 
       //获取数据
       axios.get('/api/' + id + '/')
         .then((res) => {
-
-
           this.setState({
             isStatistics: true,
           })
         })
         .catch((error) => {
-
         })
-
     }
+
+    // 3.
+
+
+
 
 
 
@@ -133,9 +135,8 @@ export default class PreviewContainer extends React.Component {
       .catch(function (error) {
         message.error('请求失败')
       });
-
-
   }
+
 
   setPrinting = (printing) => {
     if (printing) {
@@ -860,9 +861,6 @@ export default class PreviewContainer extends React.Component {
                     }
                   </div>
               }
-
-
-
 
 
             </div>
