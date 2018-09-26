@@ -241,7 +241,6 @@ class ExamTaskListSerializer(serializers.ModelSerializer):
 
 
 class ExamTaskSerializer(serializers.ModelSerializer):
-    participant_num = serializers.SerializerMethodField()
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     exampaper = serializers.PrimaryKeyRelatedField(queryset=ExamPaper.objects.all())
     task_state = serializers.CharField(read_only=True)
