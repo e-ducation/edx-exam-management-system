@@ -9,8 +9,10 @@ coreschema==0.0.4
 coverage==4.5.1
 Django==1.11.14
 django-cors-headers==2.4.0
+django-filter==1.1.0
 django-model-utils==3.1.2
 djangorestframework==3.8.2
+djangorestframework-jwt==1.11.0
 drf-yasg==1.10.0
 edx-auth-backends==1.1.3
 enum34==1.1.6
@@ -40,6 +42,7 @@ pyflakes==1.6.0
 pyjwkest==1.4.0
 PyJWT==1.6.4
 pylint==1.9.3
+pypinyin==0.33.0
 python-openid==2.2.5
 pytz==2018.5
 PyYAML==3.13
@@ -56,6 +59,7 @@ social-auth-core==1.7.0
 strict-rfc3339==0.7
 swagger-spec-validator==2.3.1
 tox==3.2.1
+typing==3.6.6
 uritemplate==3.0.0
 urllib3==1.23
 validate-email==1.3
