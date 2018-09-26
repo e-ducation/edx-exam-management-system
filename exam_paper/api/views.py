@@ -37,7 +37,6 @@ from exam_paper.api.serializers import (
     ExamParticipantSerializer2,
     ExamTaskSerializer,
     ExamTaskListSerializer,
-    ExamTaskPaperPreviewSerializer
 )
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
@@ -742,11 +741,11 @@ class UserInfoListView(APIView):
     def get(self, request, *args, **kwargs):
         USERS_INFO_API = '/exam/users'
         token = request.user.social_auth.first().extra_data['access_token']
-        url = settings.EDX_API['HOST']+USERS_INFO_API
+        url = settings.EDX_API['HOST'] + USERS_INFO_API
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},
-            params = request.GET,
+            params=request.GET,
         )
         return Response(response_format(rep.json()))
 
@@ -798,8 +797,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
       "participants": [
         {
           "participant": {
-          	                "username": "1",
-                "email": "502464760@qq.com"
+            "username": "1",
+            "email": "502464760@qq.com"
           }
         }
       ]
