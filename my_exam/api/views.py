@@ -14,6 +14,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from django.db.models import Count, Q
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.mixins import (
@@ -28,6 +29,8 @@ from my_exam.api.serializers import (
     MyExamListSerializer,
     ExamParticipantAnswerSerializer
 )
+from my_exam.utils import datetime_to_timestamp
+from my_exam.filters import ExamParticipantOrdering
 from exam_paper.models import (
     ExamTask,
     ExamParticipant,
@@ -102,8 +105,8 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
     list: 我的考试列表接口
     * 分页，默认单页 10 条记录
-    * 排序，默认按开考时间、降序排序， /api/my_exam/?ordering=created
-    * 搜索，按「考试任务名称」搜索，/api/my_exam/?ordering=created&search=<exam task title>
+    * 排序，默认按开考时间、降序排序， /api/my_exam/my_exam?ordering=period_start
+    * 搜索，按「考试任务名称」搜索，/api/my_exam/my_exam?ordering=period_start&search=<exam task title>&exam_result=pending
     * 权限，只能看到自己的考试任务
     """
     # authentication_classes = (
@@ -114,10 +117,11 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
     # )
 
     serializer_class = MyExamListSerializer
-    filter_backends = (filters.SearchFilter, filters.OrderingFilter)
-    search_fields = ('exam_task__name', 'exam_result')
-    ordering_fields = ('exam_task__period_start',)
-    ordering = ('-exam_task__period_start',)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend, ExamParticipantOrdering,)
+    filter_fields = ('task_state',)
+    search_fields = ('exam_task__name',)
+    ordering_fields = ('exam_task__period_start', 'exam_task__period_end')
+    ordering = ('exam_task__period_start',)
 
     def get_queryset(self):
         user = self.request.user
@@ -133,19 +137,24 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
     @swagger_auto_schema(manual_parameters=[page, page_size])
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
+        queryset_state = self.get_queryset()
+        # 先更新一下状态
+        queryset_state_update = self.update_exam_result(queryset_state)
         state_count = {
             'started': 0,
             'finished': 0,
             'unavailable': 0,
-            'pending': 0
+            'pending': 0,
+            'all_count': 0,
+            'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        state_count.update(queryset.filter(exam_result='pending').aggregate(pending=Count('pk')))
-        state_count.update(queryset.filter(exam_result='started').aggregate(started=Count('pk')))
-        state_count.update(queryset.filter(exam_result='finished').aggregate(finished=Count('pk')))
-        state_count.update(queryset.filter(exam_result='unavailable').aggregate(unavailable=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state='pending').aggregate(pending=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state='started').aggregate(started=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state='finished').aggregate(finished=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state='unavailable').aggregate(unavailable=Count('pk')))
+        state_count.update(queryset_state_update.filter().aggregate(all_count=Count('pk')))
 
+        queryset = self.filter_queryset(queryset_state_update)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -154,7 +163,34 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
 
-        return super(MyExamViewSet, self).list(request, args, kwargs)
+        return Response(serializer.data, **state_count)
+
+    def update_exam_result(self, queryset):
+        """
+        更新我的考试状态
+        即将开始的考试=考试时间还未到考试时间
+        正在进行中的考试=当前日期在考试期限内，并且还没有交卷的考试任务。
+        已完成的考试=当前日期在考试期限内，并且已经交卷的考试任务
+        :return:
+        """
+        exam_tasks = ExamTask.objects.filter()
+        try:
+            for item in queryset:
+                exam_task_id = item.exam_task_id
+                exam_task = exam_tasks.filter(id=exam_task_id).first()
+                if exam_task:
+                    if datetime_to_timestamp(datetime.datetime.now()) < datetime_to_timestamp(exam_task.period_start):
+                        item.task_state = "pending"
+                    elif datetime_to_timestamp(datetime.datetime.now()) >= datetime_to_timestamp(exam_task.period_end):
+                        item.task_state = "finished"
+                    else:
+                        if item.task_state != "finished":
+                            item.task_state = "started"
+                    item.save()
+        except Exception as ex:
+            pass
+
+        return self.get_queryset()
 
     def create(self, request, *args, **kwargs):
         """

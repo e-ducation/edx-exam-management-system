@@ -2,8 +2,10 @@
 
 from __future__ import unicode_literals
 import datetime
+from decimal import Decimal
 from django.db import transaction
 from rest_framework import serializers
+from rest_framework.compat import MaxValueValidator, MinValueValidator
 from exam_paper.models import (
     ExamTask,
     ExamParticipant,
@@ -31,15 +33,8 @@ class ExamTaskMixin(object):
 
 class ExamParticipantMixin(object):
 
-    def get_current_time(self, exam_participant):
-        """
-        返回服务器当前时间
-        :param exam_participant:
-        :return:
-        """
-        now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        return now_time
+    def get_total_grade(self, examparticipant):
+        return examparticipant.total_grade
 
 
 class ExamTaskSerializer(serializers.ModelSerializer, ExamTaskMixin):
@@ -56,13 +51,13 @@ class ExamTaskSerializer(serializers.ModelSerializer, ExamTaskMixin):
 class MyExamListSerializer(serializers.ModelSerializer, ExamParticipantMixin):
 
     exam_task = ExamTaskSerializer()
-    current_time = serializers.SerializerMethodField()
+    total_grade = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamParticipant
         fields = (
-            'id', 'exam_result', 'participate_time', 'hand_in_time', 'participant_id',
-            'exam_task', 'current_time')
+            'id', 'exam_result', 'task_state', 'participate_time', 'hand_in_time', 'participant_id',
+            'exam_task', 'total_grade')
 
 
 class MyExamPaperSerializer(serializers.ModelSerializer):
