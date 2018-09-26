@@ -6,13 +6,11 @@ import requests
 from itertools import groupby
 
 from django.conf import settings
-from django.db.models import Q
-
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend
 
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -36,16 +34,14 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
-
     ExamParticipantSerializer2,
-
-    ExamTaskSerializer)
-
+    ExamTaskSerializer,
+    ExamTaskListSerializer,
+)
+from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
-from exam_paper.pageinations import FormatPageNumberPagination
 from exam_paper.utils import response_format
 
-from ..filters import MyCustomOrdering
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -733,6 +729,7 @@ class UserInfoView(APIView):
         )
         return Response(response_format(rep.json()))
 
+
 class UserInfoListView(APIView):
     """
     获取用户信息
@@ -744,11 +741,11 @@ class UserInfoListView(APIView):
     def get(self, request, *args, **kwargs):
         USERS_INFO_API = '/exam/users'
         token = request.user.social_auth.first().extra_data['access_token']
-        url = settings.EDX_API['HOST']+USERS_INFO_API
+        url = settings.EDX_API['HOST'] + USERS_INFO_API
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},
-            params = request.GET,
+            params=request.GET,
         )
         return Response(response_format(rep.json()))
 
@@ -800,8 +797,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
       "participants": [
         {
           "participant": {
-          	                "username": "1",
-                "email": "502464760@qq.com"
+            "username": "1",
+            "email": "502464760@qq.com"
           }
         }
       ]
@@ -844,20 +841,24 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        state_count = queryset.aggregate(
-            pending=Count('pk', filter=Q(task_state='pending')),
-            started=Count('pk', filter=Q(task_state='started')),
-            finished=Count('pk', filter=Q(task_state='finished')),
-            unavailable=Count('pk', filter=Q(task_state='unavailable')),
-        )
+        state_count = {
+            'started': 0,
+            'finished': 0,
+            'unavailable': 0,
+            'pending': 0
+        }
+        state_count.update(queryset.filter(task_state='pending').aggregate(pending=Count('pk')))
+        state_count.update(queryset.filter(task_state='started').aggregate(started=Count('pk')))
+        state_count.update(queryset.filter(task_state='finished').aggregate(finished=Count('pk')))
+        state_count.update(queryset.filter(task_state='unavailable').aggregate(unavailable=Count('pk')))
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = ExamTaskListSerializer(page, many=True)
             assert self.paginator is not None
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
-        serializer = self.get_serializer(queryset, many=True)
+        serializer = self.ExamTaskListSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):

@@ -31,4 +31,3 @@ router = routers.SimpleRouter()
 router.register(r'my_exam', MyExamViewSet, base_name='my_exam_list')
 router.register(r'exam_task/exam_answers', ExamParticipantAnswerViewSet, 'my_exam_answer')
 urlpatterns += router.urls
-

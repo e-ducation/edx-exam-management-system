@@ -166,7 +166,8 @@ EDX_LMS_PATH = ''
 SOCIAL_AUTH_EDX_OIDC_KEY = ''
 SOCIAL_AUTH_EDX_OIDC_SECRET = ''
 SOCIAL_AUTH_EDX_OIDC_URL_ROOT = EDX_LMS_PATH + 'oauth2'
-SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = '' #	Identity token decryption key (same value as the client secret for edX OpenID Connect)
+# Identity token decryption key (same value as the client secret for edX OpenID Connect)
+SOCIAL_AUTH_EDX_OIDC_ID_TOKEN_DECRYPTION_KEY = ''
 SOCIAL_AUTH_EDX_OIDC_ISSUER = EDX_LMS_PATH + 'oauth2'
 LOGIN_REDIRECT_URL = '/'
 
