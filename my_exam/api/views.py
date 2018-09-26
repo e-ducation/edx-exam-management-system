@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.serializers import Serializer
+from django.db.models import Count, Q
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.mixins import (
@@ -132,6 +133,27 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
 
     @swagger_auto_schema(manual_parameters=[page, page_size])
     def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        state_count = {
+            'started': 0,
+            'finished': 0,
+            'unavailable': 0,
+            'pending': 0
+        }
+        state_count.update(queryset.filter(exam_result='pending').aggregate(pending=Count('pk')))
+        state_count.update(queryset.filter(exam_result='started').aggregate(started=Count('pk')))
+        state_count.update(queryset.filter(exam_result='finished').aggregate(finished=Count('pk')))
+        state_count.update(queryset.filter(exam_result='unavailable').aggregate(unavailable=Count('pk')))
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            assert self.paginator is not None
+            return self.paginator.get_paginated_response(serializer.data, **state_count)
+
+        serializer = self.get_serializer(queryset, many=True)
+
         return super(MyExamViewSet, self).list(request, args, kwargs)
 
     def create(self, request, *args, **kwargs):
