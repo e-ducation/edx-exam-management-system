@@ -184,45 +184,28 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
         return exam_paper
 
 
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
-
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'username', 'email')
-
-
 class ExamParticipantSerializer2(serializers.ModelSerializer):
-    participant = UserSerializer(read_only=True)
-    num_of_people = serializers.SerializerMethodField()
-
-    def get_num_of_people(self, obj):
-        num_of_people = {}
-        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending').count()
-        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk').count()
-        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass').count()
-        return num_of_people
+    email = serializers.EmailField(source='participant.email')
+    username = serializers.CharField(source='participant.username')
 
     class Meta:
         model = ExamParticipant
-        fields = ('exam_task', 'participant', 'exam_result', 'participate_time',
-                  'hand_in_time', 'total_grade', 'num_of_people')
+        fields = ('exam_result', 'total_grade', 'email', 'username')
 
 
 class ExamParticipantSerializer(serializers.ModelSerializer):
     exam_result = serializers.CharField(required=False)
     participate_time = serializers.DateTimeField(required=False)
     hand_in_time = serializers.DateTimeField(required=False)
-    participant = UserSerializer()
+    username = serializers.CharField(source='participant.username', required=True)
+    email = serializers.EmailField(source='participant.email', required=True)
 
     class Meta:
         model = ExamParticipant
-        fields = ('participant', 'exam_result', 'participate_time', 'hand_in_time')
+        fields = ('participant_id', 'exam_result', 'participate_time', 'hand_in_time', 'username', 'email')
 
 
 class ExamTaskListSerializer(serializers.ModelSerializer):
-
     participant_num = serializers.SerializerMethodField()
     creator = serializers.SlugRelatedField(read_only=True, slug_field='username')
     task_state = serializers.CharField(read_only=True)
@@ -254,7 +237,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                   'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
                   'exampaper_total_grade', 'creator',
                   'task_state', 'period_start', 'period_end', 'exam_time_limit',
-                  'problem_disorder', 'show_answer', 'participants', )
+                  'problem_disorder', 'show_answer', 'participants',)
 
     def create(self, validated_data):
         if 'participants' in validated_data:
@@ -336,7 +319,6 @@ class ExamTaskSerializer(serializers.ModelSerializer):
 
 
 class ExamTaskPaperPreviewSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ExamTask
         fields = ('name', 'exampaper_total_grade', 'exampaper_total_problem_num',
