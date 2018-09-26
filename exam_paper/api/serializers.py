@@ -341,4 +341,16 @@ class ExamTaskPaperPreviewSerializer(serializers.ModelSerializer):
         model = ExamTask
         fields = ('name', 'exampaper_total_grade', 'exampaper_total_problem_num',
                   'exampaper_passing_ratio', 'exampaper_description',
-                  'problem_statistic')
+                  'problem_statistic', )
+
+
+class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
+    content = serializers.JSONField()
+    grade = serializers.DecimalField(max_digits=5, decimal_places=2,
+                                     validators=[
+                                         MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                         MaxValueValidator(Decimal(100))])
+
+    class Meta:
+        model = ExamPaperProblems
+        fields = ('sequence', 'grade', 'problem_type', 'content')

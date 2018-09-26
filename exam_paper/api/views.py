@@ -37,7 +37,8 @@ from exam_paper.api.serializers import (
     ExamParticipantSerializer2,
     ExamTaskSerializer,
     ExamTaskListSerializer,
-)
+    ExamTaskPaperPreviewSerializer,
+    ExamPaperCreateRuleSerializer, ExamPaperProblemsSnapShotSerializer)
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
 from exam_paper.utils import response_format
@@ -101,6 +102,20 @@ fix_exampaper = openapi.Schema(
     },
     required=['name', 'problems', 'passing_ratio']
 )
+
+
+def gourp_rules(rules):
+    subject = []
+    for name, group in groupby(rules, lambda x: x['section_name']):
+        section_rule = {
+            'name': name,
+        }
+        for rule in group:
+            section_rule['id'] = rule['problem_section_id']
+            section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
+            section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
+        subject.append(section_rule)
+    return subject
 
 
 class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
@@ -382,21 +397,10 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        rules = serializer.data['rules']
-
         data = serializer.data
 
-        subject = []
-        for name, group in groupby(rules, lambda x: x['section_name']):
-            section_rule = {
-                'name': name,
-            }
-            for rule in group:
-                section_rule['id'] = rule['problem_section_id']
-                section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
-                section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
-            subject.append(section_rule)
-        data['subject'] = subject
+        rules = serializer.data['rules']
+        data['subject'] = gourp_rules(rules)
 
         return Response(response_format(data))
 
@@ -841,16 +845,13 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
+        state_queryset = ExamTask.objects.filter(creator=request.user)
         state_count = {
-            'started': 0,
-            'finished': 0,
-            'unavailable': 0,
-            'pending': 0
+            'pending': state_queryset.filter(task_state='pending').count(),
+            'started': state_queryset.filter(task_state='started').count(),
+            'finished': state_queryset.filter(task_state='finished').count(),
+            'unavailable': state_queryset.filter(task_state='unavailable').count(),
         }
-        state_count.update(queryset.filter(task_state='pending').aggregate(pending=Count('pk')))
-        state_count.update(queryset.filter(task_state='started').aggregate(started=Count('pk')))
-        state_count.update(queryset.filter(task_state='finished').aggregate(finished=Count('pk')))
-        state_count.update(queryset.filter(task_state='unavailable').aggregate(unavailable=Count('pk')))
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -859,7 +860,7 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
         serializer = self.ExamTaskListSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, **state_count)
 
     def update(self, request, *args, **kwargs):
         """
@@ -887,3 +888,22 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         if instance.task_state == TASK_STATE[1][0]:
             return Response(response_format(msg='Can not delete started task'))
         return super(ExamTaskViewSet, self).destroy(request, args, kwargs)
+
+    @action(methods=['GET'], detail=True)
+    def preview(self, request, pk, *args, **kwargs):
+        exam_task = self.get_object()
+        serializers = ExamTaskPaperPreviewSerializer(exam_task)
+        data = serializers.data
+        if exam_task.exampaper_create_type == 'fixed':
+            problems = exam_task.problems.all()
+            problems_serializer = ExamPaperProblemsSnapShotSerializer(problems, many=True)
+            data['problems'] = problems_serializer.data
+
+            return Response(response_format(data))
+
+        elif exam_task.exampaper_create_type == 'random':
+            rules = exam_task.rules.all()
+            rules_serializer = ExamPaperCreateRuleSerializer(rules, many=True)
+            data['subject'] = gourp_rules(rules_serializer.data)
+
+            return Response(response_format(data))
