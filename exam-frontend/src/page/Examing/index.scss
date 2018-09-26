@@ -1,0 +1,73 @@
+@import '../../default.scss';
+// 预览试卷
+.preview-block{
+  padding: 20px 25px;
+  border: 1px solid $border;
+  line-height: 1.5;
+  margin: 10px 0;
+  border-radius: 4px;
+  .preview-title{
+    margin-bottom: 20px;
+    color: $title;
+  }
+  .preview-type{
+    color: $font;
+    margin: 0 4px 0 8px;
+  }
+}
+.back-to-top{
+  width: 40px;
+  height: 40px;
+  border-radius: 40px;
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  background: $border;
+  color: $font;
+  text-align: center;
+  font-size: 20px;
+  line-height: 40px;
+  cursor: pointer;
+  z-index: 100;
+}
+.back-to-top:hover{
+  background: $blue;
+  color:#fff;
+}
+.container-examing .ant-breadcrumb{
+  margin: 0 0 20px 0;
+}
+/* 倒计时 */
+.exam-count{
+  width: 145px;
+  height: 102px;
+  background: #393c46;
+  color: $note;
+  position: fixed;
+  right: 0;
+  top: 105px;
+  text-align: center;
+}
+.exam-count-time{
+  width: 40px;
+  height: 30px;
+  line-height: 30px;
+  font-weight: bold;
+  text-align: center;
+  display: inline-block;
+  border: 1px solid #2e313c;
+  margin: 8px 2px;
+}
+.exam-count-text{
+  width: 40px;
+  display: inline-block;
+  margin: 0 2px;
+  font-size: 12px;
+}
+/* 信息提示框 */
+.exam-msg-block{
+  width: 100%;
+  padding: 60px 0;
+  text-align: center;
+  border: 1px solid $border;
+}

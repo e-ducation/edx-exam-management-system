@@ -1,15 +1,18 @@
 # -*-coding:utf-8 -*-
-
 from __future__ import unicode_literals
 
 import random
+import requests
 from itertools import groupby
 
-import requests
 from django.conf import settings
+from django.db.models import Q
 
 from django.db import transaction
+from django.db.models import Count, Q
 from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -33,9 +36,16 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
-)
-from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE
+
+    ExamParticipantSerializer2,
+
+    ExamTaskSerializer)
+
+from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
+from exam_paper.pageinations import FormatPageNumberPagination
 from exam_paper.utils import response_format
+
+from ..filters import MyCustomOrdering
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -83,7 +93,8 @@ fix_exampaper = openapi.Schema(
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'sequence': openapi.Schema(type=openapi.TYPE_STRING, example=5),
-                    'problem_id': openapi.Schema(type=openapi.TYPE_STRING, example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
+                    'problem_id': openapi.Schema(type=openapi.TYPE_STRING,
+                                                 example='hello+hello+20180101+type@problem+block@915e0a76b7aa457f8cf616284bbfba32'),
                     'problem_type': openapi.Schema(type=openapi.TYPE_STRING, example='choiceresponse'),
                     'grade': openapi.Schema(type=openapi.TYPE_INTEGER, example=5),
                     'content': openapi.Schema(type=openapi.TYPE_OBJECT, properties={}),
@@ -441,8 +452,8 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
 
 
 class CoursesListAPIView(APIView):
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get courses list',
@@ -482,8 +493,8 @@ class CourseSectionsListAPIView(APIView):
     """
     获取课程的章节列表
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get course sections list',
@@ -527,8 +538,8 @@ class BlocksProblemsListAPIView(APIView):
     """
     获取课程的题目列表
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get courses problem list',
@@ -584,16 +595,18 @@ class BlocksProblemsListAPIView(APIView):
         if rep.status_code == 400:
             return Response(response_format(status=rep.json().get('code'),
                                             msg=rep.json().get('msg')))
-        else:
+        elif rep.status_code == 200:
             return Response(response_format(rep.json()))
+        else:
+            return Response(rep.text)
 
 
 class ProblemsDetailAPIView(APIView):
     """
     获取题目内容
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id='problem_content',
@@ -642,8 +655,8 @@ class ProblemsTypesAPIView(APIView):
     """
     获取题目类型
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get problem type',
@@ -668,8 +681,8 @@ class SectionProblemTypeCountView(APIView):
     """
     获取章节的题型统计数据
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_description='get section problem type count',
@@ -706,8 +719,8 @@ class UserInfoView(APIView):
     """
     获取用户信息
     """
-    authentication_classes = (SessionAuthentication, )
-    permission_classes = (IsAuthenticated, )
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(operation_description='get user info')
     def get(self, request, *args, **kwargs):
@@ -719,3 +732,157 @@ class UserInfoView(APIView):
             headers={'Authorization': 'Bearer ' + token},
         )
         return Response(response_format(rep.json()))
+
+class UserInfoListView(APIView):
+    """
+    获取用户信息
+    """
+    authentication_classes = (SessionAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    @swagger_auto_schema(operation_description='get users info')
+    def get(self, request, *args, **kwargs):
+        USERS_INFO_API = '/exam/users'
+        token = request.user.social_auth.first().extra_data['access_token']
+        url = settings.EDX_API['HOST']+USERS_INFO_API
+        rep = requests.get(
+            url,
+            headers={'Authorization': 'Bearer ' + token},
+            params = request.GET,
+        )
+        return Response(response_format(rep.json()))
+
+
+class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
+
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
+
+    serializer_class = ExamParticipantSerializer2
+    search_fields = ('participant__username',)
+    filter_backends = (filters.SearchFilter, MyCustomOrdering,)
+    queryset = ExamParticipant.objects.all()
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the purchases
+        for the currently authenticated user.
+        """
+        exam_result = self.request.GET.get('exam_result', '')
+        if exam_result in ('pass', 'flunk'):
+            return ExamParticipant.objects.filter(exam_result=exam_result)
+        elif exam_result == 'pending':
+            return ExamParticipant.objects.filter(exam_result=exam_result)
+        else:
+            return ExamParticipant.objects.filter(
+                Q(exam_result='pass') | Q(exam_result='flunk'))
+
+
+class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
+                      UpdateModelMixin, DestroyModelMixin, GenericViewSet):
+    """
+    ```
+    {
+      "name": "考试任务",
+      "exampaper": 1,
+      "exampaper_name": "test",
+      "exampaper_description": "test",
+      "exampaper_create_type": "fixed",
+      "exampaper_passing_ratio": 60,
+      "period_start": "2018-09-19T08:02:25.955Z",
+      "period_end": "2018-09-19T08:02:25.955Z",
+      "exam_time_limit": 60,
+      "exampaper_total_problem_num":1,
+      "participants": [
+        {
+          "participant": {
+          	                "username": "1",
+                "email": "502464760@qq.com"
+          }
+        }
+      ]
+    }
+    ```
+    """
+
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
+    serializer_class = ExamTaskSerializer
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter,
+                       DjangoFilterBackend,)
+    filter_fields = ('task_state',)
+    search_fields = ('name',)
+    ordering_fields = ('modified',)
+    ordering = ('-modified',)
+
+    def get_queryset(self):
+        user = self.request.user
+        return ExamTask.objects.filter(creator=user)
+
+    def create(self, request, *args, **kwargs):
+        request.data['creator'] = request.user.id
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        state_count = queryset.aggregate(
+            pending=Count('pk', filter=Q(task_state='pending')),
+            started=Count('pk', filter=Q(task_state='started')),
+            finished=Count('pk', filter=Q(task_state='finished')),
+            unavailable=Count('pk', filter=Q(task_state='unavailable')),
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            assert self.paginator is not None
+            return self.paginator.get_paginated_response(serializer.data, **state_count)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def update(self, request, *args, **kwargs):
+        """
+        「考试中」和「考试结束」不可编辑
+        """
+        instance = self.get_object()
+        if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
+            return Response(response_format(msg='Can not edit started task'))
+        return super(ExamTaskViewSet, self).update(request, args, kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        """
+        「考试中」和「考试结束」不可编辑
+        """
+        instance = self.get_object()
+        if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
+            return Response(response_format(msg='Can not edit started task'))
+        return super(ExamTaskViewSet, self).partial_update(request, args, kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        「考试中」的任务不能删除操作；
+        """
+        instance = self.get_object()
+        if instance.task_state == TASK_STATE[1][0]:
+            return Response(response_format(msg='Can not delete started task'))
+        return super(ExamTaskViewSet, self).destroy(request, args, kwargs)

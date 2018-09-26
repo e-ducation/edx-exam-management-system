@@ -10,6 +10,11 @@ import RandomExam from '../page/RandomExam';
 import Task from '../page/Task';
 import TextTask from '../page/TextTask';
 import Statistics from '../page/Statistics';
+
+// 我的考生
+import HomeStudent from '../page/HomeStudent';
+import ManageStudent from '../page/ManageStudent';
+import Examing from '../page/Examing';
 // import { deflateRaw } from 'zlib';
 
 
@@ -29,6 +34,9 @@ export default class Main extends Component {
         <Route path='/task/:id' component={Task} />
         <Route path='/task' component={TextTask} />
         <Route path='/statistics' component={Statistics} />
+        <Route path='/student' component={HomeStudent} />
+        <Route path='/student_manage' component={ManageStudent} />
+        <Route path='/examing/:id' component={Examing} />
       </Switch>
     </main>)
   }

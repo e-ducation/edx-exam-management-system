@@ -30,10 +30,13 @@ from exam_paper.api.views import (
     ProblemsTypesAPIView,
     SectionProblemTypeCountView,
     UserInfoView,
+    ExamParticipantViewSet,
+    ExamTaskViewSet,
+    UserInfoListView,
 )
 
 urlpatterns = [
-    url(r'^courses/$', CoursesListAPIView.as_view()),
+    url(r'^courses/$', CoursesListAPIView.as_view(), name='course_list'),
     url(r'^courses/(?P<course_id>.+)/sections/$',
         CourseSectionsListAPIView.as_view()),
     url(r'^problems/detail/$', ProblemsDetailAPIView.as_view()),
@@ -41,10 +44,15 @@ urlpatterns = [
     url(r'^xblocks/(?P<block_id>.+)/problems/$', BlocksProblemsListAPIView.as_view()),
     url(r'^sections/problems/count/$', SectionProblemTypeCountView.as_view()),
     url(r'^user/info/$', UserInfoView.as_view()),
+    url(r'^users/$', UserInfoListView.as_view()),
+
 ]
 
 router = routers.SimpleRouter()
-router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, 'exampaper_fixed')
-router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, 'exampaper_random')
-router.register(r'exampapers', ExamPaperListViewSet, 'exampaper')
+router.register(r'exampapers/fixed', ExamPaperFixedCreateViewSet, base_name='exam_paper_fixed')
+router.register(r'exampapers/random', ExamPaperRandomCreateViewSet, base_name='exam_paper_random')
+router.register(r'exampapers', ExamPaperListViewSet, base_name='exam_paper')
+router.register(r'examtasks', ExamTaskViewSet, base_name='exam_task')
+router.register(r'examparticipants', ExamParticipantViewSet, 'examparticipants')
+
 urlpatterns += router.urls

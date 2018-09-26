@@ -24,7 +24,7 @@ export default class PreviewContainer extends React.Component {
     answerShow: false,
     pass: true,
     isStudent: false,
-    isRandom: true
+    isRandom: false
   }
 
   componentDidMount() {
@@ -69,40 +69,38 @@ export default class PreviewContainer extends React.Component {
       })
       return false;
     }
-    //统计页面
+    // 1. 统计页面
     if (id.split('/')[0] === "statistics") {
 
       //获取数据
       axios.get('/api/' + id + '/')
         .then((res) => {
-
-
           this.setState({
             isStatistics: true,
           })
         })
         .catch((error) => {
-
         })
-
     }
-    //编辑时候
+
+    // 2. 编辑时候
     if (id.split('/')[0] === "edit") {
 
       //获取数据
       axios.get('/api/' + id + '/')
         .then((res) => {
-
-
           this.setState({
             isStatistics: true,
           })
         })
         .catch((error) => {
-
         })
-
     }
+
+    // 3.
+
+
+
 
 
 
@@ -133,9 +131,8 @@ export default class PreviewContainer extends React.Component {
       .catch(function (error) {
         message.error('请求失败')
       });
-
-
   }
+
 
   setPrinting = (printing) => {
     if (printing) {
@@ -155,20 +152,16 @@ export default class PreviewContainer extends React.Component {
     $("html,body").animate({ scrollTop: 0 }, 500)
   }
 
-  answerShow = () => {
+
+  //显示答案
+  answerShow = (e) => {
 
     this.setState({
-      answerShow: true
+      answerShow: !e
     })
-    console.log(this.state.answerShow)
+
   }
 
-  answerNoShow = () => {
-    this.setState({
-      answerShow: false
-    })
-    console.log(this.state.answerShow)
-  }
 
   render() {
     // multiplechoiceresponse 单选题
@@ -207,9 +200,9 @@ export default class PreviewContainer extends React.Component {
                           <div style={{ textAlign: 'right', marginBottom: '20px' }}>
                             {
                               this.state.answerShow ?
-                                <Button onClick={this.answerNoShow} style={{ marginRight: '10px' }}>隐藏答案</Button>
+                                <Button onClick={this.answerShow.bind(this, this.state.answerShow)} style={{ marginRight: '10px' }}>隐藏答案</Button>
                                 :
-                                <Button onClick={this.answerShow} style={{ marginRight: '10px' }}>查看答案</Button>
+                                <Button onClick={this.answerShow.bind(this, this.state.answerShow)} style={{ marginRight: '10px' }}>显示答案</Button>
                             }
                             <Button onClick={this.setPrinting.bind(this, true)}>打印试卷</Button>
                           </div>
@@ -761,13 +754,109 @@ export default class PreviewContainer extends React.Component {
                           )
                         }
 
+                        if (this.state.isStatistics === false && this.state.isEdit === false && this.state.isStudent === false) {
+                          return (
+                            <div className="preview-subject" key={index} style={border}>
+                              <div style={{ padding: '20px 25px' }}>
+                                <p className="preview-title">
+                                  {index + 1}.
+                              <span className="preview-type">
+                                    {
+                                      (() => {
+                                        switch (item.problem_type) {
+                                          case 'multiplechoiceresponse':
+                                            return '[单选题]';
+                                          case 'choiceresponse':
+                                            return '[多选题]';
+                                          case 'fill':
+                                            return '[填空题]';
+                                          default:
+                                            return null;
+                                        }
+                                      })()
+                                    }
+                                  </span>
+                                  {item.content.title}
+                                  （{item.grade}分）
+                              </p>
+                                <div style={{ marginLeft: '18px' }}>
+                                  {
+                                    (() => {
+                                      switch (item.problem_type) {
+                                        case 'multiplechoiceresponse':
+                                          return <Radio.Group style={{ display: 'block' }} value={this.state.answerShow ? item.content.answers[0] : null}>
+                                            {
+                                              item.content.options.map((item, index) => {
+                                                return <Radio style={{ display: 'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0' }} key={index} value={index}>{item}</Radio>
+                                              })
+                                            }
+                                          </Radio.Group>;
+
+                                        case 'choiceresponse':
+                                          return <Checkbox.Group value={this.state.answerShow ? item.content.answers : null}>
+                                            {
+                                              item.content.options.map((item, index) => {
+                                                return <Checkbox style={{ display: 'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0' }} key={index} value={index}>{item}</Checkbox>
+                                              })
+                                            }
+                                          </Checkbox.Group>;
+
+                                        case 'stringresponse':
+                                          return <div>
+                                            {
+                                              /*
+                                              item.input.map((answer, index) => {
+                                                return <div style={(index !== item.input.length - 1) ? { marginBottom: '20px'} : {} }>
+                                                  <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
+                                                  <Input.TextArea
+                                                    autosize={{ minRows: 1, maxRows: 6 }}
+                                                    style={{ width: '400px', display:'inline-block', marginLeft: '15px', verticalAlign: 'text-top'}}
+                                                  />
+                                                </div>
+                                              })
+                                              */
+                                            }
+                                            <span style={{ position: 'relative', top: '4px' }}>请填写答案</span>
+                                            <Input.TextArea
+                                              autosize={{ minRows: 1, maxRows: 6 }}
+                                              style={{ width: '385px', display: 'inline-block', marginLeft: '15px', verticalAlign: 'text-top' }}
+                                              maxLength="2000"
+                                            />
+                                          </div>
+
+                                        default:
+                                          return null;
+                                      }
+                                    })()
+                                  }
+                                </div>
+                              </div>
+
+                              {
+                                this.state.answerShow ?
+                                  <div className="answerShow">
+                                    <p>正确答案：
+                                    {
+                                        item.content.answers.map(item => {
+                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item))}</span>)
+                                        })
+                                      }
+                                    </p>
+                                    <p>{item.content.solution}</p>
+                                  </div>
+                                  :
+                                  null
+                              }
+
+                            </div>
+                          )
+                        }
+
+
                       })
                     }
                   </div>
               }
-
-
-
 
 
             </div>
