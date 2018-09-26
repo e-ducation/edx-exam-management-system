@@ -217,6 +217,7 @@ class ExamParticipant(TimeStampedModel):
     exam_task = models.ForeignKey(ExamTask, related_name='participants', help_text='考试')
     participant = models.ForeignKey(User, related_name='exams', help_text='考生')
     exam_result = models.CharField(max_length=16, choices=EXAM_RESULT, help_text='考试结果', default='pending')
+    task_state = models.CharField(max_length=16, choices=TASK_STATE, default='pending', help_text='考试状态')
     participate_time = models.DateTimeField(blank=True, null=True, help_text='应考时间')
     hand_in_time = models.DateTimeField(blank=True, null=True, help_text='交卷时间')
 
