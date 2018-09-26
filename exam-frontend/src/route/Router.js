@@ -34,6 +34,7 @@ export default class Main extends Component {
         <Route path='/task/:id' component={Task} />
         <Route path='/task' component={TextTask} />
         <Route path='/statistics' component={Statistics} />
+        <Route path='/statistics/:id' component={Statistics} />
         <Route path='/student' component={HomeStudent} />
         <Route path='/student_manage' component={ManageStudent} />
         <Route path='/examing/:id' component={Examing} />

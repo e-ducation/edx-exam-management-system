@@ -24,7 +24,11 @@ export default class TextTask extends React.Component {
     pageSize: 10,
     search: '',
     allPaper: '',
-    key: 1,
+    key: 'all',
+    all: '0',
+    pending: '0',
+    started: '0',
+    finished: '0'
   }
 
 
@@ -44,24 +48,35 @@ export default class TextTask extends React.Component {
     this.setState({
       loading: true,
     }, () => {
-      axios.get('/api/exampapers/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+      var url = "";
+      //状态的改变
+      if (key === 'all') {
+        url = '/api/examtasks/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize;
+      }
+      else {
+        url = '/api/examtasks/?search=' + search + '&task_state=' + key + '&page=' + pageCurrent + '&page_size=' + pageSize;
+      }
+
+      axios.get(url, {
         cancelToken: new CancelToken(function executor(c) {
           // An executor function receives a cancel function as a parameter
           that.searchAjax = c
         })
       }).then(function (response) {
         const res = response.data;
+
         if (res.status === 0) {
-          // 给list添加key
           let list = res.data.results;
-          for (let i = 0; i < list.length; i++) {
-            list[i].key = i;
-          }
           that.setState({
             list,
             pageTotal: res.data.count,
             loading: false,
+            all: res.data.count,
+            pending: res.data.pending,
+            started: res.data.started,
+            finished: res.data.finished
           })
+
         } else {
           message.error('请求失败')
           that.setState({
@@ -73,7 +88,6 @@ export default class TextTask extends React.Component {
           that.setState({
             loading: false,
           })
-          // message.error('请求失败')
         });
     })
 
@@ -110,19 +124,20 @@ export default class TextTask extends React.Component {
   }
 
 
-  // 3. 预览试卷
+  // 3. 预览试卷详情
   previewPaper = (id) => {
-    window.open("/#/preview/" + id)
+    //window.open("/#/task/" + id);
+    window.location.href = '/#/task/' + id;
   }
 
   // 4. 统计试卷
   statisticsPaper = (id) => {
-    window.location.href = '/#/statistics/';
+    window.location.href = '/#/statistics/' + id;
   }
 
   // 5. 删除试卷
   deletePaper = (id) => {
-    const that = this;
+
     Modal.confirm({
       iconType: 'exclamation-circle',
       className: 'confirm-red',
@@ -132,18 +147,22 @@ export default class TextTask extends React.Component {
       cancelText: '取消',
       onOk: () => {
         // 删除试卷
-        axios.delete('/api/exampapers/' + id + '/')
-          .then(function (response) {
+        axios.delete('/api/examtasks/' + id + '/')
+          .then((response) => {
+
             const res = response.data;
-            if (res.status === 0) {
-              message.success('删除成功');
-              that.getList();
-            } else {
-              message.error('删除失败');
-            }
+            message.success('删除成功');
+            this.getList();
+
+            // if (res.status === 0) {
+            //   message.success('删除成功');
+            //
+            // } else {
+            //   message.error('删除失败');
+            // }
 
           })
-          .catch(function (error) {
+          .catch((error) => {
             message.error('删除失败')
           });
       }
@@ -152,31 +171,44 @@ export default class TextTask extends React.Component {
 
   // 6. 编辑试卷
   editPaper = (id) => {
-    //window.location.href = '/#/edit/' + id;
+    window.location.href = '/#/task/' + id;
   }
 
   // 7. 切换tab栏
   callback = (key) => {
+
     this.setState({
       key
-    })
+    }, () => {
+      this.getList();
+    });
   }
 
 
   render() {
     // 列表头
+
     const columns = [
       {
         title: '状态',
-        dataIndex: 'status',
+        dataIndex: 'task_state',
         width: '10%',
         render: (text, record) => (
           <span>
+
             {
-              record.create_type === 'fixed' ?
-                <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
-                :
-                <span>{text}</span>
+              (() => {
+                switch (record.task_state) {
+                  case 'pending':
+                    return '未开始';
+                  case 'started':
+                    return '考试中';
+                  case 'finished':
+                    return '已结束';
+                  default:
+                    return '不可用';
+                }
+              })()
             }
           </span>
 
@@ -186,23 +218,23 @@ export default class TextTask extends React.Component {
         dataIndex: 'name',
         width: '26%',
         render: (text, record) => (
-          <a>{text}</a>
+          <span onClick={this.previewPaper.bind(this, record.id)} className="text-link">{text}</span>
         )
       }, {
         title: '创建人',
-        dataIndex: 'create_name',
+        dataIndex: 'creator',
         width: '10%',
       }, {
         title: '开始时间',
-        dataIndex: 'start_time',
+        dataIndex: 'period_start',
         width: '16%',
       }, {
         title: '结束时间',
-        dataIndex: 'end_time',
+        dataIndex: 'period_end',
         width: '16%',
       }, {
         title: '考生人数',
-        dataIndex: 'number',
+        dataIndex: 'participant_num',
         width: '9%',
       }, {
         title: '操作',
@@ -252,12 +284,24 @@ export default class TextTask extends React.Component {
         title={() =>
           <div>
             <Button type="primary" href="/#/"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
-            <Input
-              prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              placeholder="请输入考试任务名称搜索"
-              style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
-              onChange={this.onChangeSearch}
-            />
+
+            {
+              this.state.list.length < 1 ?
+                <Input
+                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  placeholder="请输入考试任务名称搜索"
+                  style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
+                  onChange={this.onChangeSearch}
+                  disabled
+                />
+                :
+                <Input
+                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+                  placeholder="请输入考试任务名称搜索"
+                  style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
+                  onChange={this.onChangeSearch}
+                />
+            }
           </div>
         }
         locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
@@ -278,11 +322,11 @@ export default class TextTask extends React.Component {
             </Breadcrumb.Item>
           </Breadcrumb>
           <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>考试任务</h1>
-          <Tabs defaultActiveKey="1" onChange={this.callback}>
-            <TabPane tab={<span>全部（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
-            <TabPane tab={<span>未开始（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
-            <TabPane tab={<span>考试中（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
-            <TabPane tab={<span>已结束（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
+          <Tabs defaultActiveKey={this.state.key} onChange={this.callback}>
+            <TabPane tab={<span>全部（{this.state.all}）</span>} key="all">{textTask}</TabPane>
+            <TabPane tab={<span>未开始（{this.state.pending}）</span>} key="pending">{textTask}</TabPane>
+            <TabPane tab={<span>考试中（{this.state.started}）</span>} key="started">{textTask}</TabPane>
+            <TabPane tab={<span>已结束（{this.state.finished}）</span>} key="finished">{textTask}</TabPane>
           </Tabs>
 
 
