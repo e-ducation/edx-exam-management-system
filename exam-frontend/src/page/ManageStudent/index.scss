@@ -1,0 +1,44 @@
+@import '../../default.scss';
+
+.container_student{
+  .ant-breadcrumb{
+    margin: 0 0 20px 0;
+  }
+}
+.student-modal{
+  text-align: center;
+  line-height: 2.3;
+  h1{
+    font-size: 18px;
+  }
+  > span{
+    margin: 0 15px;
+  }
+  .description{
+    color: $note;
+    text-align: left;
+    margin-top: 20px;
+  }
+  .count{
+    width: 280px;
+    height: 100px;
+    border: 1px solid $border;
+    border-radius: 4px;
+    margin: 0 auto;
+    padding-top: 12px;
+    p{
+      padding-bottom: 3px;
+    }
+  }
+  .count-black{
+    background: #2e313c;
+    height: 30px;
+    color: #e5e8ec;
+    display: inline-block;
+    padding: 0 30px;
+    line-height: 30px;
+    border-radius: 4px;
+    margin: 0 2px;
+    font-size: 12px;
+  }
+}

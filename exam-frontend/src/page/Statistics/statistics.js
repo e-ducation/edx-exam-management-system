@@ -1,14 +1,11 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal } from 'antd';
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import { Icon, Tooltip, Table, Input, Breadcrumb, Pagination, Select, message, Modal, Tabs } from 'antd';
 import Sidebar from '../../components/Sidebar';
-import ChoosePaperType from '../../components/ChoosePaperType';
 import axios from 'axios';
 import './index.scss';
-import $ from "jquery";
 import none from "../../assets/images/none.png";
-class ManageContainer extends React.Component {
+const TabPane = Tabs.TabPane;
+class StatisticsContainer extends React.Component {
   constructor(props) {
     super(props);
     this.searchAjax = null;
@@ -17,17 +14,22 @@ class ManageContainer extends React.Component {
   state = {
     loading: true,
     visible: false,
-    list: [],
+    list: [
+      { name: '王铭业', phone: '13184821132', email: '13498655697@qq.com', result: '及格', grade: '100' },
+      { name: '陈嘉琪', phone: '13184821132', email: '13498655697@qq.com', result: '不及格', grade: '59' },
+      { name: '陈嘉琪', phone: '13184821132', email: '13498655697@qq.com', result: '待考', grade: '100' }
+    ],
     pageCurrent: 1,
     pageTotal: 0,
     pageSize: 10,
     search: '',
+    allPaper: '',
+    key: 1,
   }
 
 
   componentDidMount() {
     this.getList();
-
   }
 
   // 1.1 试卷列表
@@ -107,19 +109,6 @@ class ManageContainer extends React.Component {
     })
   }
 
-  // 2.1 新建试卷
-  showModal = () => {
-    this.setState({
-      visible: true,
-    })
-  }
-
-  // 2.2 取消新建试卷
-  hideModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
 
   // 3. 预览试卷
   previewPaper = (id) => {
@@ -156,7 +145,7 @@ class ManageContainer extends React.Component {
       cancelText: '取消',
       onOk: () => {
         // 删除试卷
-        axios.delete('/api/exampapers/' + id + '/')
+        axios.delete('./api/exampapers/' + id + '/')
           .then(function (response) {
             const res = response.data;
             if (res.status === 0) {
@@ -176,17 +165,29 @@ class ManageContainer extends React.Component {
 
   // 6. 编辑试卷
   editPaper = (id) => {
-    window.location.href = '/#/edit/' + id;
+    //window.location.href = '/#/edit/' + id;
+  }
+
+  // 7. 切换tab栏
+  callback = (key) => {
+    this.setState({
+      key
+    })
   }
 
 
+  statisticsUrl = (id) => {
+    window.open('/#/preview/statistics/' + id + '');
+  }
   render() {
     // 列表头
+
+
     const columns = [
       {
-        title: '试卷名称',
+        title: '姓名',
         dataIndex: 'name',
-        width: '29%',
+        width: '10%',
         render: (text, record) => (
           <span>
             {
@@ -199,83 +200,130 @@ class ManageContainer extends React.Component {
 
         )
       }, {
-        title: '选题方式',
-        dataIndex: 'create_type',
+        title: '电话',
+        dataIndex: 'phone',
+        width: '15%',
+      }, {
+        title: '邮箱',
+        dataIndex: 'email',
+        width: '19%',
+      }, {
+        title: '考试结果',
+        dataIndex: 'result',
         width: '14%',
-        render: (text) => (
-          <span>{text === 'fixed' ? '固定试题' : '随机试题'}</span>
+        render: (text, record) => (
+          <span>
+            {
+              (
+                () => {
+                  if (record.result == "及格") {
+                    return (
+                      <span style={{ color: '#94d055' }}>及格</span>
+                    )
+                  }
+                  else if (record.result == "不及格") {
+                    return (
+                      <span style={{ color: '#f4323c' }}>不及格</span>
+                    )
+                  }
+                  else {
+                    return (
+                      <span>待审查</span>
+                    )
+                  }
+                }
+              )()
+            }
+          </span>
         )
       }, {
-        title: '试题数',
-        dataIndex: 'total_problem_num',
-        width: '10%',
-      }, {
-        title: '总分',
-        dataIndex: 'total_grade',
-        width: '10%',
-      }, {
-        title: '及格分',
-        dataIndex: 'passing_grade',
-        width: '10%',
-      }, {
-        title: '创建人',
-        dataIndex: 'creator',
+        title: '考试分数',
+        dataIndex: 'grade',
         width: '13%',
       }, {
         title: '操作',
         dataIndex: 'id',
         width: '14%',
         render: (text, record, index) => (
-          <span>
-            <Tooltip title="编辑">
-              <Icon type="edit" className="icon-blue" style={{ fontSize: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
-            </Tooltip>
-            <Tooltip title="复制">
-              <Icon type="copy" className="icon-blue" style={{ fontSize: '16px', margin: '0 10px' }} onClick={this.copyPaper.bind(this, record.id)} />
-            </Tooltip>
-            <Tooltip title="删除">
-              <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
-            </Tooltip>
+          <span className="statistics-icon">
+            {
+              (
+                () => {
+                  if (record.result == "待考") {
+                    return (<i className="iconfont nohoverstatus" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }}>&#xe66d;</i>)
+                  }
+                  else {
+                    return (
+                      <Tooltip title="查看答卷">
+                        <i className="iconfont hashoverstatus" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsUrl.bind(this, record.id)}>&#xe66d;</i>
+                      </Tooltip>
+                    )
+                  }
+                }
+              )()
+            }
+
           </span>
         )
       }
     ];
 
+
+    // 表格
+    const textTask = (
+
+      <Table
+        columns={columns}
+        dataSource={this.state.list}
+        bordered
+        pagination={false}
+        size="small"
+        rowKey={record => record.id}
+        loading={this.state.loading}
+        title={() =>
+          <div style={{ overflow: 'hidden' }}>
+            <p style={{ float: 'left', marginTop: '6px' }}>
+              <span>考试名称：商务知识管理</span>
+              <span>及格线：60分（固定试卷）</span>
+            </p>
+            <Input
+              prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="请输入姓名/电话/邮箱"
+              style={{ width: '200px', marginLeft: '10px', float: 'right' }}
+              onChange={this.onChangeSearch}
+            />
+          </div>
+        }
+        locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
+      />
+    )
     return (
       <div className="displayFlx">
-        <Sidebar active="manage" />
+        <Sidebar active="task" />
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
               <Icon type="home" theme="outlined" style={{ fontSize: '14px', marginRight: '2px' }} />
               <span>首页</span>
             </Breadcrumb.Item>
+            <Breadcrumb.Item href="/#/task/">
+              <i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>
+              <span>考试任务</span>
+            </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <i className="iconfont" style={{ fontSize: '12px', marginRight: '5px' }}>&#xe62e;</i>
-              <span>试卷管理</span>
+              <i className="iconfont" style={{ fontSize: '16px', marginRight: '8px', cursor: 'pointer' }}>&#xe642;</i>
+              <span>统计考试任务</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>试卷管理</h1>
-          <Table
-            columns={columns}
-            dataSource={this.state.list}
-            bordered
-            pagination={false}
-            size="small"
-            loading={this.state.loading}
-            title={() =>
-              <div>
-                <Button icon="file-add" type="primary" onClick={this.showModal}>新建试卷</Button>
-                <Input
-                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="请输入关键字"
-                  style={{ width: '200px', marginLeft: '10px', position: 'relative', top: '1px' }}
-                  onChange={this.onChangeSearch}
-                />
-              </div>
-            }
-            locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
-          />
+          <h1 style={{ margin: '25px 0 10px', fontSize: '16px' }}>考试任务</h1>
+          <Tabs defaultActiveKey="1" onChange={this.callback} >
+            <TabPane tab={<span>应考人数（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
+            <TabPane tab={<span>待考人数（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
+            <TabPane tab={<span>合格人数（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
+            <TabPane tab={<span>不及格人数（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
+          </Tabs>
+
+
           {
             this.state.list.length === 0 ?
               null
@@ -304,38 +352,11 @@ class ManageContainer extends React.Component {
           }
 
         </div>
-        <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
+
       </div>
     );
   }
 }
 
 
-export default class Manage extends React.Component {
-  state = {
-    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-  }
-
-  componentDidMount() {
-    const that = this;
-
-    $(window).resize(() => {
-      const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-      that.setState({ height })
-    })
-
-  }
-
-  render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
-    return (
-      <div>
-        <Header />
-        <div className="container" style={containerHeight}>
-          <ManageContainer />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-}
+export default StatisticsContainer;

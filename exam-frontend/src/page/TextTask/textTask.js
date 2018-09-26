@@ -1,14 +1,12 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal } from 'antd';
-import Footer from '../../components/Footer';
-import Header from '../../components/Header';
+import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal, Tabs } from 'antd';
 import Sidebar from '../../components/Sidebar';
-import ChoosePaperType from '../../components/ChoosePaperType';
 import axios from 'axios';
 import './index.scss';
-import $ from "jquery";
 import none from "../../assets/images/none.png";
-class ManageContainer extends React.Component {
+const TabPane = Tabs.TabPane;
+
+export default class TextTask extends React.Component {
   constructor(props) {
     super(props);
     this.searchAjax = null;
@@ -17,22 +15,26 @@ class ManageContainer extends React.Component {
   state = {
     loading: true,
     visible: false,
-    list: [],
+    list: [
+      { status: '未开始', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' },
+      { status: '考试中', name: '这是试卷01', create_name: '王铭业', start_time: '2018/08/01 9:00', end_time: '2018/08/01 11:30', number: '30' }
+    ],
     pageCurrent: 1,
     pageTotal: 0,
     pageSize: 10,
     search: '',
+    allPaper: '',
+    key: 1,
   }
 
 
   componentDidMount() {
     this.getList();
-
   }
 
   // 1.1 试卷列表
   getList = () => {
-    const { pageCurrent, pageSize, search } = this.state;
+    const { pageCurrent, pageSize, search, key } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
     if (this.searchAjax) {
@@ -107,41 +109,15 @@ class ManageContainer extends React.Component {
     })
   }
 
-  // 2.1 新建试卷
-  showModal = () => {
-    this.setState({
-      visible: true,
-    })
-  }
-
-  // 2.2 取消新建试卷
-  hideModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
 
   // 3. 预览试卷
   previewPaper = (id) => {
     window.open("/#/preview/" + id)
   }
 
-  // 4. 复制试卷
-  copyPaper = (id) => {
-    const that = this;
-    axios.post('/api/exampapers/' + id + '/duplicate/')
-      .then(function (response) {
-        const res = response.data;
-        if (res.status === 0) {
-          that.getList();
-        } else {
-          message.error('复制失败');
-        }
-
-      })
-      .catch(function (error) {
-        message.error('复制失败')
-      });
+  // 4. 统计试卷
+  statisticsPaper = (id) => {
+    window.location.href = '/#/statistics/';
   }
 
   // 5. 删除试卷
@@ -150,8 +126,8 @@ class ManageContainer extends React.Component {
     Modal.confirm({
       iconType: 'exclamation-circle',
       className: 'confirm-red',
-      title: '提示',
-      content: '确定删除此试卷？',
+      title: '您确定要删除考试任务？',
+      content: '已经结束的考试任务删除后将无法恢复',
       okText: '确定',
       cancelText: '取消',
       onOk: () => {
@@ -176,7 +152,14 @@ class ManageContainer extends React.Component {
 
   // 6. 编辑试卷
   editPaper = (id) => {
-    window.location.href = '/#/edit/' + id;
+    //window.location.href = '/#/edit/' + id;
+  }
+
+  // 7. 切换tab栏
+  callback = (key) => {
+    this.setState({
+      key
+    })
   }
 
 
@@ -184,9 +167,9 @@ class ManageContainer extends React.Component {
     // 列表头
     const columns = [
       {
-        title: '试卷名称',
-        dataIndex: 'name',
-        width: '29%',
+        title: '状态',
+        dataIndex: 'status',
+        width: '10%',
         render: (text, record) => (
           <span>
             {
@@ -199,51 +182,90 @@ class ManageContainer extends React.Component {
 
         )
       }, {
-        title: '选题方式',
-        dataIndex: 'create_type',
-        width: '14%',
-        render: (text) => (
-          <span>{text === 'fixed' ? '固定试题' : '随机试题'}</span>
+        title: '考试任务名称',
+        dataIndex: 'name',
+        width: '26%',
+        render: (text, record) => (
+          <a>{text}</a>
         )
       }, {
-        title: '试题数',
-        dataIndex: 'total_problem_num',
-        width: '10%',
-      }, {
-        title: '总分',
-        dataIndex: 'total_grade',
-        width: '10%',
-      }, {
-        title: '及格分',
-        dataIndex: 'passing_grade',
-        width: '10%',
-      }, {
         title: '创建人',
-        dataIndex: 'creator',
-        width: '13%',
+        dataIndex: 'create_name',
+        width: '10%',
+      }, {
+        title: '开始时间',
+        dataIndex: 'start_time',
+        width: '16%',
+      }, {
+        title: '结束时间',
+        dataIndex: 'end_time',
+        width: '16%',
+      }, {
+        title: '考生人数',
+        dataIndex: 'number',
+        width: '9%',
       }, {
         title: '操作',
         dataIndex: 'id',
         width: '14%',
         render: (text, record, index) => (
           <span>
-            <Tooltip title="编辑">
-              <Icon type="edit" className="icon-blue" style={{ fontSize: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
-            </Tooltip>
-            <Tooltip title="复制">
-              <Icon type="copy" className="icon-blue" style={{ fontSize: '16px', margin: '0 10px' }} onClick={this.copyPaper.bind(this, record.id)} />
-            </Tooltip>
-            <Tooltip title="删除">
-              <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
-            </Tooltip>
+            {
+              record.status == "考试中" ?
+                <span className="diaplayIcon">
+                  <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
+
+                  <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }}>&#xe642;</i>
+
+                  <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
+                </span>
+                :
+                <span>
+                  <Tooltip title="编辑">
+                    <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
+                  </Tooltip>
+                  <Tooltip title="统计">
+                    <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                  </Tooltip>
+                  <Tooltip title="删除">
+                    <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+                  </Tooltip>
+                </span>
+            }
           </span>
+
         )
       }
     ];
 
+
+    // 表格
+    const textTask = (
+
+      <Table
+        columns={columns}
+        dataSource={this.state.list}
+        bordered
+        pagination={false}
+        size="small"
+        loading={this.state.loading}
+        title={() =>
+          <div>
+            <Button type="primary" href="/#/"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
+            <Input
+              prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="请输入考试任务名称搜索"
+              style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
+              onChange={this.onChangeSearch}
+            />
+          </div>
+        }
+        locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
+      />
+    )
     return (
       <div className="displayFlx">
-        <Sidebar active="manage" />
+        <Sidebar active="task" />
         <div className="text-right-left">
           <Breadcrumb>
             <Breadcrumb.Item href="/#/">
@@ -251,31 +273,19 @@ class ManageContainer extends React.Component {
               <span>首页</span>
             </Breadcrumb.Item>
             <Breadcrumb.Item>
-              <i className="iconfont" style={{ fontSize: '12px', marginRight: '5px' }}>&#xe62e;</i>
-              <span>试卷管理</span>
+              <i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>
+              <span>考试管理</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>试卷管理</h1>
-          <Table
-            columns={columns}
-            dataSource={this.state.list}
-            bordered
-            pagination={false}
-            size="small"
-            loading={this.state.loading}
-            title={() =>
-              <div>
-                <Button icon="file-add" type="primary" onClick={this.showModal}>新建试卷</Button>
-                <Input
-                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="请输入关键字"
-                  style={{ width: '200px', marginLeft: '10px', position: 'relative', top: '1px' }}
-                  onChange={this.onChangeSearch}
-                />
-              </div>
-            }
-            locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
-          />
+          <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>考试任务</h1>
+          <Tabs defaultActiveKey="1" onChange={this.callback}>
+            <TabPane tab={<span>全部（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
+            <TabPane tab={<span>未开始（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
+            <TabPane tab={<span>考试中（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
+            <TabPane tab={<span>已结束（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
+          </Tabs>
+
+
           {
             this.state.list.length === 0 ?
               null
@@ -304,38 +314,10 @@ class ManageContainer extends React.Component {
           }
 
         </div>
-        <ChoosePaperType visible={this.state.visible} hideModal={this.hideModal} />
+
       </div>
     );
   }
 }
 
 
-export default class Manage extends React.Component {
-  state = {
-    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
-  }
-
-  componentDidMount() {
-    const that = this;
-
-    $(window).resize(() => {
-      const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-      that.setState({ height })
-    })
-
-  }
-
-  render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
-    return (
-      <div>
-        <Header />
-        <div className="container" style={containerHeight}>
-          <ManageContainer />
-        </div>
-        <Footer />
-      </div>
-    );
-  }
-}

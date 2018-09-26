@@ -3,37 +3,30 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import './index.scss';
 import $ from "jquery";
-import PreviewContainer from '../../components/Preview';
+import StatisticsContainer from './statistics'
 
-export default class Preview extends React.Component {
+export default class Statistics extends React.Component {
   state = {
-    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeigh,
-    showBackToTop: false,
+    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
   }
 
   componentDidMount() {
     const that = this;
+
     $(window).resize(() => {
       const height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       that.setState({ height })
     })
 
-
-  }
-
-  onChangeUpBtn = (val) => {
-    this.setState({
-      showBackToTop: val,
-    })
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px', minWidth: '649px' }
+    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
-        <Header changeUpBtn={this.onChangeUpBtn} />
+        <Header />
         <div className="container" style={containerHeight}>
-          <PreviewContainer showBackToTop={this.state.showBackToTop} />
+          <StatisticsContainer />
         </div>
         <Footer />
       </div>

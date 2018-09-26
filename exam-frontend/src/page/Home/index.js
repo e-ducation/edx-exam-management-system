@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon, message } from 'antd';
+import { message } from 'antd';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import Sidebar from '../../components/Sidebar';
@@ -8,7 +8,7 @@ import axios from 'axios';
 import './index.scss';
 import $ from "jquery";
 class HomeContainer extends React.Component {
-  state={
+  state = {
     visible: false,
     username: '',
   }
@@ -19,7 +19,7 @@ class HomeContainer extends React.Component {
     axios.get('/api/user/info/')
       .then(function (response) {
         const res = response.data;
-        if (res.status === 0){
+        if (res.status === 0) {
           that.setState({
             username: res.data.username || res.data.name || res.data.email,
           })
@@ -38,7 +38,7 @@ class HomeContainer extends React.Component {
     })
   }
 
-  hideModal = () =>{
+  hideModal = () => {
     this.setState({
       visible: false,
     })
@@ -49,13 +49,13 @@ class HomeContainer extends React.Component {
       <div className="displayFlx">
         <Sidebar active="home" />
         <div className="text-right-left home">
-          <p style={{ margin: '10px 0 20px'}}>{this.state.username}，欢迎来到考试管理系统，您可以在这里管理您的试卷和发布考试任务。</p>
+          <p style={{ margin: '10px 0 20px' }}>{this.state.username}，欢迎来到考试管理系统，您可以在这里管理您的试卷和发布考试任务。</p>
           <div className="home-create" onClick={this.showModal}>
-            <i className="iconfont home-icon" style={{color:'#37c591'}}>&#xe62e;</i>
+            <i className="iconfont home-icon" style={{ color: '#37c591' }}>&#xe62e;</i>
             <div>我要创建试卷</div>
           </div>
           <div className="home-create">
-            <i className="iconfont home-icon" style={{color:'#95cd5b'}}>&#xe66b;</i>
+            <i className="iconfont home-icon" style={{ color: '#95cd5b' }}>&#xe66b;</i>
             <div>我要创建考试任务</div>
           </div>
           <h1 className="home-header">流程指引</h1>
@@ -65,7 +65,7 @@ class HomeContainer extends React.Component {
             <div className="home-process"><span className="home-process-index">3</span>发布考试任务<span className="home-process-sign">></span></div>
             <div className="home-process"><span className="home-process-index">4</span>查看考试数据</div>
           </div>
-          <div style={{marginTop:'30px'}}>
+          <div style={{ marginTop: '30px' }}>
             <div className="home-guide">
               <span>1</span>
               <h3>创建试卷</h3>
@@ -107,7 +107,7 @@ export default class Home extends React.Component {
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight,
   }
 
-  componentDidMount(){
+  componentDidMount() {
     const that = this;
 
     $(window).resize(() => {
@@ -118,7 +118,7 @@ export default class Home extends React.Component {
   }
 
   render() {
-    const containerHeight = { minHeight: this.state.height - 186 + 'px'}
+    const containerHeight = { minHeight: this.state.height - 186 + 'px' }
     return (
       <div>
         <Header />
