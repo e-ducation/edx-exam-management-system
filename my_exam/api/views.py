@@ -30,7 +30,6 @@ from my_exam.api.serializers import (
     ExamParticipantAnswerSerializer
 )
 from my_exam.utils import datetime_to_timestamp
-from my_exam.filters import ExamParticipantOrdering
 from exam_paper.models import (
     ExamTask,
     ExamParticipant,
@@ -117,7 +116,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
     # )
 
     serializer_class = MyExamListSerializer
-    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend, ExamParticipantOrdering,)
+    filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend,)
     filter_fields = ('task_state',)
     search_fields = ('exam_task__name',)
     ordering_fields = ('exam_task__period_start', 'hand_in_time')
@@ -133,7 +132,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
 
         res_data = serializer.data
         res_data["pending"] = 10
-        return Response(response_format(res_data))
+        return Response(res_data)
 
     @swagger_auto_schema(manual_parameters=[page, page_size])
     def list(self, request, *args, **kwargs):
@@ -153,8 +152,12 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
         state_count.update(queryset_state_update.filter(task_state='finished').aggregate(finished=Count('pk')))
         state_count.update(queryset_state_update.filter(task_state='unavailable').aggregate(unavailable=Count('pk')))
         state_count.update(queryset_state_update.filter().aggregate(all_count=Count('pk')))
-
-        queryset = self.filter_queryset(queryset_state_update)
+        # queryset_state_update
+        if request.GET.get('ordering') is None and request.GET.get('task_state') is None:
+            queryset_tmp = self.filter_queryset(queryset_state_update)
+            queryset = sorted(queryset_tmp, key=lambda x: (x.task_state == "finished", x.task_state == "pending", x.task_state == "started"))
+        else:
+            queryset = self.filter_queryset(queryset_state_update)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -162,7 +165,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data, **state_count)
+        return Response(serializer.data)
 
     def update_exam_result(self, queryset):
         """
@@ -291,7 +294,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response(response_format(serializer.data))
+        return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
 

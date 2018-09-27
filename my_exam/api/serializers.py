@@ -74,17 +74,6 @@ class MyExamListSerializer(serializers.ModelSerializer, ExamParticipantMixin):
             'exam_task', 'total_grade')
 
 
-class MyExamPaperSerializer(serializers.ModelSerializer):
-    """
-
-    """
-    class Meta:
-        model = ExamParticipant
-        fields = (
-            'id', 'exam_result', 'participate_time', 'hand_in_time', 'participant_id',
-            'exam_task', 'current_time')
-
-
 class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
     """
     考试任务试卷快照
