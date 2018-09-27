@@ -247,12 +247,13 @@ class ExamTaskSerializer(serializers.ModelSerializer):
     participants = ExamParticipantSerializer(many=True, required=False)
     problem_disorder = serializers.BooleanField(required=False)
     show_answer = serializers.BooleanField(required=False)
+    modified = serializers.DateTimeField(read_only=True)
 
     class Meta:
         model = ExamTask
         fields = ('id', 'name', 'exampaper', 'exampaper_name', 'exampaper_description',
                   'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
-                  'exampaper_total_grade', 'creator',
+                  'exampaper_total_grade', 'creator', 'modified',
                   'task_state', 'period_start', 'period_end', 'exam_time_limit',
                   'problem_disorder', 'show_answer', 'participants', )
 
