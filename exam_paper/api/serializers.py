@@ -255,7 +255,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                   'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
                   'exampaper_total_grade', 'creator', 'modified',
                   'task_state', 'period_start', 'period_end', 'exam_time_limit',
-                  'problem_disorder', 'show_answer', 'participants', )
+                  'problem_disorder', 'show_answer', 'participants', 'problem_statistic')
 
     def create(self, validated_data):
         if 'participants' in validated_data:
