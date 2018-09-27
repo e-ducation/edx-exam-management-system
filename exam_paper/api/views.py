@@ -42,7 +42,6 @@ from exam_paper.api.serializers import (
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
 from exam_paper.utils import response_format
-from exam_paper.pageinations import FormatPageNumberPagination
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -766,7 +765,7 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
     search_fields = ('participant__username',)
     filter_backends = (filters.SearchFilter, MyCustomOrdering,)
     queryset = ExamParticipant.objects.all()
-    pagination_class = FormatPageNumberPagination
+    # pagination_class = FormatPageNumberPagination
 
     def get_queryset(self):
         try:
@@ -819,10 +818,12 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
       "exampaper_total_problem_num":1,
       "participants": [
         {
-          "participant": {
-            "username": "1",
+            "username": "soda",
             "email": "502464760@qq.com"
-          }
+        },
+         {
+            "username": "sodaling",
+            "email": "502464760@qq.com"
         }
       ]
     }
