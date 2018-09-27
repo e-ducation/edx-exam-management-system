@@ -243,7 +243,7 @@ export default class TextTask extends React.Component {
         render: (text, record, index) => (
           <span>
             {
-              record.status == "考试中" ?
+              record.task_state == "started" ?
                 <span className="diaplayIcon">
                   <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
 
@@ -252,7 +252,7 @@ export default class TextTask extends React.Component {
                   <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
                 </span>
                 :
-                <span>
+                <span className="textIconGroup">
                   <Tooltip title="编辑">
                     <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
                   </Tooltip>
@@ -289,15 +289,14 @@ export default class TextTask extends React.Component {
               this.state.list.length < 1 ?
                 <Input
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="请输入考试任务名称搜索"
+                  placeholder="输入考试任务名称搜索"
                   style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
                   onChange={this.onChangeSearch}
-                  disabled
                 />
                 :
                 <Input
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="请输入考试任务名称搜索"
+                  placeholder="输入考试任务名称搜索"
                   style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
                   onChange={this.onChangeSearch}
                 />

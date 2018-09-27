@@ -24,7 +24,14 @@ class StatisticsContainer extends React.Component {
     pageSize: 10,
     search: '',
     allPaper: '',
-    key: 1,
+    paperName: '毛泽东思想与邓小平理论',
+    passGrade: 80,
+    paperType: '固定试题',
+    key: 'all',
+    all: 0,
+    pending: 0,
+    pass: 0,
+    flunk: 0,
   }
 
 
@@ -34,7 +41,8 @@ class StatisticsContainer extends React.Component {
 
   // 1.1 试卷列表
   getList = () => {
-    const { pageCurrent, pageSize, search } = this.state;
+    let id = this.props.id;
+    const { pageCurrent, pageSize, search, key } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
     if (this.searchAjax) {
@@ -44,23 +52,41 @@ class StatisticsContainer extends React.Component {
     this.setState({
       loading: true,
     }, () => {
-      axios.get('/api/exampapers/?search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize, {
+      let url = "";
+
+      if (key === "all") {
+        url = '/api/examparticipants/?exam_task=' + id + '&search=' + search + '&page=' + pageCurrent + '&page_size=' + pageSize;
+      }
+
+      else {
+        url = '/api/examparticipants/?exam_task=' + id + '&search=' + search + '&exam_result=' + key + '&page=' + pageCurrent + '&page_size=' + pageSize;
+      }
+
+      axios.get(url, {
         cancelToken: new CancelToken(function executor(c) {
           // An executor function receives a cancel function as a parameter
           that.searchAjax = c
         })
       }).then(function (response) {
         const res = response.data;
+
+        console.log(res);
+
+
+
         if (res.status === 0) {
           // 给list添加key
           let list = res.data.results;
-          for (let i = 0; i < list.length; i++) {
-            list[i].key = i;
-          }
+
           that.setState({
             list,
             pageTotal: res.data.count,
             loading: false,
+            all: res.data.count,
+            pending: res.data.extra_data.pending,
+            pass: res.data.extra_data.pass,
+            flunk: res.data.extra_data.flunk,
+
           })
         } else {
           message.error('请求失败')
@@ -115,24 +141,6 @@ class StatisticsContainer extends React.Component {
     window.open("/#/preview/" + id)
   }
 
-  // 4. 复制试卷
-  copyPaper = (id) => {
-    const that = this;
-    axios.post('/api/exampapers/' + id + '/duplicate/')
-      .then(function (response) {
-        const res = response.data;
-        if (res.status === 0) {
-          that.getList();
-        } else {
-          message.error('复制失败');
-        }
-
-      })
-      .catch(function (error) {
-        message.error('复制失败')
-      });
-  }
-
   // 5. 删除试卷
   deletePaper = (id) => {
     const that = this;
@@ -172,6 +180,8 @@ class StatisticsContainer extends React.Component {
   callback = (key) => {
     this.setState({
       key
+    }, () => {
+      this.getList();
     })
   }
 
@@ -186,7 +196,7 @@ class StatisticsContainer extends React.Component {
     const columns = [
       {
         title: '姓名',
-        dataIndex: 'name',
+        dataIndex: 'username',
         width: '10%',
         render: (text, record) => (
           <span>
@@ -209,26 +219,26 @@ class StatisticsContainer extends React.Component {
         width: '19%',
       }, {
         title: '考试结果',
-        dataIndex: 'result',
+        dataIndex: 'exam_result',
         width: '14%',
         render: (text, record) => (
           <span>
             {
               (
                 () => {
-                  if (record.result == "及格") {
+                  if (record.result === "pass") {
                     return (
                       <span style={{ color: '#94d055' }}>及格</span>
                     )
                   }
-                  else if (record.result == "不及格") {
+                  else if (record.result === "flunk") {
                     return (
                       <span style={{ color: '#f4323c' }}>不及格</span>
                     )
                   }
                   else {
                     return (
-                      <span>待审查</span>
+                      <span>待考</span>
                     )
                   }
                 }
@@ -238,7 +248,7 @@ class StatisticsContainer extends React.Component {
         )
       }, {
         title: '考试分数',
-        dataIndex: 'grade',
+        dataIndex: 'total_grade',
         width: '13%',
       }, {
         title: '操作',
@@ -249,8 +259,8 @@ class StatisticsContainer extends React.Component {
             {
               (
                 () => {
-                  if (record.result == "待考") {
-                    return (<i className="iconfont nohoverstatus" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }}>&#xe66d;</i>)
+                  if (record.exam_result === "pending") {
+                    return (<i className="iconfont nohoverstatus" style={{ fontSize: '16px', marginRight: '14px' }}>&#xe66d;</i>)
                   }
                   else {
                     return (
@@ -283,8 +293,8 @@ class StatisticsContainer extends React.Component {
         title={() =>
           <div style={{ overflow: 'hidden' }}>
             <p style={{ float: 'left', marginTop: '6px' }}>
-              <span>考试名称：商务知识管理</span>
-              <span>及格线：60分（固定试卷）</span>
+              <span style={{ marginRight: '10px' }}>{this.state.paperName}</span>
+              <span>及格线：{this.state.passGrade}分（{this.state.paperType}）</span>
             </p>
             <Input
               prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
@@ -315,12 +325,12 @@ class StatisticsContainer extends React.Component {
               <span>统计考试任务</span>
             </Breadcrumb.Item>
           </Breadcrumb>
-          <h1 style={{ margin: '25px 0 10px', fontSize: '16px' }}>考试任务</h1>
-          <Tabs defaultActiveKey="1" onChange={this.callback} >
-            <TabPane tab={<span>应考人数（{this.state.pageSize}）</span>} key="1">{textTask}</TabPane>
-            <TabPane tab={<span>待考人数（{this.state.pageSize}）</span>} key="2">{textTask}</TabPane>
-            <TabPane tab={<span>合格人数（{this.state.pageSize}）</span>} key="3">{textTask}</TabPane>
-            <TabPane tab={<span>不及格人数（{this.state.pageSize}）</span>} key="4">{textTask}</TabPane>
+          <h1 style={{ margin: '25px 0 10px', fontSize: '16px' }}>统计考试任务</h1>
+          <Tabs defaultActiveKey={this.state.key} onChange={this.callback} >
+            <TabPane tab={<span>应考人数（{this.state.all}）</span>} key='all'>{textTask}</TabPane>
+            <TabPane tab={<span>待考人数（{this.state.pending}）</span>} key='pending'>{textTask}</TabPane>
+            <TabPane tab={<span>合格人数（{this.state.pass}）</span>} key='pass'>{textTask}</TabPane>
+            <TabPane tab={<span>不及格人数（{this.state.flunk}）</span>} key='flunk'>{textTask}</TabPane>
           </Tabs>
 
 
