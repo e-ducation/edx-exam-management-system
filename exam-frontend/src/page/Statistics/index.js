@@ -26,7 +26,7 @@ export default class Statistics extends React.Component {
       <div>
         <Header />
         <div className="container" style={containerHeight}>
-          <StatisticsContainer />
+          <StatisticsContainer id={this.props.match.params.id} />
         </div>
         <Footer />
       </div>

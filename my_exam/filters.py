@@ -2,8 +2,6 @@ import re
 
 from rest_framework.filters import OrderingFilter
 
-from pypinyin import lazy_pinyin
-
 
 class ExamParticipantOrdering(OrderingFilter):
 

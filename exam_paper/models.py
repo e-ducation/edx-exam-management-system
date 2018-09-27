@@ -170,7 +170,7 @@ class ExamTask(TimeStampedModel):
 
     @property
     def problem_statistic(self):
-        if self.create_type == PAPER_CREATE_TYPE[0][0]:
+        if self.exampaper_create_type == PAPER_CREATE_TYPE[0][0]:
             mutiple = self.problems.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
                 multiplechoiceresponse_count=Count('problem_type'),
                 multiplechoiceresponse_grade=Sum('grade'),
@@ -190,18 +190,18 @@ class ExamTask(TimeStampedModel):
 
             return result
 
-        elif self.create_type == PAPER_CREATE_TYPE[1][0]:
+        elif self.exampaper_create_type == PAPER_CREATE_TYPE[1][0]:
             mutiple = self.rules.filter(problem_type=PROBLEM_TYPE[0][0]).aggregate(
                 multiplechoiceresponse_count=Sum('problem_num'),
                 multiplechoiceresponse_grade=Sum(F('grade') * F('problem_num'), ),
             )
 
-            choice = self.rules.fileter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
+            choice = self.rules.filter(problem_type=PROBLEM_TYPE[1][0]).aggregate(
                 choiceresponse_count=Sum('problem_num'),
                 choiceresponse_grade=Sum(F('grade') * F('problem_num'), ),
             )
 
-            string = self.rules.fileter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
+            string = self.rules.filter(problem_type=PROBLEM_TYPE[2][0]).aggregate(
                 stringresponse_count=Sum('problem_num', ),
                 stringresponse_grade=Sum(F('grade') * F('problem_num'), ),
             )
