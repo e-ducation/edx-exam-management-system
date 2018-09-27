@@ -99,7 +99,7 @@ fix_exampaper = openapi.Schema(
 )
 
 
-class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
+class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, GenericViewSet):
     """
     retrieve: 我的考试接口
 
@@ -162,7 +162,6 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
         serializer = self.get_serializer(queryset, many=True)
-
         return Response(serializer.data, **state_count)
 
     def update_exam_result(self, queryset):
@@ -252,7 +251,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, GenericViewSet):
         return exam_participant, exam_task
 
 
-class ExamParticipantAnswerViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
+class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                                    UpdateModelMixin, DestroyModelMixin, GenericViewSet):
     """
     ```
@@ -287,18 +286,22 @@ class ExamParticipantAnswerViewSet(CreateModelMixin, RetrieveModelMixin, ListMod
             participant_id = int(str(self.request.GET.get('participant_id')))
             return ExamParticipantAnswer.objects.filter(participant_id=participant_id)
         except Exception as ex:
-            return ExamParticipantAnswer.objects.all()
+            return ExamParticipantAnswer.objects.filter()
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return Response(response_format(serializer.data))
 
     def list(self, request, *args, **kwargs):
+
         queryset = self.filter_queryset(self.get_queryset())
 
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        if serializer.data == []:
+            return Response(response_format(data=serializer.data, msg='考试未开始'))
+        else:
+            return Response(response_format(serializer.data))
 
     def update(self, request, *args, **kwargs):
         """
