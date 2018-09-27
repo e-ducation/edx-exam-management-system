@@ -106,7 +106,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
     list: 我的考试列表接口
     * 分页，默认单页 10 条记录
     * 排序，默认按开考时间、降序排序， /api/my_exam/my_exam?ordering=period_start
-    * 搜索，按「考试任务名称」搜索，/api/my_exam/my_exam?ordering=period_start&search=<exam task title>&exam_result=pending
+    * 搜索，按「考试任务名称」搜索，/api/my_exam/my_exam?ordering=period_start&search=<exam task title>&task_state=pending
     * 权限，只能看到自己的考试任务
     """
     # authentication_classes = (
@@ -120,7 +120,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend, ExamParticipantOrdering,)
     filter_fields = ('task_state',)
     search_fields = ('exam_task__name',)
-    ordering_fields = ('exam_task__period_start', 'exam_task__period_end')
+    ordering_fields = ('exam_task__period_start', 'hand_in_time')
     ordering = ('exam_task__period_start',)
 
     def get_queryset(self):
@@ -298,7 +298,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         queryset = self.filter_queryset(self.get_queryset())
 
         serializer = self.get_serializer(queryset, many=True)
-        if serializer.data == []:
+        if len(serializer.data) == 0:
             return Response(response_format(data=serializer.data, msg='考试未开始'))
         else:
             return Response(response_format(serializer.data))
@@ -332,24 +332,24 @@ class JudgmentAnswer(object):
         ('stringresponse', 'fill_in'),
     )
     AnswerDict = {
-        'A': 1,
-        'B': 2,
-        'C': 3,
-        'D': 4,
-        'E': 5,
-        'F': 6,
-        'G': 7,
-        'H': 8,
-        'I': 9,
-        'a': 1,
-        'b': 2,
-        'c': 3,
-        'd': 4,
-        'e': 5,
-        'f': 6,
-        'g': 7,
-        'h': 8,
-        'i': 9,
+        'A': 0,
+        'B': 1,
+        'C': 2,
+        'D': 3,
+        'E': 4,
+        'F': 5,
+        'G': 6,
+        'H': 7,
+        'I': 8,
+        'a': 0,
+        'b': 1,
+        'c': 2,
+        'd': 3,
+        'e': 4,
+        'f': 5,
+        'g': 6,
+        'h': 7,
+        'i': 8,
 
     }
     context = ""
