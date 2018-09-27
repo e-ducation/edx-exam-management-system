@@ -6,13 +6,11 @@ import requests
 from itertools import groupby
 
 from django.conf import settings
-from django.db.models import Q
-
 from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend
 
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
@@ -36,16 +34,15 @@ from exam_paper.api.serializers import (
     ExamPaperListSerializer,
     ExamPaperFixedSerializer,
     ExamPaperRandomSerializer,
-
     ExamParticipantSerializer2,
-
-    ExamTaskSerializer)
-
+    ExamTaskSerializer,
+    ExamTaskListSerializer,
+    ExamTaskPaperPreviewSerializer,
+    ExamPaperCreateRuleSerializer, ExamPaperProblemsSnapShotSerializer)
+from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
-from exam_paper.pageinations import FormatPageNumberPagination
 from exam_paper.utils import response_format
-
-from ..filters import MyCustomOrdering
+from exam_paper.pageinations import FormatPageNumberPagination
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -105,6 +102,20 @@ fix_exampaper = openapi.Schema(
     },
     required=['name', 'problems', 'passing_ratio']
 )
+
+
+def gourp_rules(rules):
+    subject = []
+    for name, group in groupby(rules, lambda x: x['section_name']):
+        section_rule = {
+            'name': name,
+        }
+        for rule in group:
+            section_rule['id'] = rule['problem_section_id']
+            section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
+            section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
+        subject.append(section_rule)
+    return subject
 
 
 class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
@@ -386,21 +397,10 @@ class ExamPaperRandomCreateViewSet(RetrieveModelMixin, CreateModelMixin, UpdateM
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        rules = serializer.data['rules']
-
         data = serializer.data
 
-        subject = []
-        for name, group in groupby(rules, lambda x: x['section_name']):
-            section_rule = {
-                'name': name,
-            }
-            for rule in group:
-                section_rule['id'] = rule['problem_section_id']
-                section_rule[rule['problem_type'] + 'Grade'] = rule['grade']
-                section_rule[rule['problem_type'] + 'Number'] = rule['problem_num']
-            subject.append(section_rule)
-        data['subject'] = subject
+        rules = serializer.data['rules']
+        data['subject'] = gourp_rules(rules)
 
         return Response(response_format(data))
 
@@ -733,6 +733,7 @@ class UserInfoView(APIView):
         )
         return Response(response_format(rep.json()))
 
+
 class UserInfoListView(APIView):
     """
     获取用户信息
@@ -744,17 +745,16 @@ class UserInfoListView(APIView):
     def get(self, request, *args, **kwargs):
         USERS_INFO_API = '/exam/users'
         token = request.user.social_auth.first().extra_data['access_token']
-        url = settings.EDX_API['HOST']+USERS_INFO_API
+        url = settings.EDX_API['HOST'] + USERS_INFO_API
         rep = requests.get(
             url,
             headers={'Authorization': 'Bearer ' + token},
-            params = request.GET,
+            params=request.GET,
         )
         return Response(response_format(rep.json()))
 
 
 class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
-
     authentication_classes = (
         SessionAuthentication,
     )
@@ -766,20 +766,40 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
     search_fields = ('participant__username',)
     filter_backends = (filters.SearchFilter, MyCustomOrdering,)
     queryset = ExamParticipant.objects.all()
+    pagination_class = FormatPageNumberPagination
 
     def get_queryset(self):
-        """
-        This view should return a list of all the purchases
-        for the currently authenticated user.
-        """
-        exam_result = self.request.GET.get('exam_result', '')
-        if exam_result in ('pass', 'flunk'):
-            return ExamParticipant.objects.filter(exam_result=exam_result)
-        elif exam_result == 'pending':
-            return ExamParticipant.objects.filter(exam_result=exam_result)
+        try:
+            exam_result = self.request.GET.get('exam_result', '')
+            exam_task = int(self.request.GET.get('exam_task', ''))
+        except Exception as ex:
+            exam_result = ''
+            exam_task = 0
+        specific_task = ExamParticipant.objects.filter(exam_task_id=exam_task)
+        if exam_result in ('pass', 'flunk', 'pending'):
+            return specific_task.filter(exam_result=exam_result)
         else:
-            return ExamParticipant.objects.filter(
+            return specific_task.filter(
                 Q(exam_result='pass') | Q(exam_result='flunk'))
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            assert self.paginator is not None
+            return self.paginator.get_paginated_response(serializer.data, extra_data=self.get_num_of_people())
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_num_of_people(self):
+        num_of_people = {}
+        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending').count()
+        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk').count()
+        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass').count()
+        return num_of_people
 
 
 class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
@@ -800,8 +820,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
       "participants": [
         {
           "participant": {
-          	                "username": "1",
-                "email": "502464760@qq.com"
+            "username": "1",
+            "email": "502464760@qq.com"
           }
         }
       ]
@@ -844,21 +864,22 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        state_count = queryset.aggregate(
-            pending=Count('pk', filter=Q(task_state='pending')),
-            started=Count('pk', filter=Q(task_state='started')),
-            finished=Count('pk', filter=Q(task_state='finished')),
-            unavailable=Count('pk', filter=Q(task_state='unavailable')),
-        )
+        state_queryset = ExamTask.objects.filter(creator=request.user)
+        state_count = {
+            'pending': state_queryset.filter(task_state='pending').count(),
+            'started': state_queryset.filter(task_state='started').count(),
+            'finished': state_queryset.filter(task_state='finished').count(),
+            'unavailable': state_queryset.filter(task_state='unavailable').count(),
+        }
 
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = ExamTaskListSerializer(page, many=True)
             assert self.paginator is not None
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        serializer = self.ExamTaskListSerializer(queryset, many=True)
+        return Response(serializer.data, **state_count)
 
     def update(self, request, *args, **kwargs):
         """
@@ -886,3 +907,22 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         if instance.task_state == TASK_STATE[1][0]:
             return Response(response_format(msg='Can not delete started task'))
         return super(ExamTaskViewSet, self).destroy(request, args, kwargs)
+
+    @action(methods=['GET'], detail=True)
+    def preview(self, request, pk, *args, **kwargs):
+        exam_task = self.get_object()
+        serializers = ExamTaskPaperPreviewSerializer(exam_task)
+        data = serializers.data
+        if exam_task.exampaper_create_type == 'fixed':
+            problems = exam_task.problems.all()
+            problems_serializer = ExamPaperProblemsSnapShotSerializer(problems, many=True)
+            data['problems'] = problems_serializer.data
+
+            return Response(response_format(data))
+
+        elif exam_task.exampaper_create_type == 'random':
+            rules = exam_task.rules.all()
+            rules_serializer = ExamPaperCreateRuleSerializer(rules, many=True)
+            data['subject'] = gourp_rules(rules_serializer.data)
+
+            return Response(response_format(data))

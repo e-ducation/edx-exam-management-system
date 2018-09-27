@@ -3,13 +3,13 @@
 from __future__ import unicode_literals
 from decimal import Decimal
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.db import transaction
 
-from django.contrib.auth import get_user_model
-
 from rest_framework import serializers
 from rest_framework.compat import MaxValueValidator, MinValueValidator
+from social_django.models import UserSocialAuth
 
 from exam_paper.models import (
     ExamPaper,
@@ -17,10 +17,20 @@ from exam_paper.models import (
     ExamPaperCreateRule,
     ExamTask,
     ExamParticipant,
-    ExamPaperProblemsSnapShot
-)
+    ExamPaperProblemsSnapShot,
+    ExamPaperCreateRuleSnapShot)
 
-from social_django.models import UserSocialAuth
+
+def find_or_create_user(participant):
+    user = UserSocialAuth.objects.filter(uid=participant['participant']['username'])
+    if user:
+        return user[0].user
+    else:
+        user_model = get_user_model()
+        new_user = user_model.objects.create(password=user_model.objects.make_random_password(),
+                                             **participant['participant'])
+        UserSocialAuth.objects.create(user=new_user, provider='edx-oidc', uid=participant['participant']['username'])
+        return new_user
 
 
 class ExamPaperMixin(object):
@@ -66,7 +76,7 @@ class ExamPaperSerializer(serializers.ModelSerializer, ExamPaperMixin):
     class Meta:
         model = ExamPaper
         fields = ('name', 'description', 'create_type', 'passing_grade',
-                  'total_problem_num', 'total_grade', 'creator', 'problems')
+                  'total_problem_num', 'total_grade', 'creator', 'problems', 'problem_statistic')
 
 
 class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
@@ -78,7 +88,7 @@ class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
     class Meta:
         model = ExamPaper
         fields = ('id', 'name', 'create_type', 'total_problem_num',
-                  'total_grade', 'passing_grade', 'creator',)
+                  'total_grade', 'passing_grade', 'creator', 'problem_statistic')
 
 
 class ExamPaperFixedSerializer(serializers.ModelSerializer):
@@ -174,45 +184,46 @@ class ExamPaperRandomSerializer(serializers.ModelSerializer):
         return exam_paper
 
 
-class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.EmailField(required=True)
-
-    class Meta:
-        model = get_user_model()
-        fields = ('id', 'username', 'email')
-
-
 class ExamParticipantSerializer2(serializers.ModelSerializer):
-    participant = UserSerializer(read_only=True)
-    num_of_people = serializers.SerializerMethodField()
-
-    def get_num_of_people(self, obj):
-        num_of_people = {}
-        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending').count()
-        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk').count()
-        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass').count()
-        return num_of_people
+    email = serializers.EmailField(source='participant.email')
+    username = serializers.CharField(source='participant.username')
 
     class Meta:
         model = ExamParticipant
-        fields = ('exam_task', 'participant', 'exam_result', 'participate_time',
-                  'hand_in_time', 'total_grade', 'num_of_people')
+        fields = ('exam_result', 'total_grade', 'email', 'username')
 
 
 class ExamParticipantSerializer(serializers.ModelSerializer):
     exam_result = serializers.CharField(required=False)
     participate_time = serializers.DateTimeField(required=False)
     hand_in_time = serializers.DateTimeField(required=False)
-    participant = UserSerializer()
+    username = serializers.CharField(source='participant.username', required=True)
+    email = serializers.EmailField(source='participant.email', required=True)
 
     class Meta:
         model = ExamParticipant
-        fields = ('participant', 'exam_result', 'participate_time', 'hand_in_time')
+        fields = ('participant_id', 'exam_result', 'participate_time', 'hand_in_time', 'username', 'email')
+
+
+class ExamTaskListSerializer(serializers.ModelSerializer):
+    participant_num = serializers.SerializerMethodField()
+    creator = serializers.SlugRelatedField(read_only=True, slug_field='username')
+    task_state = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ExamTask
+        fields = ('id', 'name', 'creator',
+                  'task_state', 'period_start', 'period_end',
+                  'participant_num')
+
+    def get_participant_num(self, exam_task):
+        """
+        考试人数
+        """
+        return exam_task.participants.count()
 
 
 class ExamTaskSerializer(serializers.ModelSerializer):
-    participant_num = serializers.SerializerMethodField()
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
     exampaper = serializers.PrimaryKeyRelatedField(queryset=ExamPaper.objects.all())
     task_state = serializers.CharField(read_only=True)
@@ -226,13 +237,7 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                   'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
                   'exampaper_total_grade', 'creator',
                   'task_state', 'period_start', 'period_end', 'exam_time_limit',
-                  'problem_disorder', 'show_answer', 'participants', 'participant_num')
-
-    def get_participant_num(self, exam_task):
-        """
-        考试人数
-        """
-        return exam_task.participants.count()
+                  'problem_disorder', 'show_answer', 'participants',)
 
     def create(self, validated_data):
         if 'participants' in validated_data:
@@ -257,6 +262,16 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                         problem_type=problem.problem_type,
                         grade=problem.grade,
                         content=problem.content
+                    )
+            if exam_paper.create_type == 'random':
+                for rule in exam_paper.rules.all():
+                    ExamPaperCreateRuleSnapShot.objects.create(
+                        exam_task=exam_task,
+                        problem_section_id=rule.problem_section_id,
+                        section_name=rule.section_name,
+                        problem_type=rule.problem_type,
+                        problem_num=rule.problem_num,
+                        grade=rule.grade,
                     )
 
         return exam_task
@@ -288,17 +303,36 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                         grade=problem.grade,
                         content=problem.content
                     )
+            if exam_paper.create_type == 'random':
+                exam_task.rules.all().delete()
+                for rule in exam_paper.rules.all():
+                    ExamPaperCreateRuleSnapShot.objects.create(
+                        exam_task=exam_task,
+                        problem_section_id=rule.problem_section_id,
+                        section_name=rule.section_name,
+                        problem_type=rule.problem_type,
+                        problem_num=rule.problem_num,
+                        grade=rule.grade,
+                    )
 
         return exam_task
 
 
-def find_or_create_user(participant):
-    user = UserSocialAuth.objects.filter(uid=participant['participant']['username'])
-    if user:
-        return user[0].user
-    else:
-        user_model = get_user_model()
-        new_user = user_model.objects.create(password=user_model.objects.make_random_password(),
-                                             **participant['participant'])
-        UserSocialAuth.objects.create(user=new_user, provider='edx-oidc', uid=participant['participant']['username'])
-        return new_user
+class ExamTaskPaperPreviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamTask
+        fields = ('name', 'exampaper_total_grade', 'exampaper_total_problem_num',
+                  'exampaper_passing_ratio', 'exampaper_description',
+                  'problem_statistic', )
+
+
+class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
+    content = serializers.JSONField()
+    grade = serializers.DecimalField(max_digits=5, decimal_places=2,
+                                     validators=[
+                                         MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                         MaxValueValidator(Decimal(100))])
+
+    class Meta:
+        model = ExamPaperProblems
+        fields = ('sequence', 'grade', 'problem_type', 'content')
