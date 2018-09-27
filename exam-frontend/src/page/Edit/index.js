@@ -41,7 +41,7 @@ class EditContainerReducer extends React.Component {
   //整数
   formatterInteger = (value, max, min) => {
     value = value.toString().replace(/\$\s?|([^\d]*)/g, '');
-    if (parseInt(value) > max || parseInt(value) < min) {
+    if (parseInt(value, 10) > max || parseInt(value, 10) < min) {
       value = value.substring(0, value.length - 1);
     }
     return value;
@@ -63,7 +63,7 @@ class EditContainerReducer extends React.Component {
   }
   //修改及格线数值
   onChangePass = (e) => {
-    if (e == "") {
+    if (e === "") {
       e = 1
     }
     this.setState({
@@ -277,7 +277,7 @@ class EditContainerReducer extends React.Component {
   checkData = (type) => {
     console.log(this.props.fixedTable);
     if (type === "首页") {
-      if (this.state.paperName == "" && this.state.paperIns == "" && JSON.stringify(this.props.fixedTable) == "{}") {
+      if (this.state.paperName === "" && this.state.paperIns === "" && JSON.stringify(this.props.fixedTable) === "{}") {
         window.location.href = "/#/";
       }
       else {
@@ -286,7 +286,7 @@ class EditContainerReducer extends React.Component {
     }
 
     else {
-      if (this.state.paperName == "" && this.state.paperIns == "" && JSON.stringify(this.props.fixedTable) == "{}") {
+      if (this.state.paperName === "" && this.state.paperIns === "" && JSON.stringify(this.props.fixedTable) === "{}") {
         window.location.href = "/#/manage";
       }
       else {
@@ -396,7 +396,7 @@ class EditContainerReducer extends React.Component {
 
                 {/* 是否可以预览以及保存，保存提交方法saveFixExam */}
                 {
-                  this.state.paperName == "" ?
+                  this.state.paperName === "" ?
                     <div className="editbtn">
                       <Button disabled>预览试卷</Button>
                       <Button type="primary" disabled>保存</Button>

@@ -34,7 +34,7 @@ class StatisticsContainer extends React.Component {
 
   // 1.1 试卷列表
   getList = () => {
-    const { pageCurrent, pageSize, search, key } = this.state;
+    const { pageCurrent, pageSize, search } = this.state;
     const that = this;
     const CancelToken = axios.CancelToken;
     if (this.searchAjax) {
@@ -278,6 +278,7 @@ class StatisticsContainer extends React.Component {
         bordered
         pagination={false}
         size="small"
+        rowKey={record => record.id}
         loading={this.state.loading}
         title={() =>
           <div style={{ overflow: 'hidden' }}>
