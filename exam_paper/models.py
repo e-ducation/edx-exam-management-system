@@ -264,6 +264,11 @@ class ExamParticipantAnswer(TimeStampedModel):
                                     MinValueValidator(Decimal((0, (0, 0, 1), -2))),
                                     MaxValueValidator(Decimal(100))],
                                 help_text='考生答案得分')
+    problem_grade = models.DecimalField(max_digits=5, decimal_places=2,
+                                        validators=[
+                                            MinValueValidator(Decimal((0, (0, 0, 1), -2))),
+                                            MaxValueValidator(Decimal(100))],
+                                        help_text='题目分数')
     sequence = models.CharField(max_length=16, default='01', help_text='序号')
     problem_type = models.CharField(max_length=16, choices=PROBLEM_TYPE, help_text='问题类型')
     content = JSONField(help_text='问题内容')
