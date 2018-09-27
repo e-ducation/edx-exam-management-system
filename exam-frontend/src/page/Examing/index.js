@@ -35,14 +35,14 @@ class ExamingContainer extends React.Component {
     const id = window.location.href.split('/examing/')[1];
     const that = this;
 
-    axios.get('/api/exampapers/' + id + '/')
-      .then(function (response) {
+    axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
+      .then((response) => {
         const res = response.data;
 
         // 可以进行考试
-        const { name, passing_grade, problems, total_grade, total_problem_num, description, create_type } = res.data;
         if (res.status === 0) {
-          that.setState({
+          const { name, passing_grade, problems, total_grade, total_problem_num, description, create_type } = res.data;
+          this.setState({
             name,
             passing_grade,
             problems,
