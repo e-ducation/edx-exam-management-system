@@ -29,3 +29,11 @@ $blue_active: #1da6f3;
     color:$note !important;
   }
 }
+
+.textIconGroup{
+  i{
+    &:hover{
+      color: $blue_hover;
+    }
+  }
+}
