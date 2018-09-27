@@ -43,7 +43,7 @@ class ExamParticipantMixin(object):
         :return:
         """
         now_time = datetime.datetime.now().replace(tzinfo=pytz.utc).astimezone(
-                pytz.timezone(settings.TIME_ZONE)).strftime('%Y-%m-%d %H:%M:%S')
+            pytz.timezone(settings.TIME_ZONE)).strftime('%Y-%m-%d %H:%M:%S')
 
         return now_time
 
