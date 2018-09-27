@@ -762,19 +762,17 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
     )
 
     serializer_class = ExamParticipantSerializer2
-    search_fields = ('participant__username',)
+    search_fields = ('participant__username', 'exam_task')
     filter_backends = (filters.SearchFilter, MyCustomOrdering,)
     queryset = ExamParticipant.objects.all()
-    # pagination_class = FormatPageNumberPagination
+
 
     def get_queryset(self):
         try:
             exam_result = self.request.GET.get('exam_result', '')
-            exam_task = int(self.request.GET.get('exam_task', ''))
         except Exception as ex:
             exam_result = ''
-            exam_task = 0
-        specific_task = ExamParticipant.objects.filter(exam_task_id=exam_task)
+        specific_task = ExamParticipant.objects.all()
         if exam_result in ('pass', 'flunk', 'pending'):
             return specific_task.filter(exam_result=exam_result)
         else:
