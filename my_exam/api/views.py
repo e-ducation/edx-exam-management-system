@@ -236,6 +236,9 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
                             problem_grade=problem.grade,
                             operate_at=datetime.datetime.now()
                         )
+                exam_participant.task_state = TASK_STATE[1][0]
+                exam_participant.participate_time = datetime.datetime.now()
+                exam_participant.save()
             serializer = ExamParticipantAnswerSerializer(ExamParticipantAnswer.objects.filter(participant_id=participant_id), many=True)
 
             return Response(response_format(serializer.data))
@@ -325,11 +328,12 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                     common_info = self.get_exam_task_info(exam_participant)
                     data = self.get_finished_data(serializer)
                     return self.get_return_response(data, **common_info)
+                elif exam_participant.task_state == TASK_STATE[0][0]:
+                    return Response(response_format(data=[], msg='考试未开始'))
                 else:
-                    pass
+                    return Response(response_format(data=[], msg='试卷失效'))
             else:
-                pass
-            return Response(response_format(serializer.data))
+                return Response(response_format(data=[], msg='考试未添加参与者'))
 
     def update(self, request, *args, **kwargs):
         """
