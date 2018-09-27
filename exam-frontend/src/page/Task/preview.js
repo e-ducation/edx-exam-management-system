@@ -1,7 +1,11 @@
 import React from 'react';
 import { Button } from 'antd';
+import moment from 'moment';
 export default class Preview extends React.Component {
   render() {
+    const { task } = this.props;
+    const { problem_statistic ={} } = task;
+    console.log( problem_statistic)
     return (
       <div className="task-content">
         <div className="task-row">
@@ -9,7 +13,7 @@ export default class Preview extends React.Component {
             已选试卷
           </div>
           <div className="task-item">
-            <div>母婴知识答题 <Button style={{ position: "absolute", top: '-10px', marginLeft: '30px' }} type="primary">预览试卷</Button></div>
+            <div>{task.exampaper_name} <Button style={{ position: "absolute", top: '-10px', marginLeft: '30px' }} type="primary">预览试卷</Button></div>
             <div className="paper-info">
               此试卷为快照，保存于10月1日
             </div>
@@ -23,17 +27,17 @@ export default class Preview extends React.Component {
               </div>
               <div className="total-block">
                 <span className="first-span">数量</span>
-                <span className="number">{3}</span>
-                <span className="number">{1}</span>
-                <span className="number">{2}</span>
-                <span className="number">{2}</span>
+                <span className="number">{problem_statistic.multiplechoiceresponse_count}</span>
+                <span className="number">{problem_statistic.choiceresponse_count}</span>
+                <span className="number">{problem_statistic.stringresponse_count}</span>
+                <span className="number">{task.exampaper_total_problem_num}</span>
               </div>
               <div className="total-block">
                 <span className="first-span">分数</span>
-                <span className="number">{3}</span>
-                <span className="number">{1}</span>
-                <span className="number">{2}</span>
-                <span className="number">{2}</span>
+                <span className="number">{problem_statistic.multiplechoiceresponse_grade || 0}</span>
+                <span className="number">{problem_statistic.choiceresponse_grade || 0}</span>
+                <span className="number">{problem_statistic.stringresponse_grade || 0}</span>
+                <span className="number">{task.exampaper_total_grade || 0}</span>
               </div>
             </div>
           </div>
@@ -43,7 +47,7 @@ export default class Preview extends React.Component {
             及格线
           </div>
           <div className="task-item">
-            60%
+            {task.exampaper_passing_ratio}%
           </div>
         </div>
         <div className="task-row">
@@ -51,7 +55,7 @@ export default class Preview extends React.Component {
             考试名称
           </div>
           <div className="task-item">
-            母婴知识竞赛A卷第一次考试
+            {task.name}
           </div>
         </div>
         <div className="task-row">
@@ -59,15 +63,17 @@ export default class Preview extends React.Component {
             考试周期
           </div>
           <div className="task-item">
-            2018年9月14日 - 2018年10月15日
+            {moment(task.period_start).format('YYYY年MM月DD日')}
+            -
+            {moment(task.period_end).format('YYYY年MM月DD日')}
           </div>
         </div>
         <div className="task-row">
           <div className="task-label">
-            答卷试卷
+            答卷时间
           </div>
           <div className="task-item">
-            30分值
+            {task.exam_time_limit}分钟
           </div>
         </div>
         <div className="task-row">
@@ -78,18 +84,11 @@ export default class Preview extends React.Component {
             <div className="participate">
               <div style={{ minWidth: '60px' }}>成员：</div>
               <div>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
-                <span>企业人员1</span>
+                {
+                  task.participants.map(item => {
+                    return (<span key={item.username}>{item.username}</span>)
+                  })
+                }
               </div>
             </div>
 
@@ -100,7 +99,9 @@ export default class Preview extends React.Component {
             题目排序
           </div>
           <div className="task-item">
-            是
+            {
+              task.problem_disorder ? '是' : '否'
+            }
           </div>
         </div>
         <div className="task-row">
@@ -108,7 +109,9 @@ export default class Preview extends React.Component {
             查看答案
           </div>
           <div className="task-item">
-            否
+            {
+              task.show_answer ? '是' : '否'
+            }
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, InputNumber, DatePicker, Switch, Modal, Icon, Table, Select } from 'antd';
+import { Button, Input, DatePicker, Switch, Modal, Icon, Table, Select } from 'antd';
 import moment from 'moment';
 import axios from 'axios';
 import Paper from './paper';
@@ -31,7 +31,8 @@ export default class Preview extends React.Component {
       loading: true,
       list: [],
     },
-    exam_time_limit: '',
+    taskName: '',
+    exam_time_limit: 10,
     period_start: '',
     period_end: '',
     participants: [],
@@ -40,113 +41,43 @@ export default class Preview extends React.Component {
   }
   componentWillMount() {
     console.log($().jquery)
+    console.log(this.props)
+    const { task } = this.props;
+    if (task.id != undefined) {
+      // const chosen = task.participants.map(item => item.participant_id)
+      this.setState({
+        taskName: task.name,
+        exampaper_name: task.exampaper_name,
+        show_answer: task.show_answer,
+        problem_disorder: task.problem_disorder,
+        participants: task.participants,
+        exam_time_limit: task.exam_time_limit,
+        period_start: task.period_start,
+        period_end: task.period_end,
+        paper: {
+          create_type: task.exampaper_create_type,
+          creator: "luoqingfu",
+          id: task.exampaper,
+          name: "可以可以",
+          passing_grade: (task.exampaper_total_grade * (task.exampaper_passing_ratio / 100)).toFixed(2),
+          problem_statistic: task.problem_statistic,
+          total_grade: task.exampaper_total_grade,
+          total_problem_num: task.exampaper_total_problem_num,
+        }
+      })
+    }
+  }
+  init = () => {
+
   }
   getList = () => {
-    const list = [
-      {
-        id: 573,
-        user: 800004054,
-        username: "lili",
-        is_xdmin: true,
-        phone: "13500000032",
-        email: "admin002@lts.cn",
-        department: "管理员,测试001"
-      },
-      {
-        id: 574,
-        user: 800004055,
-        username: "测试",
-        is_xdmin: true,
-        phone: "13500000029",
-        email: "admin001@lts.cn",
-        department: "管理员,测试001"
-      },
-      {
-        id: 579,
-        user: 800004130,
-        username: "admin003",
-        is_xdmin: true,
-        phone: "15900000003",
-        email: "admin003@lts.cn",
-        department: "管理员,测试001,20180404"
-      },
-      {
-        id: 581,
-        user: 800004145,
-        username: "ad004",
-        is_xdmin: true,
-        phone: "15900000004",
-        email: "admin004@lts.cn",
-        department: "管理员,测试001"
-      },
-      {
-        id: 600,
-        user: 800004207,
-        username: "admin0051441",
-        is_xdmin: true,
-        phone: "15900000005",
-        email: "admin005@lts.cn",
-        department: "管理员,测试001"
-      },
-      {
-        id: 602,
-        user: 800004216,
-        username: "sole652",
-        is_xdmin: true,
-        phone: "13500000030",
-        email: "sole652@qq.com",
-        department: "管理员,测试001"
-      },
-      {
-        id: 604,
-        user: 800004219,
-        username: "guanli06",
-        is_xdmin: true,
-        phone: "15900000006",
-        email: "admin006@lts.cn",
-        department: "管理员,测试001"
-      },
-      {
-        id: 843,
-        user: 800004160,
-        username: "test012",
-        is_xdmin: false,
-        phone: "13500000012",
-        email: "test012@lts.cn",
-        department: "技术部/广州区/PHP"
-      },
-      {
-        id: 970,
-        user: 800004203,
-        username: "sole651",
-        is_xdmin: false,
-        phone: "18816786355",
-        email: "sole651@163.com",
-        department: "课程/助教!"
-      },
-      {
-        id: 984,
-        user: 800005283,
-        username: "test045",
-        is_xdmin: true,
-        phone: "13500000045",
-        email: "test045@lts.cn",
-        department: ""
-      }
-    ]
-    this.setState({
-      staff: {
-        ...this.state.staff,
-        list,
-        loading: false,
-      }
-    });
     // this.getStaffList()
   }
-  //
+  // 试卷选择弹窗
   showPaper = () => {
     this.paper.showPaper();
   }
+  // 选择试卷
   selectPaper = (paper) => {
     this.setState({
       paper,
@@ -154,17 +85,30 @@ export default class Preview extends React.Component {
   }
   // 创建任务
   createTask = () => {
-    const { paper, period_start, period_end, exam_time_limit, staff, taskName } = this.state;
-    const { chosen } = staff;
-    const participants = [];
-    const data = this.getItem();
-    chosen.map(id => {
-      participants.push({
-        participant: data[id],
-      })
-    })
+    const params = this.paramsInit();
     // console.log()
-    axios.post('/api/examtasks/', {
+    axios.post('/api/examtasks/', params).then((response) => {
+      console.log(response)
+    }).catch((err) => {
+      console.log(err)
+    })
+  }
+
+  // 修改保存考试任务
+  saveTask = () => {
+    const params = this.paramsInit();
+    const id = this.props.task.id;
+    axios.put(`/api/examtasks/${id}/`, params)
+      .then((response) => {
+        console.log(response)
+      })
+      .catch((response) => {
+
+      })
+  }
+  paramsInit = () => {
+    const { paper, participants, period_start, period_end, exam_time_limit, staff, taskName } = this.state;
+    const params = {
       name: taskName,
       exampaper: paper.id,
       exampaper_name: paper.name,
@@ -176,13 +120,10 @@ export default class Preview extends React.Component {
       exam_time_limit,
       exampaper_total_problem_num: paper.total_problem_num,
       participants: participants,
-    }).then((response) => {
-      console.log(response)
-    }).catch((err)=>{
-      console.log(err)
-    })
+    }
+    return params;
   }
-  // 2.2 获取公司成员列表
+  // 获取公司成员列表
   getStaffList = () => {
     const page = this.state.staff.page + 1;
 
@@ -200,7 +141,7 @@ export default class Preview extends React.Component {
     this.isGettingList = true;
     const CancelToken = axios.CancelToken;
     const that = this;
-    axios.get('/api/users/?search=' + this.state.staff.search + '&page=' + page + '&page_size=20', {
+    axios.get('/api/users/?search=' + this.state.staff.search + '&page=' + page + '&page_size=10', {
       cancelToken: new CancelToken(function executor(c) {
         // An executor function receives a cancel function as a parameter
         that.searchajax = c
@@ -260,7 +201,7 @@ export default class Preview extends React.Component {
         console.log(err)
       })
   }
-  // 2.3 搜索人员
+  // 搜索人员
   onSearchChange = (e) => {
     if (this.searchajax) {
       console.log(this.searchajax, '12312312312')
@@ -295,6 +236,24 @@ export default class Preview extends React.Component {
   }
   // 确定选择
   handleOk = () => {
+    const { staff, participants } = this.state;
+    const { list, chosen } = staff;
+    const data = [];
+    list.map(item => {
+      if (chosen.includes(item.id)) data.push(item);
+    });
+    staff.visible = false;
+    console.log(data)
+    this.setState({
+      staff,
+      participants: [
+        ...participants,
+        ...data,
+      ],
+    });
+    clearInterval(this.timer);
+  }
+  handleCancel = () => {
     const { staff } = this.state;
     staff.visible = false;
     this.setState({
@@ -317,15 +276,17 @@ export default class Preview extends React.Component {
   // 移除
   removeSelect = (id) => {
     console.log(id, 'remove');
-    const { staff } = this.state;
+    const { staff, participants } = this.state;
     const { chosen } = staff;
     const newChosen = chosen.filter(x => x != id)
+    const newParticipants = participants.filter(x => x.participant_id != id);
     // console.log(newChosen, chosen)
     this.setState({
       staff: {
         ...staff,
         chosen: newChosen,
       },
+      participants: newParticipants,
     })
   }
   // 周期长度
@@ -354,11 +315,10 @@ export default class Preview extends React.Component {
     // console.log(e.target.value)
   }
   render() {
-    const { paper } = this.state;
-    const { create } = this.props;
-    const { staff } = this.state;
+    const { paper, participants, staff } = this.state;
+    const { create, task } = this.props;
     const problem_statistic = paper.problem_statistic || {};
-    console.log(staff)
+    console.log(create)
     // 所有员工 - 列表头
     const staffColumns = [
       {
@@ -392,23 +352,27 @@ export default class Preview extends React.Component {
       }
     ];
     const rowSelection = {
-      selectedRowKeys: staff.chosen,
+      // selectedRowKeys: staff.chosen,
       onChange: (selectedRowKeys, selectedRows) => {
         let { staff } = this.state;
         staff.chosen = selectedRowKeys;
+        console.log(selectedRows);
         this.setState({
           staff,
         });
       },
       getCheckboxProps: (record) => {
         return ({
-          disabled: record.is_file_admin,
+          disabled: participants.map(item => item.participant_id).includes(record.id),
         })
       }
     };
     return (
       <div className="task-content">
-        <Paper selectPaper={this.selectPaper} value={paper.id} ref={(node) => { this.paper = node; }} />
+        {
+          paper.id &&
+          <Paper selectPaper={this.selectPaper} value={paper.id} ref={(node) => { this.paper = node; }} />
+        }
         <div className="task-row">
           <div className="task-label">
             已选试卷*
@@ -458,7 +422,9 @@ export default class Preview extends React.Component {
                     </div>
                   </div>
                   <div style={{ marginTop: '10px' }}>
-                    <span>及格线： {(paper.passing_grade / paper.total_grade).toFixed(2) * 100}%</span>
+                    {
+                      <span>及格线： {(paper.passing_grade / paper.total_grade).toFixed(2) * 100}%</span>
+                    }
                   </div>
                 </div>
                 :
@@ -490,7 +456,7 @@ export default class Preview extends React.Component {
             考试名称
           </div>
           <div className="task-item">
-            <Input onChange={this.nameOnChange} maxLength={50} style={{ width: '350px' }} placeholder="输入试卷名称，限定50字符" />
+            <Input value={this.state.taskName} onChange={this.nameOnChange} maxLength={50} style={{ width: '350px' }} placeholder="输入试卷名称，限定50字符" />
           </div>
         </div>
         <div className="task-row input-item">
@@ -503,6 +469,7 @@ export default class Preview extends React.Component {
               showTime={{ format: 'HH:mm' }}
               format="YYYY-MM-DD HH:mm"
               onChange={this.rangeOnChange}
+              value={this.state.period_start ? [moment(this.state.period_start), moment(this.state.period_end)] : []}
             // format={dateFormat}
             />
           </div>
@@ -512,7 +479,7 @@ export default class Preview extends React.Component {
             答卷时间
           </div>
           <div className="task-item">
-            <Select defaultValue="10" style={{ width: 83, marginRight: '10px' }} onChange={this.timeHandleChange}>
+            <Select defaultValue={this.state.exam_time_limit} style={{ width: 83, marginRight: '10px' }} onChange={this.timeHandleChange}>
               {
                 OptionList.map(key => {
                   return <Option key={key} value={key}>{key}</Option>
@@ -527,23 +494,29 @@ export default class Preview extends React.Component {
             参与人员
           </div>
           <div className="task-item">
-            <div style={{ height: staff.chosen.length != 0 ? '40px' : '20px' }}>
+            <div style={{ height: participants.length != 0 ? '40px' : '20px' }}>
               <Button onClick={this.staffModal} style={{ position: 'absolute', top: '-6px', color: '#0692e1', borderColor: '#0692e1' }} icon="plus-square" >人员</Button>
             </div>
             {
-              staff.chosen.length != 0 &&
+              participants.length != 0 &&
               <div className="staff-container">
                 {
-                  (() => {
-                    const data = this.getItem();
-                    console.log(data)
-                    return staff.chosen.map((id) => {
-                      const item = data[id];
-                      return (
-                        <span key={item.id} className="staff-block">{item.username} <Icon onClick={this.removeSelect.bind(this, id)} style={{ cursor: 'pointer' }} type="close" theme="outlined" /></span>
-                      )
-                    })
-                  })()
+                  participants.map(item => {
+                    return (
+                      <span key={item.username} className="staff-block">{item.username} <Icon onClick={this.removeSelect.bind(this, item.participant_id)} style={{ cursor: 'pointer' }} type="close" theme="outlined" /></span>
+                    )
+                  })
+                  // (() => {
+                  //   const data = this.getItem();
+                  //   // console.log(data, 'ssssssss')
+                  //   if (JSON.stringify(data) == '{}') return;
+                  //   return staff.chosen.map((id) => {
+                  //     const item = data[id];
+                  //     return (
+                  //       <span key={item.id} className="staff-block">{item.username} <Icon onClick={this.removeSelect.bind(this, id)} style={{ cursor: 'pointer' }} type="close" theme="outlined" /></span>
+                  //     )
+                  //   })
+                  // })()
                 }
               </div>
             }
@@ -554,7 +527,7 @@ export default class Preview extends React.Component {
               width="800px"
               visible={this.state.staff.visible}
               onOk={this.handleOk}
-              onCancel={this.handleOk}
+              onCancel={this.handleCancel}
               className="staffModal"
               destroyOnClose={true}
               bodyStyle={{ height: '500px', padding: '10px 24px' }}
@@ -586,7 +559,7 @@ export default class Preview extends React.Component {
             题目排序
           </div>
           <div className="task-item">
-            <Switch checkedChildren="开" unCheckedChildren="关" defaultChecked /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
+            <Switch checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.problem_disorder} /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
           </div>
         </div>
         <div className="task-row">
@@ -594,17 +567,22 @@ export default class Preview extends React.Component {
             查看答案
           </div>
           <div className="task-item">
-            <Switch checkedChildren="开" unCheckedChildren="关" defaultChecked /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
+            <Switch checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.show_answer} /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
           </div>
         </div>
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
           {
-            create == false ?
+            create ?
               <Button>返回</Button>
               :
-              <Button onClick={() => { this.props.goback() }}>返回</Button>
+              <Button onClick={() => { this.props.goback(); console.log('sss') }}>返回</Button>
           }
-          <Button onClick={this.createTask} type="primary" style={{ marginLeft: '18px' }}>发布</Button>
+          {
+            create ?
+              <Button onClick={this.createTask} type="primary" style={{ marginLeft: '18px' }}>发布</Button>
+              :
+              <Button onClick={this.saveTask} type="primary" style={{ marginLeft: '18px' }}>保存</Button>
+          }
         </div>
       </div>
     )

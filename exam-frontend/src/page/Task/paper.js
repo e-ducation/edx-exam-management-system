@@ -24,6 +24,15 @@ export default class Paper extends React.Component {
         // value: this.props.value != undefined ? this.props.value : data[0].id, // 默认选择第一个
       })
     })
+    this.setState({
+      value: this.props.value
+    })
+  }
+  componentWillReceiveProps(next){
+    const { value } = this.props;
+    if (value != next.value) {
+
+    }
   }
   showPaper = () => {
     this.setState({
