@@ -309,8 +309,9 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                 ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
             exam_paper = validated_data['exampaper']
+            exam_task.problems.all().delete()
+            exam_task.rules.all().delete()
             if exam_paper.create_type == 'fixed':
-                exam_task.problems.all().delete()
                 for problem in exam_paper.problems.all():
                     ExamPaperProblemsSnapShot.objects.create(
                         exam_task=exam_task,
@@ -321,7 +322,6 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                         content=problem.content
                     )
             if exam_paper.create_type == 'random':
-                exam_task.rules.all().delete()
                 for rule in exam_paper.rules.all():
                     ExamPaperCreateRuleSnapShot.objects.create(
                         exam_task=exam_task,

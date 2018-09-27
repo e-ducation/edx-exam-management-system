@@ -7,7 +7,7 @@ from itertools import groupby
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Q
 from django.utils import timezone
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -869,6 +869,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         instance = self.get_object()
         if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
             return Response(response_format(msg='Can not edit started task'))
+
+        request.data['creator'] = request.user.id
         return super(ExamTaskViewSet, self).update(request, args, kwargs)
 
     def partial_update(self, request, *args, **kwargs):
@@ -878,6 +880,8 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         instance = self.get_object()
         if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
             return Response(response_format(msg='Can not edit started task'))
+
+        request.data['creator'] = request.user.id
         return super(ExamTaskViewSet, self).partial_update(request, args, kwargs)
 
     def destroy(self, request, *args, **kwargs):
