@@ -84,6 +84,21 @@
     white-space: nowrap;
     text-overflow: ellipsis;
   }
+  .staff-container {
+    padding: 10px;
+    border: 1px dashed #ccd1d9;
+    border-radius: 4px;
+    padding-bottom: 0;
+  }
+  .staff-block {
+    padding: 5px 5px;
+    background-color: #f5f7fa;
+    color: #2e313c;
+    margin-right: 10px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 10px;
+  }
 }
 
 .paper-select {
