@@ -835,12 +835,12 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(response_format(serializer.data), status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return Response(response_format(serializer.data))
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -859,8 +859,10 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
             assert self.paginator is not None
             return self.paginator.get_paginated_response(serializer.data, **state_count)
 
-        serializer = self.ExamTaskListSerializer(queryset, many=True)
-        return Response(serializer.data, **state_count)
+        serializer = ExamTaskListSerializer(queryset, many=True)
+        rep_data = {'exam_tasks': serializer.data}
+        rep_data.update(state_count)
+        return Response(response_format(rep_data))
 
     def update(self, request, *args, **kwargs):
         """
@@ -871,7 +873,19 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
             return Response(response_format(msg='Can not edit started task'))
 
         request.data['creator'] = request.user.id
-        return super(ExamTaskViewSet, self).update(request, args, kwargs)
+
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(response_format(serializer.data))
 
     def partial_update(self, request, *args, **kwargs):
         """
@@ -881,7 +895,6 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         if instance.task_state in (TASK_STATE[1][0], TASK_STATE[2][0]):
             return Response(response_format(msg='Can not edit started task'))
 
-        request.data['creator'] = request.user.id
         return super(ExamTaskViewSet, self).partial_update(request, args, kwargs)
 
     def destroy(self, request, *args, **kwargs):
@@ -891,7 +904,9 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         instance = self.get_object()
         if instance.task_state == TASK_STATE[1][0]:
             return Response(response_format(msg='Can not delete started task'))
-        return super(ExamTaskViewSet, self).destroy(request, args, kwargs)
+
+        self.perform_destroy(instance)
+        return Response(response_format())
 
     @action(methods=['GET'], detail=True)
     def preview(self, request, pk, *args, **kwargs):
