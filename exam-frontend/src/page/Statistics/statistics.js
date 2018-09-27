@@ -241,6 +241,7 @@ class StatisticsContainer extends React.Component {
                       <span>待考</span>
                     )
                   }
+                }
               )()
             }
           </span>
