@@ -195,8 +195,8 @@ class ExamParticipantSerializer2(serializers.ModelSerializer):
 
 class ExamParticipantSerializer(serializers.ModelSerializer):
     exam_result = serializers.CharField(required=False)
-    participate_time = serializers.DateTimeField(required=False)
-    hand_in_time = serializers.DateTimeField(required=False)
+    participate_time = serializers.DateTimeField(required=False, allow_null=True)
+    hand_in_time = serializers.DateTimeField(required=False, allow_null=True)
     username = serializers.CharField(source='participant.username', required=True)
     email = serializers.EmailField(source='participant.email', required=True)
 

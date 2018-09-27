@@ -7,7 +7,6 @@ from itertools import groupby
 
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from django_filters.rest_framework import DjangoFilterBackend
@@ -42,7 +41,6 @@ from exam_paper.api.serializers import (
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
 from exam_paper.utils import response_format
-from exam_paper.pageinations import FormatPageNumberPagination
 
 DUPLICATE_SUFFIX = '(copy)'
 
@@ -764,23 +762,9 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
 
     serializer_class = ExamParticipantSerializer2
     search_fields = ('participant__username',)
-    filter_backends = (filters.SearchFilter, MyCustomOrdering,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, MyCustomOrdering,)
+    filter_fields = ('exam_result', 'exam_task')
     queryset = ExamParticipant.objects.all()
-    pagination_class = FormatPageNumberPagination
-
-    def get_queryset(self):
-        try:
-            exam_result = self.request.GET.get('exam_result', '')
-            exam_task = int(self.request.GET.get('exam_task', ''))
-        except Exception as ex:
-            exam_result = ''
-            exam_task = 0
-        specific_task = ExamParticipant.objects.filter(exam_task_id=exam_task)
-        if exam_result in ('pass', 'flunk', 'pending'):
-            return specific_task.filter(exam_result=exam_result)
-        else:
-            return specific_task.filter(
-                Q(exam_result='pass') | Q(exam_result='flunk'))
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -796,9 +780,24 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
 
     def get_num_of_people(self):
         num_of_people = {}
-        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending').count()
-        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk').count()
-        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass').count()
+        exam_task = self.request.query_params.get('exam_task', '0')
+        num_of_people['pending'] = ExamParticipant.objects.filter(exam_result='pending', exam_task=exam_task).count()
+        num_of_people['flunk'] = ExamParticipant.objects.filter(exam_result='flunk', exam_task=exam_task).count()
+        num_of_people['pass'] = ExamParticipant.objects.filter(exam_result='pass', exam_task=exam_task).count()
+
+        paper_datail = {}
+        try:
+            paper = ExamTask.objects.get(id=exam_task)
+            paper_datail['task_name'] = paper.name
+            ratio = float(paper.exampaper_passing_ratio) / 100
+            total_grade = float(paper.exampaper_total_grade)
+            paper_datail['passing_grade'] = '%.2f' % (ratio * total_grade)
+            paper_datail['type'] = paper.exampaper_create_type
+        except Exception as ex:
+            paper_datail['task_name'] = ''
+            paper_datail['passing_grade'] = '0.00'
+            paper_datail['type'] = ''
+        num_of_people.update(**paper_datail)
         return num_of_people
 
 
