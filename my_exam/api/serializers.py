@@ -51,6 +51,27 @@ class ExamParticipantMixin(object):
         return examparticipant.total_grade
 
 
+class ExamParticipantAnswerMixin(object):
+    def get_answer(self, examparticipant_answer):
+        """
+        获得答案
+        :param examparticipant_answer:
+        :return:
+        """
+        if str(examparticipant_answer.answer):
+            answers = str(examparticipant_answer.answer).split(',')
+        else:
+            answers = []
+        data = []
+        try:
+            for answer in answers:
+                data.append(int(answer))
+        except Exception as ex:
+            data = answers
+
+        return data
+
+
 class ExamTaskSerializer(serializers.ModelSerializer, ExamTaskMixin):
 
     creator = serializers.SerializerMethodField()
@@ -83,18 +104,19 @@ class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
         fields = ('id', 'exam_task_id', 'sequence', 'problem_block_id', 'problem_type', 'grade', 'content')
 
 
-class ExamParticipantAnswerSerializer(serializers.ModelSerializer, ExamParticipantMixin):
+class ExamParticipantAnswerSerializer(serializers.ModelSerializer, ExamParticipantAnswerMixin):
     """
     考生答卷
         exam_task_id
         participant_id
     """
-    current_time = serializers.SerializerMethodField()
+    content = serializers.JSONField(required=True)
+    answer = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamParticipantAnswer
-        fields = ('id', 'participant_id', 'answer', 'grade', 'sequence', 'problem_type',
-                  'content', 'operate_at', 'current_time')
+        fields = ('id', 'participant_id', 'answer', 'grade', 'problem_grade', 'sequence', 'problem_type',
+                  'content')
 
     def update(self, instance, validated_data):
         """
