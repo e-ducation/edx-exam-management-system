@@ -7,6 +7,8 @@ from collections import OrderedDict
 from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+import pytz
+from django.conf import settings
 from rest_framework import filters, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -291,7 +293,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         :param kwargs:
         :return:
         """
-        participant_id = str(self.request.GET.get('participant_id'))
+        participant_id = str(self.request.data['participant_id'])
         exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
         if not exam_participant:
             return Response(response_format(data=[], msg='考试不存在', status=-1))
@@ -385,7 +387,8 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
             'task_state': exam_participant.task_state,
             'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'exam_task': serializer.data,
-            'participate_time': exam_participant.participate_time,
+            'participate_time': exam_participant.participate_time.replace(tzinfo=pytz.utc).astimezone(
+                    pytz.timezone(settings.TIME_ZONE)).strftime('%Y-%m-%d %H:%M:%S'),
             'hand_in_time': exam_participant.hand_in_time
         }
         if exam_participant.task_state == TASK_STATE[2][0]:
