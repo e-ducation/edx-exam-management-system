@@ -117,16 +117,3 @@ class ExamParticipantAnswerSerializer(serializers.ModelSerializer, ExamParticipa
         model = ExamParticipantAnswer
         fields = ('id', 'participant_id', 'answer', 'grade', 'problem_grade', 'sequence', 'problem_type',
                   'content')
-
-    def update(self, instance, validated_data):
-        """
-        更新
-        :param instance:
-        :param validated_data:
-        :return:
-        """
-        instance.answer = validated_data.get('answer', instance.answer)
-        instance.grade = validated_data.get('grade', instance.grade)
-        instance.operate_at = validated_data.get('operate_at', instance.operate_at)
-        instance.save()
-        return instance
