@@ -388,7 +388,7 @@ export default class Preview extends React.Component {
     return (
       <div className="task-content">
         {
-          paper.id &&
+          // paper.id &&
           <Paper selectPaper={this.selectPaper} value={paper.id} ref={(node) => { this.paper = node; }} />
         }
         <div className="task-row">
