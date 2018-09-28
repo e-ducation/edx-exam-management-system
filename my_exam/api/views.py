@@ -39,6 +39,7 @@ from exam_paper.models import (
     ExamParticipantAnswer,
     PAPER_CREATE_TYPE,
     TASK_STATE,
+    EXAM_RESULT
 )
 from exam_paper.utils import response_format
 
@@ -258,12 +259,12 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
     ```
     """
 
-    # authentication_classes = (
-    #     SessionAuthentication,
-    # )
-    # permission_classes = (
-    #     IsAuthenticated,
-    # )
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
     serializer_class = ExamParticipantAnswerSerializer
 
     def get_queryset(self):
@@ -281,6 +282,35 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                 return ExamParticipantAnswer.objects.filter(id=pk)
             except Exception as ex:
                 return []
+
+    def create(self, request, *args, **kwargs):
+        """
+        提交试卷
+        :param request:
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        participant_id = str(self.request.GET.get('participant_id'))
+        exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
+        if not exam_participant:
+            return Response(response_format(data=[], msg='考试不存在', status=-1))
+        if exam_participant.exam_task == TASK_STATE[1][0]:
+            problems = ExamParticipantAnswerSerializer(request.data['problems'])
+            exam_participant_answers = ExamParticipantAnswer.objects.filter()
+            with transaction.atomic():
+                for problem in problems.instance:
+                    exam_participant_answer = exam_participant_answers.filter(id=str(problem['id'])).first()
+                    if exam_participant_answer:
+                        exam_participant_answer.answer = str(problem['answer'])
+                        exam_participant_answer.save()
+                exam_participant.task_state = TASK_STATE[2][0]
+                #TODO
+                exam_participant.exam_result = EXAM_RESULT[1][0]
+                exam_participant.save()
+        else:
+            return Response(response_format(data=[], msg='只有考试中的试卷允许提交'))
+        return Response(response_format(data=[], msg='提交成功'))
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -354,7 +384,9 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
             'participant_id': exam_participant.id,
             'task_state': exam_participant.task_state,
             'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-            'exam_task': serializer.data
+            'exam_task': serializer.data,
+            'participate_time': exam_participant.participate_time,
+            'hand_in_time': exam_participant.hand_in_time
         }
         if exam_participant.task_state == TASK_STATE[2][0]:
             common_info['total_grade'] = exam_participant.total_grade
