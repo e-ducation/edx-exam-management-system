@@ -305,7 +305,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                         exam_participant_answer.answer = str(problem['answer'])
                         exam_participant_answer.save()
                 exam_participant.task_state = TASK_STATE[2][0]
-                #TODO
+                # TODO
                 exam_participant.exam_result = EXAM_RESULT[1][0]
                 exam_participant.save()
         else:
