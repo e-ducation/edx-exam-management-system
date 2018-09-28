@@ -193,7 +193,7 @@ export default class Preview extends React.Component {
     if (validate.participant) {
       validate.participant = participants.length > 0;
     }
-    return (validate.name && validate.time && validate.paper && validate.participant )
+    return (validate.name && validate.time && validate.paper && validate.participant)
   }
   // 获取公司成员列表
   getStaffList = () => {
@@ -391,11 +391,11 @@ export default class Preview extends React.Component {
     if (value.length === 0) {
       validate.time = false;
       validate.timeError = '考试周期不能为空';
-        this.setState({
-          period_start: '',
-          period_end: '',
-          validate,
-        })
+      this.setState({
+        period_start: '',
+        period_end: '',
+        validate,
+      })
     } else {
       const time = value[1].valueOf() - value[0].valueOf();
       const min = time / 1000 / 60;
@@ -505,10 +505,13 @@ export default class Preview extends React.Component {
                         <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe66d;</i>
                         更换试卷
                       </Button>
-                      <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary">
-                        <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
-                        预览试卷
+                      {
+                        this.props.task .id!== undefined &&
+                        <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary">
+                          <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
+                          预览试卷
                       </Button>
+                      }
                     </div>
                   </div>
                   <div className="paper-info">
