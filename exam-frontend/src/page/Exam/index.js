@@ -214,18 +214,31 @@ class ExamContainer extends React.Component {
   submit = () => {
     // 交卷请求
     // 构造交卷参数
-    let obj = [];
+    let arr = [];
     const { results } = this.state;
     for (let i = 0; i < results.length; i++){
-      obj.push({id: results[i].id, answer: results[i].answer})
+      arr.push({id: results[i].id, answer: results[i].answer})
     }
 
-    console.log(obj);
+    console.log(arr);
     console.log(this.participant_id);
 
-    this.setState({
-      mode: 'submit_success'
-    })
+    axios.post('/api/my_exam/exam_task/exam_answers/', {problems:arr, participant_id:this.participant_id})
+      .then((response) => {
+        const res = response.data;
+        if (res.status === 0) {
+          this.setState({
+            mode: 'submit_success'
+          })
+        } else {
+          message.error('请求失败')
+        }
+      })
+      .catch(function (error) {
+        message.error('请求失败')
+      });
+
+
   }
 
   render() {
@@ -320,7 +333,7 @@ class ExamContainer extends React.Component {
                                             return <Radio.Group style={{ display: 'block' }} value={item.answer} onChange={this.onChangeRadioAnswer.bind(this, index)}>
                                               {
                                                 item.content.options.map((item, index) => {
-                                                  return <Radio style={{ display: 'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0' }} key={index} value={index}>{item}</Radio>
+                                                  return <Radio style={{ display: 'block', lineHeight: '1.5', whiteSpace: 'pre-wrap', margin: '0 0 10px 0' }} key={index} value={'' + index}>{item}</Radio>
                                                 })
                                               }
                                             </Radio.Group>;
