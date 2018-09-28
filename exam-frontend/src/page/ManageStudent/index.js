@@ -210,10 +210,10 @@ class ManageStudentContainer extends React.Component {
         render: (text, record) => (
           <span>
             {
-              record.exam_result === 'pending' ?
+              record.task_state === 'pending' ?
                 <span className="text-link" onClick={this.showModal.bind(this, record)}> {text}</span>
               :
-                <span className="text-link" onClick={this.goToPaper.bind(this, record.participant_id)}>{text}</span>
+                <span className="text-link" onClick={this.goToPaper.bind(this, record.id)}>{text}</span>
 
             }
           </span>
