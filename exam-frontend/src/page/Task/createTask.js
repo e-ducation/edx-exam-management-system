@@ -430,6 +430,14 @@ export default class Preview extends React.Component {
     })
     // console.log(e.target.value)
   }
+  //预览试卷
+
+  previewPaper = () => {
+
+    let id = this.props.id;
+    window.open('/#/preview/edit/' + id);
+
+  }
   render() {
     const { paper, participants, validate } = this.state;
     const { create } = this.props;
@@ -505,11 +513,9 @@ export default class Preview extends React.Component {
                         <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe66d;</i>
                         更换试卷
                       </Button>
-                      {
-                        this.props.task .id!== undefined &&
-                        <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary">
-                          <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
-                          预览试卷
+                      <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary" onClick={this.previewPaper}>
+                        <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
+                        预览试卷
                       </Button>
                       }
                     </div>

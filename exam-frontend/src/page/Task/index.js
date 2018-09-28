@@ -99,10 +99,10 @@ export default class Task extends React.Component {
               </div>
               {
                 preview === true ?
-                  <Preview task={task} />
+                  <Preview task={task} id={this.props.match.params.id} />
                   :
                   <div>
-                    <CreateTask task={task} history={this.props.history} create={create} goback={() => { this.setState({ preview: true }) }} />
+                    <CreateTask task={task} history={this.props.history} create={create} goback={() => { this.setState({ preview: true }) }} id={this.props.match.params.id} />
                     {/* {
                       create === false &&
                       <Button onClick={() => { this.setState({ preview: true }) }}>
