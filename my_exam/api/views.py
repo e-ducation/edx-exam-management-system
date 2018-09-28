@@ -3,7 +3,7 @@
 from __future__ import unicode_literals
 import datetime
 import json
-
+from collections import OrderedDict
 from django.db import transaction
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from django.db.models import Count, Q
 from django_filters.rest_framework import DjangoFilterBackend
+import re
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 from rest_framework.views import APIView
 from rest_framework.mixins import (
@@ -27,7 +28,8 @@ from rest_framework.mixins import (
 
 from my_exam.api.serializers import (
     MyExamListSerializer,
-    ExamParticipantAnswerSerializer
+    ExamParticipantAnswerSerializer,
+    ExamTaskSerializer
 )
 from my_exam.utils import datetime_to_timestamp
 from exam_paper.models import (
@@ -35,7 +37,8 @@ from exam_paper.models import (
     ExamParticipant,
     ExamPaperProblemsSnapShot,
     ExamParticipantAnswer,
-    PAPER_CREATE_TYPE
+    PAPER_CREATE_TYPE,
+    TASK_STATE,
 )
 from exam_paper.utils import response_format
 
@@ -147,15 +150,17 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
             'all_count': 0,
             'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
-        state_count.update(queryset_state_update.filter(task_state='pending').aggregate(pending=Count('pk')))
-        state_count.update(queryset_state_update.filter(task_state='started').aggregate(started=Count('pk')))
-        state_count.update(queryset_state_update.filter(task_state='finished').aggregate(finished=Count('pk')))
-        state_count.update(queryset_state_update.filter(task_state='unavailable').aggregate(unavailable=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state=TASK_STATE[0][0]).aggregate(pending=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state=TASK_STATE[1][0]).aggregate(started=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state=TASK_STATE[2][0]).aggregate(finished=Count('pk')))
+        state_count.update(queryset_state_update.filter(task_state=TASK_STATE[3][0]).aggregate(unavailable=Count('pk')))
         state_count.update(queryset_state_update.filter().aggregate(all_count=Count('pk')))
         # queryset_state_update
         if request.GET.get('ordering') is None and request.GET.get('task_state') is None:
             queryset_tmp = self.filter_queryset(queryset_state_update)
-            queryset = sorted(queryset_tmp, key=lambda x: (x.task_state == "finished", x.task_state == "pending", x.task_state == "started"))
+            queryset = sorted(queryset_tmp, key=lambda x: (x.task_state == TASK_STATE[2][0],
+                                                           x.task_state == TASK_STATE[0][0],
+                                                           x.task_state == TASK_STATE[1][0]))
         else:
             queryset = self.filter_queryset(queryset_state_update)
         page = self.paginate_queryset(queryset)
@@ -182,12 +187,12 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
                 exam_task = exam_tasks.filter(id=exam_task_id).first()
                 if exam_task:
                     if datetime_to_timestamp(datetime.datetime.now()) < datetime_to_timestamp(exam_task.period_start):
-                        item.task_state = "pending"
+                        item.task_state = TASK_STATE[0][0]
                     elif datetime_to_timestamp(datetime.datetime.now()) >= datetime_to_timestamp(exam_task.period_end):
-                        item.task_state = "finished"
+                        item.task_state = TASK_STATE[2][0]
                     else:
-                        if item.task_state != "finished":
-                            item.task_state = "started"
+                        if item.task_state != TASK_STATE[2][0]:
+                            item.task_state = TASK_STATE[1][0]
                     item.save()
         except Exception as ex:
             pass
@@ -219,7 +224,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
                     ).first()
                     if exam_participant_answer:
                         serializer = ExamParticipantAnswerSerializer(ExamParticipantAnswer.objects.filter(participant_id=participant_id), many=True)
-                        return Response(serializer.data, status=status.HTTP_201_CREATED, headers={})
+                        return Response(response_format(serializer.data))
                     else:
                         ExamParticipantAnswer.objects.create(
                             participant=exam_participant,
@@ -228,11 +233,15 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
                             content=problem.content,
                             answer='',
                             grade=0,
+                            problem_grade=problem.grade,
                             operate_at=datetime.datetime.now()
                         )
+                exam_participant.task_state = TASK_STATE[1][0]
+                exam_participant.participate_time = datetime.datetime.now()
+                exam_participant.save()
             serializer = ExamParticipantAnswerSerializer(ExamParticipantAnswer.objects.filter(participant_id=participant_id), many=True)
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers={})
+            return Response(response_format(serializer.data))
         else:
             return Response(response_format(msg='考试任务不存在'))
 
@@ -289,7 +298,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
             participant_id = int(str(self.request.GET.get('participant_id')))
             return ExamParticipantAnswer.objects.filter(participant_id=participant_id)
         except Exception as ex:
-            return ExamParticipantAnswer.objects.filter()
+            return ExamParticipantAnswer.objects.filter(participant_id=0)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -297,14 +306,34 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
-
+        try:
+            participant_id = int(str(self.request.GET.get('participant_id')))
+        except Exception as ex:
+            participant_id = 0
         queryset = self.filter_queryset(self.get_queryset())
 
         serializer = self.get_serializer(queryset, many=True)
         if len(serializer.data) == 0:
             return Response(response_format(data=serializer.data, msg='考试未开始'))
         else:
-            return Response(response_format(serializer.data))
+            exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
+            if exam_participant:
+                if exam_participant.task_state == TASK_STATE[1][0]:
+                    # 正在考试中
+                    common_info = self.get_exam_task_info(exam_participant)
+                    data = self.get_started_data(serializer)
+                    return self.get_return_response(data, **common_info)
+                elif exam_participant.task_state == TASK_STATE[2][0]:
+                    # 考试结束
+                    common_info = self.get_exam_task_info(exam_participant)
+                    data = self.get_finished_data(serializer)
+                    return self.get_return_response(data, **common_info)
+                elif exam_participant.task_state == TASK_STATE[0][0]:
+                    return Response(response_format(data=[], msg='考试未开始'))
+                else:
+                    return Response(response_format(data=[], msg='试卷失效'))
+            else:
+                return Response(response_format(data=[], msg='考试未添加参与者'))
 
     def update(self, request, *args, **kwargs):
         """
@@ -323,6 +352,61 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
     def get_serializer(self, *args, **kwargs):
         kwargs['partial'] = True
         return super(ExamParticipantAnswerViewSet, self).get_serializer(*args, **kwargs)
+
+    def get_exam_task_info(self, exam_participant):
+        """
+        获取考试任务信息
+        :return:
+        """
+        instance = ExamTask.objects.filter(id=exam_participant.exam_task_id).first()
+        serializer = ExamTaskSerializer(instance)
+        common_info = {
+            'participant_id': exam_participant.id,
+            'task_state': exam_participant.task_state,
+            'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'exam_task': serializer.data
+        }
+        if exam_participant.task_state == TASK_STATE[2][0]:
+            common_info['total_grade'] = exam_participant.total_grade
+        return common_info
+
+    def get_return_response(self, data, **kwargs):
+        """
+        自定义格式化返回
+        :param data:
+        :param kwargs:
+        :return:
+        """
+        result = [
+            ('results', data),
+        ]
+
+        if kwargs:
+            result += kwargs.items()
+
+        return Response(response_format(OrderedDict(result)))
+
+    def get_started_data(self, serializer):
+        """
+        获取考试中的题目
+        :return:
+        """
+        data = []
+        for item in serializer.data:
+            item.pop('grade')
+            if 'answers' in item['content'].keys():
+                item['content'].pop('answers')
+            if 'solution' in item['content'].keys():
+                item['content'].pop('solution')
+            data.append(item)
+        return data
+
+    def get_finished_data(self, serializer):
+        """
+        获取考试结束后的题目
+        :return:
+        """
+        return serializer.data
 
 
 class JudgmentAnswer(object):
