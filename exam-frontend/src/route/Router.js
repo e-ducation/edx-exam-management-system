@@ -14,7 +14,7 @@ import Statistics from '../page/Statistics';
 // 我的考生
 import HomeStudent from '../page/HomeStudent';
 import ManageStudent from '../page/ManageStudent';
-import Examing from '../page/Examing';
+import Exam from '../page/Exam';
 // import { deflateRaw } from 'zlib';
 
 
@@ -36,7 +36,7 @@ export default class Main extends Component {
         <Route path='/statistics/:id' component={Statistics} />
         <Route path='/student' component={HomeStudent} />
         <Route path='/student_manage' component={ManageStudent} />
-        <Route path='/examing/:id' component={Examing} />
+        <Route path='/exam/:id' component={Exam} />
       </Switch>
     </main>)
   }

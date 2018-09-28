@@ -30,7 +30,7 @@ export default class Paper extends React.Component {
   }
   componentWillReceiveProps(next){
     const { value } = this.props;
-    if (value != next.value) {
+    if (value !== next.value) {
 
     }
   }
@@ -43,7 +43,7 @@ export default class Paper extends React.Component {
     const { data, value } = this.state;
     let paper = {};
     for (let item of data) {
-      if (item.id == value) {
+      if (item.id === value) {
         paper = item;
         break;
       }
@@ -132,7 +132,7 @@ export default class Paper extends React.Component {
         const data = res.data.results;
         const hasMore = data.length < res.data.count;
         this.setState({
-          data: data.length == 0 ? [] : data,
+          data: data.length === 0 ? [] : data,
           pageTotal: res.data.count,
           loading: false,
           hasMore,
@@ -153,7 +153,7 @@ export default class Paper extends React.Component {
       height: '30px',
       lineHeight: '30px',
     };
-    const { data, value } = this.state;
+    const { data } = this.state;
     return (
       <Modal
         title="试卷选择"
