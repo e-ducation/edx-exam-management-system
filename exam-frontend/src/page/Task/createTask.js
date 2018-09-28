@@ -44,6 +44,7 @@ export default class Preview extends React.Component {
       time: true,
       paper: true,
       participant: true,
+      timeError: '',
     },
     modified: '',
   }
@@ -188,6 +189,7 @@ export default class Preview extends React.Component {
     }
     if (validate.time) {
       validate.time = period_start == '' ? false : true;
+      validate.timeError = '考试周期不能为空'
     }
     if (validate.paper) {
       validate.paper = paper.id == undefined ? false : true;
@@ -394,21 +396,22 @@ export default class Preview extends React.Component {
     const { exam_time_limit, validate } = this.state;
     if (value.length == 0) {
       validate.time = false,
+      validate.timeError = '考试周期不能为空';
         this.setState({
           period_start: '',
           period_end: '',
-          timeError: '考试周期不能为空',
           validate,
         })
     } else {
       const time = value[1].valueOf() - value[0].valueOf();
       const min = time / 1000 / 60;
       if (min < exam_time_limit) {
+        validate.timeError = '考试周期不能小于答卷时间';
         validate.time = false;
-        this.setState({
-          timeError: '考试周期不能小于答卷时间'
-        })
         console.log('error')
+      } else if (min > 7 * 24 * 60) {
+        validate.timeError = '考试周期不能大于7天';
+        validate.time = false;
       } else {
         validate.time = true;
       }
@@ -610,7 +613,16 @@ export default class Preview extends React.Component {
             <div className="task-item error-tips">
               {
                 validate.time == false &&
-                '请选择开始与结束时间'
+                validate.timeError
+                // <span>
+                //   {
+                //     this.state.period_start == '' ?
+                //     '请选择开始与结束时间'
+                //     :
+                //     '考试周期要大于答卷时间'
+                //   }
+                // </span>
+
               }
             </div>
           </div>
