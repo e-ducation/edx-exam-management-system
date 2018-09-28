@@ -13,6 +13,7 @@ class ManageStudentContainer extends React.Component {
   constructor(props) {
     super(props);
     this.timer = null;
+    this.searchAjax = null;
   }
 
   state = {
@@ -22,10 +23,17 @@ class ManageStudentContainer extends React.Component {
     pageTotal: 1,
     pageSize: 10,
     search: '',
-    tab: '1',
+    task_state: 'started',
     visible: false,
+    /* tab总数 */
+    started: '',
+    finished: '',
+    pending: '',
+    all_count: '',
     /* 弹框 */
-    record: null,
+    record: {
+      exam_task: {},
+    },
     timestamp_now: null,
     timestamp_start: null,
     timestamp_end: null,
@@ -34,7 +42,7 @@ class ManageStudentContainer extends React.Component {
   componentDidMount() {
     const tab = window.location.href.split('?tab=')[1];
     this.setState({
-      tab: tab ? tab + '' : '1',
+      tab: tab ? tab + '' : 'started',
     }, () => {
       this.getList();
     })
@@ -42,25 +50,65 @@ class ManageStudentContainer extends React.Component {
 
   // 1.1 获取试卷列表
   getList = () => {
-    // status 未开考/已开考
+    const { task_state, pageCurrent, pageSize, search } = this.state;
+    const CancelToken = axios.CancelToken;
+    const that = this;
+
+    if (this.searchAjax) {
+      this.searchAjax();
+    }
+
+    clearInterval(this.timer);
     this.setState({
-      list: [
-        {
-          id: 1,
-          name: '商务谈判技巧',
-          creator: '张明明',
-          start_time: '2018/09/20 11:08',
-          end_time: '2018/09/22 12:14',
-          consume: '180分钟',
-          total_grade: 120,
-          passing_grade: 60,
-          grade: '',
-          is_start: false,
-          count: 20,
-          description: '试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明'
+      loading: true,
+    }, () => {
+      axios.get('/api/my_exam/my_exam/', {
+        params: {
+          task_state,
+          search,
+          page: pageCurrent,
+          page_size: pageSize,
+        },
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
+      }).then((response) => {
+        const res = response.data;
+
+        if (res.status === 0){
+          this.setState({
+            list: res.data.results,
+            started: res.data.started,
+            finished: res.data.finished,
+            pending: res.data.pending,
+            all_count: res.data.all_count,
+            pageTotal: res.data.count,
+            timestamp_now: Date.parse(new Date(res.data.current_time)),
+            loading: false,
+          }, () => {
+            clearInterval(this.timer);
+            // 设置倒计时
+            this.timer = setInterval(() => {
+              this.setState({
+                timestamp_now: this.state.timestamp_now - 1000
+              })
+            }, 1000)
+          });
+        } else {
+          message.error('请求失败')
         }
-      ]
+      })
+      .catch((error) => {
+        that.setState({
+          loading: false,
+        })
+      });
     })
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer)
   }
 
   // 1.2 试卷列表页码变更
@@ -85,7 +133,6 @@ class ManageStudentContainer extends React.Component {
   // 1.4 搜索试卷
   onChangeSearch = (e) => {
     this.setState({
-      pageSize: this.state.pageSize,
       pageCurrent: 1,
       search: e.target.value,
     }, () => {
@@ -99,7 +146,7 @@ class ManageStudentContainer extends React.Component {
       pageCurrent: 1,
       search: '',
       pageSize: 10,
-      tab: key,
+      task_state: key,
     }, () => {
       this.getList();
     });
@@ -111,17 +158,9 @@ class ManageStudentContainer extends React.Component {
     this.setState({
       visible: true,
       record,
-      timestamp_start: Date.parse(new Date(record.start_time)),
-      timestamp_end: Date.parse(new Date(record.end_time)),
-      timestamp_now: Date.parse(new Date())
+      timestamp_start: Date.parse(new Date(record.exam_task.period_start)),
+      timestamp_end: Date.parse(new Date(record.exam_task.period_end)),
     })
-
-    // 设置倒计时
-    this.timer = setInterval(() => {
-      this.setState({
-        timestamp_now: Date.parse(new Date())
-      })
-    }, 1000)
   }
 
   hideModal = () => {
@@ -131,9 +170,7 @@ class ManageStudentContainer extends React.Component {
     clearInterval(this.timer);
   }
 
-  goToPaper = () => {
-    // 前往答卷
-  }
+
 
   // 倒计时
   checkTime = (i) => {
@@ -143,54 +180,84 @@ class ManageStudentContainer extends React.Component {
     return i;
   }
 
+  // 开始考试
+  startExam = () =>{
+    axios.post('/api/my_exam/my_exam/', {'participant_id' : this.state.record.id})
+      .then((response) => {
+        const res = response.data;
+        if (res.status === 0){
+         window.location.href = '/#/exam/' + this.state.record.id;
+        } else {
+          message.error('请求失败')
+        }
+      })
+      .catch((error) => {
+        message.error('请求失败')
+      });
+  }
+
+  // 查看试卷
+  goToPaper = (participant_id) => {
+    window.location.href = "/#/exam/" + participant_id;
+  }
+
   render() {
     const columns = [
       {
         title: '考试任务',
-        dataIndex: 'name',
+        dataIndex: 'exam_task.name',
         width: '32.4%',
         render: (text, record) => (
           <span>
             {
-              record.is_start ?
-                <span className="text-link" onClick={this.goToPaper}>{text}</span>
-                :
+              record.exam_result === 'pending' ?
                 <span className="text-link" onClick={this.showModal.bind(this, record)}> {text}</span>
+              :
+                <span className="text-link" onClick={this.goToPaper.bind(this, record.participant_id)}>{text}</span>
+
             }
           </span>
         )
       }, {
         title: '发布者',
-        dataIndex: 'creator',
+        dataIndex: 'exam_task.creator',
         width: '10%',
       }, {
         title: '考试期限',
-        dataIndex: 'time',
+        dataIndex: 'exam_task.period_start',
         width: '30.3%',
         render: (text, record) => {
-          return <span>{record.start_time + ' ~ ' + record.end_time}</span>
+          return <span>{record.exam_task.period_start + ' ~ ' + record.exam_task.period_end}</span>
         }
       }, {
         title: '时长',
-        dataIndex: 'consume',
+        dataIndex: 'exam_task.exam_time_limit',
         width: '6.8%',
+        render: (text) => {
+          return <span>{ text }分钟</span>
+        }
       }, {
         title: '总分',
-        dataIndex: 'total_grade',
+        dataIndex: 'exam_task.exampaper_total_grade',
         width: '6.7%',
       }, {
         title: '及格线',
-        dataIndex: 'passing_grade',
+        dataIndex: 'exam_task.exampaper_passing_ratio',
         width: '6.8%',
       }, {
         title: '成绩',
-        dataIndex: 'grade',
+        dataIndex: 'total_grade',
         width: '6.8%',
+        render: (text, record) => {
+          return <span>{ record.task_state === 'finished' ? text : '--'}</span>
+        }
       }
     ];
 
     const beforeStart = this.state.timestamp_start - this.state.timestamp_now;
     const beforeEnd = this.state.timestamp_end - this.state.timestamp_now;
+    const { started, finished, pending, all_count } = this.state;
+    const { exam_task } = this.state.record;
     return (
       <div style={{ width: '100%' }}>
         <Breadcrumb>
@@ -204,11 +271,11 @@ class ManageStudentContainer extends React.Component {
           </Breadcrumb.Item>
         </Breadcrumb>
         <h1 style={{ margin: '25px 0 15px', fontSize: '16px' }}>我的考试</h1>
-        <Tabs activeKey={this.state.tab} onChange={this.tabsChange}>
-          <TabPane tab="考试中(2)" key="1"></TabPane>
-          <TabPane tab="即将开始(1)" key="2"></TabPane>
-          <TabPane tab="已结束(27)" key="3"></TabPane>
-          <TabPane tab="全部(30)" key="4"></TabPane>
+        <Tabs activeKey={this.state.task_state} onChange={this.tabsChange}>
+          <TabPane tab={'考试中(' + started + ')'} key="started"></TabPane>
+          <TabPane tab={'即将开始(' + pending + ')'} key="pending"></TabPane>
+          <TabPane tab={'已结束(' + finished + ')'} key="finished"></TabPane>
+          <TabPane tab={'全部(' + all_count + ')'} key=""></TabPane>
         </Tabs>
         <Table
           columns={columns}
@@ -272,7 +339,7 @@ class ManageStudentContainer extends React.Component {
                 return (
                   <div>
                     <Button onClick={this.hideModal}>暂不考试</Button>
-                    <Button type="primary">开始考试</Button>
+                    <Button type="primary" onClick={this.startExam}>开始考试</Button>
                   </div>
                 )
 
@@ -284,17 +351,17 @@ class ManageStudentContainer extends React.Component {
           }
         >
           <div className="student-modal">
-            <h1>商务管理基础知识</h1>
+            <h1>{ exam_task.name }</h1>
             <p>
-              <span>共20题</span>
-              <span>试卷总分: 100分</span>
-              <span>及格分: 60分</span>
+              <span>共{ exam_task.exampaper_total_problem_num }题</span>
+              <span>试卷总分: { exam_task.exampaper_total_grade }分</span>
+              <span>及格分: { exam_task.exampaper_passing_ratio }分</span>
             </p>
             <p>
-              <span>考试期限: 2016/06/02 10:00 ~ 2017/09-09 10:00</span>
-              <span>答卷时间: 30分钟</span>
+              <span>考试期限: { exam_task.period_start } ~ { exam_task.period_end }</span>
+              <span>答卷时间: { exam_task.exam_time_limit }分钟</span>
             </p>
-            <p className="description">试卷说明：试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明试卷说明</p>
+            <p className="description">试卷说明：{ exam_task.exampaper_description }</p>
             <div style={{ padding: '30px 0 20px' }}>
               {
                 (() => {

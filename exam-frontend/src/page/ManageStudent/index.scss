@@ -11,13 +11,14 @@
   h1{
     font-size: 18px;
   }
-  > span{
+  p > span{
     margin: 0 15px;
   }
   .description{
     color: $note;
     text-align: left;
     margin-top: 20px;
+    line-height: 1.8;
   }
   .count{
     width: 280px;
