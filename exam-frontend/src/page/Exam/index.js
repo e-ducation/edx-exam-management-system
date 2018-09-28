@@ -32,22 +32,24 @@ class ExamContainer extends React.Component {
     // 获取试卷participant_id
     const id = window.location.href.split('/exam/')[1];
 
-
-    /* 1. 考试中，请求成功
-    const res = {
+    /*
+    // 1. 考试中，请求成功
+    const res_started = {
       "status": 0,
       "message": "",
       "data":{
         "participant_id": 1,
-        "task_state": "", //考试状态
-        "current_time": "2018-09-27 14:19:50",//当前时间
+        "task_state": "started", //考试状态
+        "current_time": "2018-09-28 11:00:00",//当前时间
+        "participant_time": "2018-09-28 11:00:00",
+        "hand_in_time":"",
         "exam_task": {
             "id": 3,//考试任务ID
             "name": "运营管理第三次考试", //考试任务名称
             "exampaper_description": "运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3",//考试说明
             "creator": "edx",//发布人
             "period_start": "2018-09-26 18:00:00",//考试开始时间
-            "period_end": "2018-09-27 14:20:00",//考试结束时间
+            "period_end": "2018-09-28 14:20:00",//考试结束时间
             "exam_time_limit": 60,//考试时长
             "exampaper_passing_ratio": 60,//及格线
             "exampaper_total_problem_num": 6,//总问题数
@@ -95,64 +97,10 @@ class ExamContainer extends React.Component {
         ]
       }
     }
-    */
-   axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
-    .then((response) => {
-      const res = response.data;
-      if (res.status === 0) {
-        if (res.data.task_state === 'started'){
-
-          // 1. 正在考试中
-          const { participant_id, task_state, current_time, exam_task, results } = res.data;
-          this.setState({
-            mode: task_state,
-            exam_task,
-            results,
-            timestamp_end: Date.parse(new Date(exam_task.period_end)),
-            timestamp_now: Date.parse(new Date(current_time)),
-            loading: false,
-          }, () => {
-            // 设置倒计时
-            this.timer = setInterval(() => {
-              const { timestamp_end, timestamp_now } = this.state;
-              if (timestamp_now - timestamp_end > -1) {
-                // 自动交卷，清除倒计时
-                clearInterval(this.timer);
-                this.setState({
-                  mode: 'submit_success'
-                })
-                return false;
-              }
-              this.setState({
-                timestamp_now: timestamp_now + 1000,
-              });
-
-              // 倒计时少于0秒，自动交卷
-            }, 1000)
-          });
-          this.participant_id = participant_id;
-        } else if (res.data.task_state === 'finised') {
-
-          // 2. 结束考试
-          this.setState({
-            mode: res.data.task_state,
-            previewData:res.data,
-          })
-        }
-
-      } else {
-        message.error('请求失败');
-      }
-    })
-    .catch((error) => {
-      message.error('请求失败')
-    });
-
-
 
 
     // 考试结束，查看试卷
-    const res = {
+    const res_finished = {
       "status": 0,
       "message": "",
       "data":{
@@ -223,10 +171,92 @@ class ExamContainer extends React.Component {
 
       }
     }
+    const { participant_id, task_state, current_time, participant_time, exam_task, results } = res_started.data;
+    this.setState({
+      mode: task_state,
+      exam_task,
+      results,
+      timestamp_end: Date.parse(new Date(participant_time)) + exam_task.exam_time_limit * 60 * 1000,
+      timestamp_now: Date.parse(new Date(current_time)),
+      loading: false,
+    }, () => {
+      // 设置倒计时
+      this.timer = setInterval(() => {
+        const { timestamp_end, timestamp_now } = this.state;
+        if (timestamp_now - timestamp_end > -1) {
+          // 自动交卷，清除倒计时
+          clearInterval(this.timer);
+          this.setState({
+            mode: 'submit_success'
+          })
+          return false;
+        }
+        this.setState({
+          timestamp_now: timestamp_now + 1000,
+        });
+
+        // 倒计时少于0秒，自动交卷ß
+      }, 1000)
+    });
+    this.participant_id = participant_id;
+
+    */
 
 
+    // 正常请求
+    axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
+    .then((response) => {
+      const res = response.data;
+      if (res.status === 0) {
+        if (res.data.task_state === 'started'){
 
+          // 1. 正在考试中
+          const { participant_id, task_state, current_time, participant_time, exam_task, results } = res.data;
+          this.setState({
+            mode: task_state,
+            exam_task,
+            results,
+            timestamp_end: Date.parse(new Date(participant_time)) + exam_task.exam_time_limit * 60 * 1000,
+            timestamp_now: Date.parse(new Date(current_time)),
+            loading: false,
+          }, () => {
+            // 设置倒计时
+            this.timer = setInterval(() => {
+              const { timestamp_end, timestamp_now } = this.state;
+              if (timestamp_now - timestamp_end > -1) {
+                // 自动交卷，清除倒计时
+                clearInterval(this.timer);
+                this.setState({
+                  mode: 'submit_success'
+                })
+                return false;
+              }
+              this.setState({
+                timestamp_now: timestamp_now + 1000,
+              });
 
+              // 倒计时少于0秒，自动交卷
+            }, 1000)
+          });
+          this.participant_id = participant_id;
+        } else if (res.data.task_state === 'finised') {
+
+          // 2. 结束考试
+          this.setState({
+            mode: res.data.task_state,
+            previewData:res.data,
+          })
+        }
+
+      } else if (res.status === -1 && res.message){
+        message.error('请求失败');
+      } else {
+        message.error('请求失败');
+      }
+    })
+    .catch((error) => {
+      message.error('请求失败')
+    });
 
   }
 
@@ -267,6 +297,20 @@ class ExamContainer extends React.Component {
   setAnswer = (index, val) => {
     let { results, unFillArr } = this.state;
     results[index].answer = val;
+
+    // PUT/PATCH 提交单个题目
+    axios.put('/api/my_exam/exam_task/exam_answers/' + this.state.results[index].id, { answer: this.state.results[index].answer})
+      .then((response) => {
+        const res = response.data;
+        if (res.status === 0) {
+
+        } else {
+          message.error('请求失败')
+        }
+      })
+      .catch((error) => {
+        message.error('请求失败')
+      });
 
 
     // 如果题目边框红色，去掉颜色, unFillArr存储的是
