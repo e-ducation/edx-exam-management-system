@@ -40,7 +40,9 @@ class ExamContainer extends React.Component {
       "data":{
         "participant_id": 1,
         "task_state": "started", //考试状态
-        "current_time": "2018-09-27 14:19:50",//当前时间
+        "current_time": "2018-09-28 11:00:00",//当前时间
+        "participant_time": "2018-09-28 11:00:00",
+        "hand_in_time":"",
         "exam_task": {
             "id": 3,//考试任务ID
             "name": "运营管理第三次考试", //考试任务名称
@@ -169,12 +171,12 @@ class ExamContainer extends React.Component {
 
       }
     }
-    const { participant_id, task_state, current_time, exam_task, results } = res_started.data;
+    const { participant_id, task_state, current_time, participant_time, exam_task, results } = res_started.data;
     this.setState({
       mode: task_state,
       exam_task,
       results,
-      timestamp_end: Date.parse(new Date(exam_task.period_end)),
+      timestamp_end: Date.parse(new Date(participant_time)) + exam_task.exam_time_limit * 60 * 1000,
       timestamp_now: Date.parse(new Date(current_time)),
       loading: false,
     }, () => {
@@ -197,21 +199,24 @@ class ExamContainer extends React.Component {
       }, 1000)
     });
     this.participant_id = participant_id;
+
     */
 
-   axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
+
+    // 正常请求
+    axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
     .then((response) => {
       const res = response.data;
       if (res.status === 0) {
         if (res.data.task_state === 'started'){
 
           // 1. 正在考试中
-          const { participant_id, task_state, current_time, exam_task, results } = res.data;
+          const { participant_id, task_state, current_time, participant_time, exam_task, results } = res.data;
           this.setState({
             mode: task_state,
             exam_task,
             results,
-            timestamp_end: Date.parse(new Date(exam_task.period_end)),
+            timestamp_end: Date.parse(new Date(participant_time)) + exam_task.exam_time_limit * 60 * 1000,
             timestamp_now: Date.parse(new Date(current_time)),
             loading: false,
           }, () => {
@@ -294,7 +299,7 @@ class ExamContainer extends React.Component {
     results[index].answer = val;
 
     // PUT/PATCH 提交单个题目
-    axios.put('/api/my_exam/exam_task/exam_answers/' + this.state.results[index].id, this.state.results[index])
+    axios.put('/api/my_exam/exam_task/exam_answers/' + this.state.results[index].id, { answer: this.state.results[index].answer})
       .then((response) => {
         const res = response.data;
         if (res.status === 0) {
