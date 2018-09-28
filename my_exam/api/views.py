@@ -388,7 +388,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
             'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'exam_task': serializer.data,
             'participate_time': exam_participant.participate_time.replace(tzinfo=pytz.utc).astimezone(
-                    pytz.timezone(settings.TIME_ZONE)).strftime('%Y-%m-%d %H:%M:%S'),
+                pytz.timezone(settings.TIME_ZONE)).strftime('%Y-%m-%d %H:%M:%S'),
             'hand_in_time': exam_participant.hand_in_time
         }
         if exam_participant.task_state == TASK_STATE[2][0]:
