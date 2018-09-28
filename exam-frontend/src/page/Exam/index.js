@@ -22,186 +22,16 @@ class ExamContainer extends React.Component {
     results: [],
     timestamp_end: null,
     timestamp_now: null,
-    loading: false,
+    loading: true,
     /* unFillArr 保存的是 index + 1 */
     unFillArr: [],
     previewData: {},
+    errorMsg: '',
   }
 
   componentDidMount() {
     // 获取试卷participant_id
     const id = window.location.href.split('/exam/')[1];
-
-    /*
-    // 1. 考试中，请求成功
-    const res_started = {
-      "status": 0,
-      "message": "",
-      "data":{
-        "participant_id": 1,
-        "task_state": "started", //考试状态
-        "current_time": "2018-09-28 11:00:00",//当前时间
-        "participant_time": "2018-09-28 11:00:00",
-        "hand_in_time":"",
-        "exam_task": {
-            "id": 3,//考试任务ID
-            "name": "运营管理第三次考试", //考试任务名称
-            "exampaper_description": "运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3",//考试说明
-            "creator": "edx",//发布人
-            "period_start": "2018-09-26 18:00:00",//考试开始时间
-            "period_end": "2018-09-28 14:20:00",//考试结束时间
-            "exam_time_limit": 60,//考试时长
-            "exampaper_passing_ratio": 60,//及格线
-            "exampaper_total_problem_num": 6,//总问题数
-            "exampaper_total_grade": "6.00"//试卷总分
-        },
-        "results": [
-          {
-            "id": 1,
-            "answer": '', //用户答案 多选[0,1,2,3,4]
-            "grade": "0.00", //用户得分
-            "problem_grade": "1.00", //题目分数
-            "sequence": "3", //序号
-            "problem_type": "multiplechoiceresponse", //题目类型
-            "content": {
-              'title': '要坚持无进去、全服的方式打开了就分手了的看法吉林省乐山大佛记录卡士大夫娄底市解放路看到了里是否看电视剧',
-              'descriptions': {},
-              'options': ['1.22', '1.66', '2.34', '3.33', '4.44']
-            },
-          },
-          {
-            "id": 2,
-            "answer": [0], //用户答案 多选[0,1,2,3,4]
-            "grade": "0.00", //用户得分
-            "problem_grade": "1.00", //题目分数
-            "sequence": "3", //序号
-            "problem_type": "choiceresponse", //题目类型
-            "content": {
-              'title': '要坚持无进去、全服的方式打开了就分手了的看法吉林省乐山大佛记录卡士大夫娄底市解放路看到了里是否看电视剧',
-              'descriptions': {},
-              'options': ['1.22', '1.66', '2.34', '3.33', '4.44']
-            },
-          },
-          {
-            "id": 3,
-            "answer":"the correct answer",
-            "problem_id":"yingli+ceshi005+2020+type@problem+block@7655160fbf8d43d09cfe447be3c08e13",
-            "problem_grade":"1.00",
-            "sequence":"0",
-            "problem_type":"stringresponse",
-            "content":{
-              "descriptions":"You can add an optional tip or note related to the prompt like this. ",
-              "title":"Add the question text, or prompt, here. This text is ."
-            }
-          }
-        ]
-      }
-    }
-
-
-    // 考试结束，查看试卷
-    const res_finished = {
-      "status": 0,
-      "message": "",
-      "data":{
-        "participant_id": 1,
-        "task_state": "finished",
-        "current_time": "2018-09-26 11:17:25",
-        "total_grade": 70, // 学生分数
-        "participant_name": "小明",// 考生
-        "exam_task": {
-            "id": 3,//考试任务ID
-            "name": "运营管理第三次考试", //考试任务名称
-            "exampaper_description": "运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3运营管理3",//考试说明
-            "creator": "edx",//发布人
-            "period_start": "2018-09-26 18:00:00",//考试开始时间
-            "period_end": "2018-10-10 18:00:00",//考试结束时间
-            "exam_time_limit": 60,//考试时长
-            "exampaper_passing_ratio": 60,//及格线
-            "exampaper_total_problem_num": 6,//总问题数
-            "exampaper_total_grade": "6.00",//试卷总分
-            "show_answer": true,
-        },
-        "results": [
-          {
-            "id": 1,
-            "answer": '', //用户答案 多选[0,1,2,3,4]
-            "grade": "0.00", //用户得分
-            "problem_grade": "1.00", //题目分数
-            "sequence": "3", //序号
-            "problem_type": "multiplechoiceresponse", //题目类型
-            "content": {
-              'title': '要坚持无进去、全服的方式打开了就分手了的看法吉林省乐山大佛记录卡士大夫娄底市解放路看到了里是否看电视剧',
-              'descriptions': {},
-              'options': ['1.22', '1.66', '2.34', '3.33', '4.44'],
-              'solution':'solution',
-              'answers': [3],
-            },
-          },
-          {
-            "id": 2,
-            "answer": [0], //用户答案 多选[0,1,2,3,4]
-            "grade": "1.00", //用户得分
-            "problem_grade": "1.00", //题目分数
-            "sequence": "3", //序号
-            "problem_type": "choiceresponse", //题目类型
-            "content": {
-              'title': '要坚持无进去、全服的方式打开了就分手了的看法吉林省乐山大佛记录卡士大夫娄底市解放路看到了里是否看电视剧',
-              'descriptions': {},
-              'options': ['1.22', '1.66', '2.34', '3.33', '4.44'],
-              'solution':'solution',
-              'answers': [3],
-            },
-          },
-          {
-            "id": 3,
-            "answer":"the correct answer",
-            "problem_id":"yingli+ceshi005+2020+type@problem+block@7655160fbf8d43d09cfe447be3c08e13",
-            "grade": '0.00',
-            "problem_grade":"1.00",
-            "sequence":"0",
-            "problem_type":"stringresponse",
-            "content":{
-              "descriptions":"You can add an optional tip or note related to the prompt like this. ",
-              "title":"Add the question text, or prompt, here. This text is .",
-              "answers": ['正确答案1', '正确答案2']
-            }
-          }
-        ],
-
-      }
-    }
-    const { participant_id, task_state, current_time, participant_time, exam_task, results } = res_started.data;
-    this.setState({
-      mode: task_state,
-      exam_task,
-      results,
-      timestamp_end: Date.parse(new Date(participant_time)) + exam_task.exam_time_limit * 60 * 1000,
-      timestamp_now: Date.parse(new Date(current_time)),
-      loading: false,
-    }, () => {
-      // 设置倒计时
-      this.timer = setInterval(() => {
-        const { timestamp_end, timestamp_now } = this.state;
-        if (timestamp_now - timestamp_end > -1) {
-          // 自动交卷，清除倒计时
-          clearInterval(this.timer);
-          this.setState({
-            mode: 'submit_success'
-          })
-          return false;
-        }
-        this.setState({
-          timestamp_now: timestamp_now + 1000,
-        });
-
-        // 倒计时少于0秒，自动交卷ß
-      }, 1000)
-    });
-    this.participant_id = participant_id;
-
-    */
-
 
     // 正常请求
     axios.get('/api/my_exam/exam_task/exam_answers?participant_id=' + id)
@@ -209,7 +39,6 @@ class ExamContainer extends React.Component {
       const res = response.data;
       if (res.status === 0) {
         if (res.data.task_state === 'started'){
-
           // 1. 正在考试中
           const { participant_id, task_state, current_time, participant_time, exam_task, results } = res.data;
           this.setState({
@@ -249,16 +78,23 @@ class ExamContainer extends React.Component {
         }
 
       } else if (res.status === -1 && res.message){
-        message.error('请求失败');
+        this.setState({
+          mode: 'error',
+          errorMsg: res.message,
+        })
       } else {
         message.error('请求失败');
       }
+
+      this.setState({
+        loading: false,
+      })
     })
     .catch((error) => {
       message.error('请求失败')
     });
-
   }
+
 
   componentWillUnmount(){
     clearInterval(this.timer)
@@ -543,7 +379,12 @@ class ExamContainer extends React.Component {
                     return <PreviewStudent data={this.state.previewData} />
                   } else if (mode === 'error') {
                     // 4. 错误信息提示框
-
+                    return (
+                      <div className="exam-msg-block">
+                        <i className="iconfont" style={{ fontSize: '120px', color:'#ccd1d9' }}>&#xe636;</i>
+                        <p style={{ marginTop: '30px' }}>{ this.state.errorMsg }</p>
+                      </div>
+                    )
                   }
                 })()
               }
