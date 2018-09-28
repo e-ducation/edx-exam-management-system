@@ -226,7 +226,7 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
         else:
             return Response(response_format(data=[], msg='考试任务不存在'))
 
-    def get_exam_participant(self, exam_participant):
+    def get_exam_task(self, exam_participant):
         """
         获取考试任务信息
         :param participant_id:
