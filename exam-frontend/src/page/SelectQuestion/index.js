@@ -181,6 +181,7 @@ class SelectQuestion extends Component {
           choiceresponse: 0,
           stringresponse: 0,
         }
+        // eslint-disable-next-line
         list.map(data=>{
           counting['multiplechoiceresponse']+= data['multiplechoiceresponse']
           counting['choiceresponse']+= data['choiceresponse']
@@ -397,7 +398,7 @@ class SelectQuestion extends Component {
               </div>
               <ul className="course-list">
                 {
-                  courseList.length == 0 && this.state.courseSearch != '' &&
+                  courseList.length === 0 && this.state.courseSearch !== '' &&
                   <div className="no-search">没有找到与"<span style={{color: '#0692e1'}}>{this.state.courseSearch}</span>"相关的课程</div>
                 }
                 {
@@ -459,11 +460,11 @@ class SelectQuestion extends Component {
               <div style={{padding: '10px',textAlign: 'center'}}>
                 {
                   paperType === 'fixed' ?
-                  <Button type="primary" disabled={sum == 0} onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
+                  <Button type="primary" disabled={sum === 0} onClick={() => {this.fixed.confirm();this.props.setShow(false)}}>
                     选好了
                   </Button>
                   :
-                  <Button type="primary" disabled={sum == 0}  onClick={() => { this.random.confirm();this.props.setShow(false)}}>
+                  <Button type="primary" disabled={sum === 0}  onClick={() => { this.random.confirm();this.props.setShow(false)}}>
                     选好了
                   </Button>
                 }
