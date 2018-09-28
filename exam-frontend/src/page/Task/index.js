@@ -19,7 +19,7 @@ export default class Task extends React.Component {
   componentWillMount() {
     console.log(this.props);
     const { id } = this.props.match.params;
-    if (id != undefined) {
+    if (id !== undefined) {
       this.getTaskDetail(id, () => {
         this.setState({
           id,
@@ -47,40 +47,6 @@ export default class Task extends React.Component {
       }).catch((response) => {
 
       })
-    return;
-    const task = {
-      "id": 29,
-      "name": "考试任务",
-      "exampaper": 1,
-      "exampaper_name": "test",
-      "exampaper_description": "test",
-      "exampaper_create_type": "fixed",
-      "exampaper_passing_ratio": 60,
-      "exampaper_total_problem_num": 1,
-      "exampaper_total_grade": "1.00",
-      "task_state": "pending",
-      "period_start": "2018-09-19T08:02:25.955000Z",
-      "period_end": "2018-09-19T08:02:25.955000Z",
-      "exam_time_limit": 60,
-      "problem_disorder": false,
-      "show_answer": false,
-      "participants": [
-        {
-          email: "ecommerce_worker@example.com",
-          id: 1,
-          username: "ecommerce_worker",
-        },
-        {
-          participant_id: "edx@example.com",
-          id: 2,
-          key: undefined,
-          username: "edx",
-        }
-      ]
-    }
-    this.setState({
-      task,
-    })
   }
   edit = () => {
     this.setState({
