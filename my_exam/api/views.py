@@ -111,12 +111,12 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
     * 搜索，按「考试任务名称」搜索，/api/my_exam/my_exam?ordering=period_start&search=<exam task title>&task_state=pending
     * 权限，只能看到自己的考试任务
     """
-    # authentication_classes = (
-    #     SessionAuthentication,
-    # )
-    # permission_classes = (
-    #     IsAuthenticated,
-    # )
+    authentication_classes = (
+        SessionAuthentication,
+    )
+    permission_classes = (
+        IsAuthenticated,
+    )
 
     serializer_class = MyExamListSerializer
     filter_backends = (filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend,)
@@ -201,66 +201,44 @@ class MyExamViewSet(RetrieveModelMixin, ListModelMixin, CreateModelMixin, Generi
 
     def create(self, request, *args, **kwargs):
         """
-        参加考试
+        参加考试-更新考试时间，更改考试状态
         :param request:
         :param args:
         :param kwargs:
         :return:
         """
         participant_id = request.data['participant_id']
-        exam_participant, exam_task = self.get_exam_participant(participant_id)
+
+        exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
+        if not exam_participant:
+            return Response(response_format(data=[], msg='考试任务不存在'))
+        exam_task = self.get_exam_task(exam_participant)
         if exam_participant and exam_task:
-            if exam_task.exampaper_create_type == PAPER_CREATE_TYPE[0][0]:
-                # 固定考试生成试卷
-                snapshot_list = ExamPaperProblemsSnapShot.objects.filter(exam_task_id=exam_task.id)
-            else:
-                snapshot_list = []
-            with transaction.atomic():
-                for problem in snapshot_list:
-                    exam_participant_answer = ExamParticipantAnswer.objects.filter(
-                        participant=exam_participant,
-                        sequence=problem.sequence,
-                        problem_type=problem.problem_type
-                    ).first()
-                    if exam_participant_answer:
-                        serializer = ExamParticipantAnswerSerializer(ExamParticipantAnswer.objects.filter(participant_id=participant_id), many=True)
-                        return Response(response_format(serializer.data))
-                    else:
-                        ExamParticipantAnswer.objects.create(
-                            participant=exam_participant,
-                            sequence=problem.sequence,
-                            problem_type=problem.problem_type,
-                            content=problem.content,
-                            answer='',
-                            grade=0,
-                            problem_grade=problem.grade,
-                            operate_at=datetime.datetime.now()
-                        )
-                exam_participant.task_state = TASK_STATE[1][0]
+            if not exam_participant.participate_time:
                 exam_participant.participate_time = datetime.datetime.now()
+                # exam_participant.hand_in_time = datetime.datetime.now() + datetime.timedelta(minutes=exam_task.exam_time_limit)
+            if exam_participant.task_state == TASK_STATE[0][0]:
+                exam_participant.task_state = TASK_STATE[1][0]
+            with transaction.atomic():
                 exam_participant.save()
-            serializer = ExamParticipantAnswerSerializer(ExamParticipantAnswer.objects.filter(participant_id=participant_id), many=True)
 
-            return Response(response_format(serializer.data))
+            return Response(response_format(data=[], msg='开始考试'))
         else:
-            return Response(response_format(msg='考试任务不存在'))
+            return Response(response_format(data=[], msg='考试任务不存在'))
 
-    def get_exam_participant(self, participant_id):
+    def get_exam_participant(self, exam_participant):
         """
         获取考试任务信息
         :param participant_id:
         :return:
         """
-        exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
 
-        if not exam_participant:
-            raise
         exam_task_id = exam_participant.exam_task_id
         try:
             exam_task = ExamTask.objects.get(id=exam_task_id)
         except Exception as ex:
             exam_task = None
-        return exam_participant, exam_task
+        return exam_task
 
 
 class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
@@ -298,12 +276,16 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
             participant_id = int(str(self.request.GET.get('participant_id')))
             return ExamParticipantAnswer.objects.filter(participant_id=participant_id)
         except Exception as ex:
-            return ExamParticipantAnswer.objects.filter(participant_id=0)
+            try:
+                pk = int(str(self.kwargs['pk']))
+                return ExamParticipantAnswer.objects.filter(id=pk)
+            except Exception as ex:
+                return []
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        return Response([])
 
     def list(self, request, *args, **kwargs):
         try:
@@ -314,7 +296,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
 
         serializer = self.get_serializer(queryset, many=True)
         if len(serializer.data) == 0:
-            return Response(response_format(data=serializer.data, msg='考试未开始'))
+            return Response(response_format(data=serializer.data, msg='考试不存在', status=-1))
         else:
             exam_participant = ExamParticipant.objects.filter(id=participant_id).first()
             if exam_participant:
@@ -329,25 +311,33 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                     data = self.get_finished_data(serializer)
                     return self.get_return_response(data, **common_info)
                 elif exam_participant.task_state == TASK_STATE[0][0]:
-                    return Response(response_format(data=[], msg='考试未开始'))
+                    return Response(response_format(data=[], msg='考试未开始', status=-1))
                 else:
-                    return Response(response_format(data=[], msg='试卷失效'))
+                    return Response(response_format(data=[], msg='试卷失效', status=-2))
             else:
-                return Response(response_format(data=[], msg='考试未添加参与者'))
+                return Response(response_format(data=[], msg='考试未添加参与者', status=-3))
 
     def update(self, request, *args, **kwargs):
         """
         更新所有
         """
         instance = self.get_object()
-        return super(ExamParticipantAnswerViewSet, self).update(request, args, kwargs)
+        instance.answer = str(request.data['answer'])
+        instance.operate_at = datetime.datetime.now()
+        instance.save()
+
+        return Response(response_format(data=[], msg='作答成功'))
 
     def partial_update(self, request, *args, **kwargs):
         """
         更新部分
         """
         instance = self.get_object()
-        return super(ExamParticipantAnswerViewSet, self).partial_update(request, args, kwargs)
+        instance.answer = str(request.data['answer'])
+        instance.operate_at = datetime.datetime.now()
+        instance.save()
+
+        return Response(response_format(data=[], msg='作答成功'))
 
     def get_serializer(self, *args, **kwargs):
         kwargs['partial'] = True
