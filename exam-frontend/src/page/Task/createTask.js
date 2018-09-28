@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, DatePicker, Switch, Modal, Icon, Table, Select } from 'antd';
+import { Button, Input, DatePicker, Switch, Modal, Icon, Table, Select, message } from 'antd';
 import moment from 'moment';
 import axios from 'axios';
 import Paper from './paper';
@@ -38,7 +38,14 @@ export default class Preview extends React.Component {
     participants: [],
     show_answer: false,
     problem_disorder: false,
-    timeError: false,
+    publishLoading: false,
+    validate: {
+      name: true,
+      time: true,
+      paper: true,
+      participant: true,
+    },
+    modified: '',
   }
   componentWillMount() {
     console.log($().jquery)
@@ -55,11 +62,13 @@ export default class Preview extends React.Component {
         exam_time_limit: task.exam_time_limit,
         period_start: task.period_start,
         period_end: task.period_end,
+        modified: task.modified,
+        modified: task.modified,
         paper: {
           create_type: task.exampaper_create_type,
           creator: "luoqingfu",
           id: task.exampaper,
-          name: "可以可以",
+          name: task.exampaper_name,
           passing_grade: (task.exampaper_total_grade * (task.exampaper_passing_ratio / 100)).toFixed(2),
           problem_statistic: task.problem_statistic,
           total_grade: task.exampaper_total_grade,
@@ -80,33 +89,78 @@ export default class Preview extends React.Component {
   }
   // 选择试卷
   selectPaper = (paper) => {
+    const { validate } = this.state;
+    validate.paper = true;
     this.setState({
       paper,
+      validate,
     })
   }
   // 创建任务
   createTask = () => {
     const params = this.paramsInit();
+    this.setState({
+      publishLoading: true,
+    })
+    if (!this.checkAll()) {
+      this.setState({
+        publishLoading: false,
+      })
+      console.log('123123')
+      return
+    }
     // console.log()
+    const that = this;
     axios.post('/api/examtasks/', params).then((response) => {
       console.log(response)
+      if (response.data.status == 0) {
+        message.success('创建成功')
+        that.props.history.push('/task');
+      } else {
+        message.success('创建失败')
+      }
+      this.setState({
+        publishLoading: false,
+      })
     }).catch((err) => {
       console.log(err)
+      this.setState({
+        publishLoading: false,
+      })
     })
   }
-
   // 修改保存考试任务
   saveTask = () => {
+    this.setState({
+      publishLoading: true,
+    })
+    if (!this.checkAll()) {
+      this.setState({
+        publishLoading: false,
+      })
+      console.log('123123')
+      return
+    }
     const params = this.paramsInit();
     const id = this.props.task.id;
+    const that = this;
     axios.put(`/api/examtasks/${id}/`, params)
       .then((response) => {
         console.log(response)
+        if (response.data.status == 0) {
+          message.success('保存成功')
+          that.props.history.push('/task');
+        } else {
+          message.success('保存失败')
+        }
       })
       .catch((response) => {
-
+        this.setState({
+          publishLoading: false,
+        })
       })
   }
+  // 参数初始化
   paramsInit = () => {
     const { paper, participants, period_start, period_end, exam_time_limit, staff, taskName, show_answer, problem_disorder } = this.state;
     const params = {
@@ -120,11 +174,28 @@ export default class Preview extends React.Component {
       period_end,
       exam_time_limit,
       exampaper_total_problem_num: paper.total_problem_num,
-      participants: participants,
+      participants,
       show_answer,
       problem_disorder,
     }
     return params;
+  }
+  //
+  checkAll = () => {
+    const { validate, paper, taskName, participants, period_start } = this.state;
+    if (validate.name) {
+      validate.name = taskName.length > 0;
+    }
+    if (validate.time) {
+      validate.time = period_start == '' ? false : true;
+    }
+    if (validate.paper) {
+      validate.paper = paper.id == undefined ? false : true;
+    }
+    if (validate.participant) {
+      validate.participant = participants.length > 0;
+    }
+    return (validate.name && validate.time && validate.paper && validate.participant )
   }
   // 获取公司成员列表
   getStaffList = () => {
@@ -184,12 +255,17 @@ export default class Preview extends React.Component {
             const { staff } = this.state;
             if (staff.loading == true) return;
             // if (staff.loading.loading == true)
-            const parentElemBottom = $('.staffModal .ant-table-body')[0].getBoundingClientRect().bottom;
-            const elems = $('.staffModal .ant-table-row');
-            const elemBottom = elems[elems.length - 1].getBoundingClientRect().bottom;
+            try {
+              const parentElemBottom = $('.staffModal .ant-table-body')[0].getBoundingClientRect().bottom;
+              const elems = $('.staffModal .ant-table-row');
+              const elemBottom = elems[elems.length - 1].getBoundingClientRect().bottom;
 
-            if (elemBottom - parentElemBottom < 150) {
-              this.getStaffList();
+              if (elemBottom - parentElemBottom < 150) {
+                this.getStaffList();
+              }
+            } catch (err) {
+              clearInterval(this.timer);
+              console.log('error')
             }
           }, 2000)
         }
@@ -237,22 +313,33 @@ export default class Preview extends React.Component {
       }
     })
   }
-  // 确定选择
+  // 选择参与人员确定选择
   handleOk = () => {
-    const { staff, participants } = this.state;
+    const { staff, participants, validate } = this.state;
     const { list, chosen } = staff;
     const data = [];
+    const exits = participants.map(item => item.username);
+    console.log(chosen, exits)
     list.map(item => {
-      if (chosen.includes(item.id)) data.push(item);
+      if (chosen.includes(item.username) && !exits.includes(item.username)) {
+        data.push(item);
+      }
     });
     staff.visible = false;
-    console.log(data)
+    // 验证
+    if (participants.length == 0 && data.length == 0) {
+      validate.participant = false;
+    } else {
+      validate.participant = true;
+    }
+    console.log(validate, participants, data)
     this.setState({
       staff,
       participants: [
         ...participants,
         ...data,
       ],
+      validate,
     });
     clearInterval(this.timer);
   }
@@ -277,19 +364,21 @@ export default class Preview extends React.Component {
     return current && current < moment().startOf('day');
   }
   // 移除
-  removeSelect = (id) => {
-    console.log(id, 'remove');
-    const { staff, participants } = this.state;
+  removeSelect = (username) => {
+    console.log(username, 'remove');
+    const { staff, participants, validate } = this.state;
     const { chosen } = staff;
-    const newChosen = chosen.filter(x => x != id)
-    const newParticipants = participants.filter(x => x.participant_id != id);
+    const newChosen = chosen.filter(x => x != username)
+    const newParticipants = participants.filter(x => x.username != username);
     // console.log(newChosen, chosen)
+    validate.participant = newParticipants.length > 0;
     this.setState({
       staff: {
         ...staff,
         chosen: newChosen,
       },
       participants: newParticipants,
+      validate,
     })
   }
   // 周期长度
@@ -302,38 +391,50 @@ export default class Preview extends React.Component {
   // 周期长度
   rangeOnChange = (value) => {
     console.log(value);
+    const { exam_time_limit, validate } = this.state;
     if (value.length == 0) {
-      this.setState({
-        period_start: '',
-        period_end: '',
-        timeError: '考试周期不能为空',
-      })
+      validate.time = false,
+        this.setState({
+          period_start: '',
+          period_end: '',
+          timeError: '考试周期不能为空',
+          validate,
+        })
     } else {
       const time = value[1].valueOf() - value[0].valueOf();
-      const min = time / 1000 / 60 ;
-      if (min < 10){
+      const min = time / 1000 / 60;
+      if (min < exam_time_limit) {
+        validate.time = false;
         this.setState({
           timeError: '考试周期不能小于答卷时间'
         })
         console.log('error')
+      } else {
+        validate.time = true;
       }
       this.setState({
         period_start: value[0],
         period_end: value[1],
+        validate,
       })
       console.log(time / 1000 / 60 / 60);
     }
 
   }
-  //
+  // 考试任务名称
   nameOnChange = (e) => {
+    const { validate } = this.state;
+    const taskName = e.target.value;
+    // if (taskName.length <= 0 ) validate.name = false;
+    validate.name = taskName.length <= 0 ? false : true;
     this.setState({
-      taskName: e.target.value,
+      taskName,
+      validate,
     })
     // console.log(e.target.value)
   }
   render() {
-    const { paper, participants, staff } = this.state;
+    const { paper, participants, validate } = this.state;
     const { create, task } = this.props;
     const problem_statistic = paper.problem_statistic || {};
     console.log(create)
@@ -381,7 +482,7 @@ export default class Preview extends React.Component {
       },
       getCheckboxProps: (record) => {
         return ({
-          disabled: participants.map(item => item.participant_id).includes(record.id),
+          disabled: participants.map(item => item.username).includes(record.username),
         })
       }
     };
@@ -414,7 +515,11 @@ export default class Preview extends React.Component {
                     </div>
                   </div>
                   <div className="paper-info">
-                    此试卷为快照，保存于10月1日
+                    {
+                      this.state.modified != '' &&
+                      `此试卷为快照，保存于${moment(this.state.modified).format('YYYY年MM月DD日')}`
+                    }
+
                   </div>
                   <div className="total">
                     <div className="total-block total-top">
@@ -451,10 +556,10 @@ export default class Preview extends React.Component {
                     <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
                     添加试卷
                   </Button>
-                  <div style={{marginTop:' 25px'}} className="task-item error-tips">
+                  <div style={{ marginTop: ' 25px' }} className="task-item error-tips">
                     {
-                      this.state.timeError == false &&
-                      '请输入考试任务名称'
+                      validate.paper == false &&
+                      '请选择考试试卷'
                     }
                   </div>
                 </div>
@@ -483,7 +588,7 @@ export default class Preview extends React.Component {
             <Input value={this.state.taskName} onChange={this.nameOnChange} maxLength={50} style={{ width: '350px' }} placeholder="输入试卷名称，限定50字符" />
             <div className="task-item error-tips">
               {
-                this.state.timeError == false &&
+                validate.name == false &&
                 '请输入考试任务名称'
               }
             </div>
@@ -504,7 +609,7 @@ export default class Preview extends React.Component {
             />
             <div className="task-item error-tips">
               {
-                this.state.timeError == false &&
+                validate.time == false &&
                 '请选择开始与结束时间'
               }
             </div>
@@ -539,7 +644,7 @@ export default class Preview extends React.Component {
                 {
                   participants.map(item => {
                     return (
-                      <span key={item.username} className="staff-block">{item.username} <Icon onClick={this.removeSelect.bind(this, item.participant_id)} style={{ cursor: 'pointer' }} type="close" theme="outlined" /></span>
+                      <span key={item.username} className="staff-block">{item.username} <Icon onClick={this.removeSelect.bind(this, item.username)} style={{ cursor: 'pointer' }} type="close" theme="outlined" /></span>
                     )
                   })
                   // (() => {
@@ -556,6 +661,12 @@ export default class Preview extends React.Component {
                 }
               </div>
             }
+            <div style={{ marginTop: ' 25px' }} className="task-item error-tips">
+              {
+                validate.participant == false &&
+                '请选择参与人员'
+              }
+            </div>
             <Modal
               title={gettext('Add Folder Admins')}
               okText={gettext('Confirm')}
@@ -584,7 +695,7 @@ export default class Preview extends React.Component {
                 locale={{ emptyText: gettext('No Data') }}
                 scroll={{ y: 390 }}
                 size="small"
-                rowKey="id"
+                rowKey="username"
                 loading={this.state.staff.loading}
               />
             </Modal>
@@ -595,7 +706,7 @@ export default class Preview extends React.Component {
             题目排序
           </div>
           <div className="task-item">
-            <Switch onChange={(problem_disorder) => {this.setState({problem_disorder,})}} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.problem_disorder} /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
+            <Switch onChange={(problem_disorder) => { this.setState({ problem_disorder, }) }} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.problem_disorder} /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
           </div>
         </div>
         <div className="task-row">
@@ -603,7 +714,7 @@ export default class Preview extends React.Component {
             查看答案
           </div>
           <div className="task-item">
-            <Switch onChange={(show_answer) => {this.setState({show_answer,})}} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.show_answer} /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
+            <Switch onChange={(show_answer) => { this.setState({ show_answer, }) }} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.show_answer} /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
           </div>
         </div>
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
@@ -615,9 +726,9 @@ export default class Preview extends React.Component {
           }
           {
             create ?
-              <Button onClick={this.createTask} type="primary" style={{ marginLeft: '18px' }}>发布</Button>
+              <Button loading={this.state.publishLoading} onClick={this.createTask} type="primary" style={{ marginLeft: '18px' }}>发布</Button>
               :
-              <Button onClick={this.saveTask} type="primary" style={{ marginLeft: '18px' }}>保存</Button>
+              <Button loading={this.state.publishLoading} onClick={this.saveTask} type="primary" style={{ marginLeft: '18px' }}>保存</Button>
           }
         </div>
       </div>
