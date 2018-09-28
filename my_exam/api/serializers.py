@@ -111,7 +111,7 @@ class ExamParticipantAnswerSerializer(serializers.ModelSerializer, ExamParticipa
         participant_id
     """
     content = serializers.JSONField(required=True)
-    answer = serializers.SerializerMethodField()
+    # answer = serializers.SerializerMethodField()
 
     class Meta:
         model = ExamParticipantAnswer
