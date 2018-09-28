@@ -283,7 +283,7 @@ export default class TextTask extends React.Component {
         loading={this.state.loading}
         title={() =>
           <div>
-            <Button type="primary" href="/#/"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
+            <Button type="primary" href="/#/createTask"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
 
             {
               this.state.list.length < 1 ?

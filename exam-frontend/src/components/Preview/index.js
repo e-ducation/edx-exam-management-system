@@ -18,6 +18,10 @@ export default class PreviewContainer extends React.Component {
     passing_grade: null,
     description: '',
     problems: [],
+    multiplechoiceresponse_count: 0,
+    choiceresponse_count: 0,
+    stringresponse_count: 0,
+    passing_ratio: 60,
     loading: true,
     isStatistics: false,
     isEdit: false,
@@ -56,6 +60,8 @@ export default class PreviewContainer extends React.Component {
     const id = window.location.href.split('/preview/')[1];
 
     const that = this;
+
+    console.log(typeof id);
     if (id === 'storage') {
       const { description, name, passing_grade, problems, total_grade, total_problem_num } = JSON.parse(localStorage.getItem('paper'));
       this.setState({
@@ -81,20 +87,88 @@ export default class PreviewContainer extends React.Component {
         })
         .catch((error) => {
         })
+
+      return false;
     }
 
     // 2. 编辑时候
     if (id.split('/')[0] === "edit") {
 
       //获取数据
-      axios.get('/api/' + id + '/')
+      axios.get('/api/examtasks/' + id.split('/')[1] + '/preview/')
         .then((res) => {
-          this.setState({
-            isStatistics: true,
-          })
+          let response = res.data.data;
+          console.log(response);
+
+          if (response.exampaper_create_type === "fixed") {
+            this.setState({
+              name: response.name,
+              passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade)) * 0.01,
+              problems: response.problems,
+              total_grade: response.exampaper_total_grade,
+              total_problem_num: response.exampaper_total_problem_num,
+              description: response.exampaper_description,
+              loading: false,
+              isEdit: true,
+              answerShow: true,
+              isRandom: false
+            })
+          }
+          else {
+
+
+            let sectionID = [];
+
+            response.subject.map(item => {
+              sectionID.push(item.id);
+            })
+
+            axios.post('/api/sections/problems/count/', {
+              section_ids: sectionID
+            })
+              .then(res => {
+
+                let response2 = [];
+                response.subject.map((item, index) => {
+
+                  response2.push(Object.assign({}, item,
+                    {
+                      choiceresponse: res.data.data[index].choiceresponse,
+                      multiplechoiceresponse: res.data.data[index].multiplechoiceresponse,
+                      stringresponse: res.data.data[index].stringresponse
+                    }))
+                })
+
+                console.log(response2);
+
+                this.setState({
+                  name: response.name,
+                  passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade)) * 0.01,
+                  problems: response2,
+                  total_grade: response.exampaper_total_grade,
+                  total_problem_num: response.exampaper_total_problem_num,
+                  description: response.exampaper_description,
+                  multiplechoiceresponse_count: response.problem_statistic.multiplechoiceresponse_count,
+                  choiceresponse_count: response.problem_statistic.choiceresponse_count,
+                  stringresponse_count: response.problem_statistic.stringresponse_count,
+                  passing_ratio: response.exampaper_passing_ratio,
+                  loading: false,
+                  isRandom: true,
+                })
+
+              })
+              .catch(error => {
+
+              })
+
+
+
+          }
+
         })
         .catch((error) => {
         })
+      return false;
     }
 
     // 3.
@@ -167,6 +241,7 @@ export default class PreviewContainer extends React.Component {
     // multiplechoiceresponse 单选题
     // choiceresponse         多选题
     // stringresponse         填空题
+
     const { name, passing_grade, problems, total_grade, total_problem_num, description, loading } = this.state;
 
     const border = {
@@ -196,6 +271,7 @@ export default class PreviewContainer extends React.Component {
                   (
                     () => {
                       if (this.state.isStatistics === false && this.state.isEdit === true) {
+
                         return (
                           <div style={{ textAlign: 'right', marginBottom: '20px' }}>
                             {
@@ -208,10 +284,12 @@ export default class PreviewContainer extends React.Component {
                           </div>
                         )
                       }
-                      else if (this.state.isStatistics === true && this.state.isEdit === false) {
+
+                      if (this.state.isStatistics === true && this.state.isEdit === false) {
                         return null
                       }
-                      else {
+
+                      if (this.state.isStatistics === false && this.state.isEdit === false) {
 
                         if (this.state.isStudent) {
                           return null;
@@ -220,6 +298,7 @@ export default class PreviewContainer extends React.Component {
                           return null;
                         }
                         else {
+
                           return (
                             <div style={{ textAlign: 'right', marginBottom: '20px' }}>
                               <Button onClick={this.setPrinting.bind(this, true)}>打印试卷</Button>
@@ -348,67 +427,68 @@ export default class PreviewContainer extends React.Component {
                     <p style={{ marginTop: '18px', marginBottom: '10px' }}>抽题规则</p>
 
                     <div>
-
-                      <div className="random-exam" style={{ marginBottom: '10px' }}>
-                        <div className="courseName">
-                          <span className="examtype-name">名字</span>
-                        </div>
-                        <ul className="question-type">
-                          <li className="type">单选题</li>
-                          <li className="question-addnumber">共<a></a>题</li>
-                          <li className="question-number">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>抽题数目</span>
-
-
-                            </div>
-                          </li>
-                          <li className="question-score">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>单题分数</span>
-                            </div>
-                          </li>
-                        </ul>
-                        <ul className="question-type">
-                          <li className="type">多选题</li>
-                          <li className="question-addnumber">共<a>222</a>题</li>
-                          <li className="question-number">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>抽题数目</span>
+                      {
+                        this.state.problems.map((item, index) => {
+                          return (
+                            <div className="random-exam" style={{ marginBottom: '10px' }} key={item.id}>
+                              <div className="courseName">
+                                <span className="examtype-name">{item.name}</span>
+                              </div>
+                              <ul className="question-type">
+                                <li className="type">单选题</li>
+                                <li className="question-addnumber">共<a>{item.multiplechoiceresponse}</a>题</li>
+                                <li className="question-number">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>抽题数目<a>{item.multiplechoiceresponseNumber}</a></span>
 
 
-
-                            </div>
-                          </li>
-                          <li className="question-score">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>单题分数</span>
+                                  </div>
+                                </li>
+                                <li className="question-score">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>单题分数<a>{item.multiplechoiceresponseGrade}</a></span>
+                                  </div>
+                                </li>
+                              </ul>
+                              <ul className="question-type">
+                                <li className="type">多选题</li>
+                                <li className="question-addnumber">共<a>{item.choiceresponse}</a>题</li>
+                                <li className="question-number">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>抽题数目<a>{item.choiceresponseNumber}</a></span>
 
 
 
-                            </div>
-                          </li>
-                        </ul>
-                        <ul className="question-type">
-                          <li className="type">填空题</li>
-                          <li className="question-addnumber">共<a>555</a>题</li>
-                          <li className="question-number">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>抽题数目</span>
+                                  </div>
+                                </li>
+                                <li className="question-score">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>单题分数<a>{item.choiceresponseGrade}</a></span>
+                                  </div>
+                                </li>
+                              </ul>
+                              <ul className="question-type">
+                                <li className="type">填空题</li>
+                                <li className="question-addnumber">共<a>{item.stringresponse}</a>题</li>
+                                <li className="question-number">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>抽题数目<a>{item.stringresponseNumber}</a></span>
 
 
-                            </div>
-                          </li>
-                          <li className="question-score">
-                            <div>
-                              <span style={{ marginRight: '30px' }}>单题分数</span>
+                                  </div>
+                                </li>
+                                <li className="question-score">
+                                  <div>
+                                    <span style={{ marginRight: '30px' }}>单题分数<a>{item.stringresponseGrade}</a></span>
 
-                            </div>
-                          </li>
-                        </ul>
-                      </div>
+                                  </div>
+                                </li>
+                              </ul>
+                            </div>)
+                        })
+                      }
                     </div>
-                    {/* 提醒统计 */}
+                    {/* 题型统计 */}
                     <div>
                       <div className="total">
                         <div className="total-block total-top">
@@ -419,22 +499,22 @@ export default class PreviewContainer extends React.Component {
                         </div>
                         <div className="total-block">
                           <span className="first-span">已选数量</span>
-                          <span className="number">1</span>
-                          <span className="number">1</span>
-                          <span className="number">1</span>
+                          <span className="number">{this.state.multiplechoiceresponse_count}</span>
+                          <span className="number">{this.state.choiceresponse_count}</span>
+                          <span className="number">{this.state.stringresponse_count}</span>
                         </div>
                         <div className="pass-per">
                           <div>
-                            <span>总题数：100</span>
-                            <span>总分：100</span>
+                            <span>总题数：<a style={{ cursor: 'not-allowed' }}>{this.state.total_problem_num}</a></span>
+                            <span>总分：<a style={{ cursor: 'not-allowed' }}>{this.state.total_grade}</a></span>
                             <span>
                               <span style={{ marginRight: '6px' }}>及格线*</span>
-                              60
+                              {this.state.passing_ratio}
                               <span style={{ marginLeft: '6px' }}>%</span>
 
                             </span>
                             {/* <span>（及格分{(this.props.sum * this.state.paperpass * 0.01).toFixed('2')}=总分{this.props.sum}分*及格线{this.state.paperpass}%）</span> */}
-                            <span>(及格分60=总分100分*及格线60%)</span>
+                            <span>(及格分{this.state.passing_grade}=总分{this.state.total_grade}分*及格线{this.state.passing_ratio}%)</span>
                           </div>
                         </div>
 

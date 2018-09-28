@@ -310,8 +310,8 @@ export default class Preview extends React.Component {
       })
     } else {
       const time = value[1].valueOf() - value[0].valueOf();
-      const min = time / 1000 / 60 ;
-      if (min < 10){
+      const min = time / 1000 / 60;
+      if (min < 10) {
         this.setState({
           timeError: '考试周期不能小于答卷时间'
         })
@@ -331,6 +331,14 @@ export default class Preview extends React.Component {
       taskName: e.target.value,
     })
     // console.log(e.target.value)
+  }
+  //预览试卷
+
+  previewPaper = () => {
+
+    let id = this.props.id;
+    window.open('/#/preview/edit/' + id);
+
   }
   render() {
     const { paper, participants, staff } = this.state;
@@ -407,7 +415,7 @@ export default class Preview extends React.Component {
                         <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe66d;</i>
                         更换试卷
                       </Button>
-                      <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary">
+                      <Button style={{ position: "absolute", top: '-10px', marginLeft: '140px' }} type="primary" onClick={this.previewPaper}>
                         <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
                         预览试卷
                       </Button>
@@ -451,7 +459,7 @@ export default class Preview extends React.Component {
                     <i className="iconfont" style={{ fontSize: '14px', marginRight: '5px' }}>&#xe62f;</i>
                     添加试卷
                   </Button>
-                  <div style={{marginTop:' 25px'}} className="task-item error-tips">
+                  <div style={{ marginTop: ' 25px' }} className="task-item error-tips">
                     {
                       this.state.timeError == false &&
                       '请输入考试任务名称'
@@ -595,7 +603,7 @@ export default class Preview extends React.Component {
             题目排序
           </div>
           <div className="task-item">
-            <Switch onChange={(problem_disorder) => {this.setState({problem_disorder,})}} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.problem_disorder} /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
+            <Switch onChange={(problem_disorder) => { this.setState({ problem_disorder, }) }} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.problem_disorder} /><span style={{ marginLeft: '15px' }}>开启以后题目顺序将随机打乱</span>
           </div>
         </div>
         <div className="task-row">
@@ -603,7 +611,7 @@ export default class Preview extends React.Component {
             查看答案
           </div>
           <div className="task-item">
-            <Switch onChange={(show_answer) => {this.setState({show_answer,})}} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.show_answer} /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
+            <Switch onChange={(show_answer) => { this.setState({ show_answer, }) }} checkedChildren="开" unCheckedChildren="关" defaultChecked={this.state.show_answer} /><span style={{ marginLeft: '15px' }}>说明：默认不开启，即考生考试完毕后提交答案无答案查看。开启后即考生考试完毕后，有答案供其查看</span>
           </div>
         </div>
         <div style={{ textAlign: 'center', marginTop: '30px' }}>
