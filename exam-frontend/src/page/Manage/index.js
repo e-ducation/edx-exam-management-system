@@ -27,7 +27,6 @@ class ManageContainer extends React.Component {
 
   componentDidMount() {
     this.getList();
-
   }
 
   // 1.1 试卷列表
