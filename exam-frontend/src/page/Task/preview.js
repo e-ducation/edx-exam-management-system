@@ -4,8 +4,8 @@ import moment from 'moment';
 export default class Preview extends React.Component {
   render() {
     const { task } = this.props;
-    const { problem_statistic ={} } = task;
-    console.log( problem_statistic)
+    const { problem_statistic = {}, modified = '' } = task;
+    console.log(problem_statistic, task.modified)
     return (
       <div className="task-content">
         <div className="task-row">
@@ -15,7 +15,10 @@ export default class Preview extends React.Component {
           <div className="task-item">
             <div>{task.exampaper_name} <Button style={{ position: "absolute", top: '-10px', marginLeft: '30px' }} type="primary">预览试卷</Button></div>
             <div className="paper-info">
-              此试卷为快照，保存于10月1日
+              {
+                task.modified != undefined &&  task.modified != '' &&
+                `此试卷为快照，保存于${moment(task.modified).format('YYYY年MM月DD日 HH时mm分')}`
+              }
             </div>
             <div className="total">
               <div className="total-block total-top">
