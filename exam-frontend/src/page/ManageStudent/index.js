@@ -13,6 +13,7 @@ class ManageStudentContainer extends React.Component {
   constructor(props) {
     super(props);
     this.timer = null;
+    this.searchAjax = null;
   }
 
   state = {
@@ -50,15 +51,29 @@ class ManageStudentContainer extends React.Component {
   // 1.1 获取试卷列表
   getList = () => {
     const { task_state, pageCurrent, pageSize, search } = this.state;
-    axios.get('/api/my_exam/my_exam/', {
+    const CancelToken = axios.CancelToken;
+    const that = this;
+
+    if (this.searchAjax) {
+      this.searchAjax();
+    }
+
+    clearInterval(this.timer);
+    this.setState({
+      loading: true,
+    }, () => {
+      axios.get('/api/my_exam/my_exam/', {
         params: {
           task_state,
           search,
           page: pageCurrent,
           page_size: pageSize,
-        }
-      })
-      .then((response) => {
+        },
+        cancelToken: new CancelToken(function executor(c) {
+          // An executor function receives a cancel function as a parameter
+          that.searchAjax = c
+        })
+      }).then((response) => {
         const res = response.data;
 
         if (res.status === 0){
@@ -70,6 +85,7 @@ class ManageStudentContainer extends React.Component {
             all_count: res.data.all_count,
             pageTotal: res.data.count,
             timestamp_now: Date.parse(new Date(res.data.current_time)),
+            loading: false,
           }, () => {
             clearInterval(this.timer);
             // 设置倒计时
@@ -84,9 +100,11 @@ class ManageStudentContainer extends React.Component {
         }
       })
       .catch((error) => {
-        message.error('请求失败')
+        that.setState({
+          loading: false,
+        })
       });
-
+    })
   }
 
   componentWillUnmount() {
@@ -115,7 +133,6 @@ class ManageStudentContainer extends React.Component {
   // 1.4 搜索试卷
   onChangeSearch = (e) => {
     this.setState({
-      pageSize: this.state.pageSize,
       pageCurrent: 1,
       search: e.target.value,
     }, () => {
@@ -169,7 +186,7 @@ class ManageStudentContainer extends React.Component {
       .then((response) => {
         const res = response.data;
         if (res.status === 0){
-         window.location.href = '/#/examing/' + this.state.record.participant_id;
+         window.location.href = '/#/exam/' + this.state.record.participant_id;
         } else {
           message.error('请求失败')
         }
@@ -181,7 +198,7 @@ class ManageStudentContainer extends React.Component {
 
   // 查看试卷
   goToPaper = (participant_id) => {
-    window.location.href = "/#/examing/" + participant_id;
+    window.location.href = "/#/exam/" + participant_id;
   }
 
   render() {
