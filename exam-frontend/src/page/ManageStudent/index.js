@@ -182,11 +182,11 @@ class ManageStudentContainer extends React.Component {
 
   // 开始考试
   startExam = () =>{
-    axios.post('/api/my_exam/my_exam/', {'participant_id' : this.state.record.participant_id})
+    axios.post('/api/my_exam/my_exam/', {'participant_id' : this.state.record.id})
       .then((response) => {
         const res = response.data;
         if (res.status === 0){
-         window.location.href = '/#/exam/' + this.state.record.participant_id;
+         window.location.href = '/#/exam/' + this.state.record.id;
         } else {
           message.error('请求失败')
         }
