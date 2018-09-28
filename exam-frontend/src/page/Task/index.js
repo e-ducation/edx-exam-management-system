@@ -136,7 +136,7 @@ export default class Task extends React.Component {
                   <Preview task={task} />
                   :
                   <div>
-                    <CreateTask task={task} create={create} goback={() => { this.setState({ preview: true }) }} />
+                    <CreateTask task={task} history={this.props.history} create={create} goback={() => { this.setState({ preview: true }) }} />
                     {/* {
                       create === false &&
                       <Button onClick={() => { this.setState({ preview: true }) }}>
