@@ -322,9 +322,8 @@ class ExamTaskSerializer(serializers.ModelSerializer):
 class ExamTaskPaperPreviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamTask
-        fields = ('name', 'exampaper_total_grade', 'exampaper_total_problem_num',
-                  'exampaper_passing_ratio', 'exampaper_description',
-                  'problem_statistic', )
+        fields = ('name', 'exampaper_total_grade', 'exampaper_total_problem_num', 'exampaper_passing_ratio',
+                  'exampaper_description', 'exampaper_create_type', 'problem_statistic', )
 
 
 class ExamPaperProblemsSnapShotSerializer(serializers.ModelSerializer):
