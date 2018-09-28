@@ -46,6 +46,7 @@ THIRD_PART_APPS = [
     'social_django',
     'corsheaders',
     'drf_yasg',
+    'django_filters'
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PART_APPS
@@ -206,7 +207,7 @@ SWAGGER_SETTINGS = {
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS':
-        'exam_paper.pageinations.FormatPageNumberPagination',
-    'PAGE_SIZE': 10
+    'DEFAULT_PAGINATION_CLASS': 'exam_paper.pageinations.FormatPageNumberPagination',
+    'PAGE_SIZE': 10,
+    'EXCEPTION_HANDLER': 'exam_paper.exception_handler.custom_exception_handler'
 }
