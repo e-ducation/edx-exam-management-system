@@ -29,7 +29,7 @@ def custom_exception_handler(exc, context):
     Any unhandled exceptions may return `None`, which will cause a 500 error
     to be raised.
     """
-    
+
     if isinstance(exc, exceptions.APIException):
         headers = {}
         if getattr(exc, 'auth_header', None):
