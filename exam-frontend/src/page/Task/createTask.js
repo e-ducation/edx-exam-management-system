@@ -399,16 +399,9 @@ export default class Preview extends React.Component {
     } else {
       const time = value[1].valueOf() - value[0].valueOf();
       const min = time / 1000 / 60;
-<<<<<<< HEAD
-      if (min < 10) {
-        this.setState({
-          timeError: '考试周期不能小于答卷时间'
-        })
-=======
       if (min < exam_time_limit) {
         validate.timeError = '考试周期不能小于答卷时间';
         validate.time = false;
->>>>>>> master
         console.log('error')
       } else if (min > 7 * 24 * 60) {
         validate.timeError = '考试周期不能大于7天';
