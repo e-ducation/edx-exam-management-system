@@ -19,7 +19,7 @@ from rest_framework.views import set_rollback
 from exam_paper.utils import response_format
 
 
-def customer_exception_handler(exc, context):
+def custom_exception_handler(exc, context):
     """
     Returns the response that should be used for any given exception.
 
@@ -29,12 +29,7 @@ def customer_exception_handler(exc, context):
     Any unhandled exceptions may return `None`, which will cause a 500 error
     to be raised.
     """
-    # if isinstance(exc, exceptions.PermissionDenied):
-    #     return Response(response_format(success=False,
-    #                                   code=code.PERMISSION_DENIED,
-    #                                   msg=_('Permission denied.')),
-    #                     status=status.HTTP_403_FORBIDDEN)
-
+    
     if isinstance(exc, exceptions.APIException):
         headers = {}
         if getattr(exc, 'auth_header', None):
