@@ -26,7 +26,6 @@ TASK_STATE = (
     ('pending', 'pending'),
     ('started', 'started'),
     ('finished', 'finished'),
-    ('unavailable', 'unavailable'),
 )
 
 EXAM_RESULT = (
