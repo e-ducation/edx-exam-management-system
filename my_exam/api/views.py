@@ -299,6 +299,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         if exam_participant.task_state == TASK_STATE[1][0]:
             problems = ExamParticipantAnswerSerializer(request.data['problems'])
             exam_participant_answers = ExamParticipantAnswer.objects.filter()
+            total_grade = 0
             with transaction.atomic():
                 for problem in problems.instance:
                     exam_participant_answer = exam_participant_answers.filter(id=str(problem['id'])).first()
@@ -306,9 +307,10 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
                         exam_participant_answer.answer = str(problem['answer'])
                         # 计算分数
                         exam_participant_answer.grade = self.calculating_score(exam_participant_answer)
+                        total_grade += exam_participant_answer.grade
                         exam_participant_answer.save()
                 exam_participant.task_state = TASK_STATE[2][0]
-                exam_participant.exam_result = EXAM_RESULT[1][0]
+                exam_participant.exam_result = self.get_exam_reuslt(exam_participant, total_grade)
                 exam_participant.save()
         else:
             return Response(response_format(data=[], msg='只有考试中的试卷允许提交'))
@@ -385,6 +387,7 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         common_info = {
             'participant_id': exam_participant.id,
             'task_state': exam_participant.task_state,
+            'user_name': exam_participant.participant.username or '',
             'current_time': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
             'exam_task': serializer.data,
             'participate_time': exam_participant.participate_time.replace(tzinfo=pytz.utc).astimezone(
@@ -392,7 +395,23 @@ class ExamParticipantAnswerViewSet(RetrieveModelMixin, ListModelMixin,
         }
         if exam_participant.task_state == TASK_STATE[2][0]:
             common_info['total_grade'] = exam_participant.total_grade
+            common_info['exam_result'] = exam_participant.exam_result
         return common_info
+
+    def get_exam_reuslt(self, exam_participant, total_grade):
+        """
+        获得考试是否通过
+        :param exam_participant:
+        :param total_grade:
+        :return:
+        """
+        exam_task = exam_participant.exam_task
+        passing_ratio_grade = (exam_task.exampaper_total_grade * exam_task.exampaper_passing_ratio) / 100
+
+        if passing_ratio_grade > total_grade:
+            return EXAM_RESULT[1][0]
+        else:
+            return EXAM_RESULT[0][0]
 
     def get_return_response(self, data, **kwargs):
         """
