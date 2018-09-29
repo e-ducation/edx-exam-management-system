@@ -41,7 +41,8 @@ $blue_active: #1da6f3;
 .pendingIconGroup{
   .iconfont{
     &:hover{
-      color:$font !important;
+      color:$blue_hover !important;
     }
   }
 }
+

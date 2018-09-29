@@ -248,7 +248,9 @@ export default class TextTask extends React.Component {
                     <span className="diaplayIcon">
                       <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
 
-                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }}>&#xe642;</i>
+                      <Tooltip title="统计">
+                        <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                      </Tooltip>
 
                       <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
                     </span>
@@ -262,27 +264,32 @@ export default class TextTask extends React.Component {
                         <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
                       </Tooltip>
 
-                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }} >&#xe642;</i>
+                      <Tooltip title="统计">
+                        <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                      </Tooltip>
 
                       <Tooltip title="删除">
                         <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
                       </Tooltip>
                     </span>
+
                   )
                 }
 
                 if (record.task_state === "finished") {
-                  <span className="textIconGroup">
-                    <Tooltip title="编辑">
-                      <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
-                    </Tooltip>
-                    <Tooltip title="统计">
-                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
-                    </Tooltip>
-                    <Tooltip title="删除">
-                      <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
-                    </Tooltip>
-                  </span>
+                  return (
+                    <span className="diaplayIcon">
+
+                      <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
+
+                      <Tooltip title="统计">
+                        <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                      </Tooltip>
+                      <Tooltip title="删除">
+                        <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+                      </Tooltip>
+                    </span>
+                  )
                 }
               })()
             }
