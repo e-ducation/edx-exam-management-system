@@ -793,10 +793,12 @@ class ExamParticipantViewSet(ListModelMixin, GenericViewSet):
             total_grade = float(paper.exampaper_total_grade)
             paper_datail['passing_grade'] = '%.2f' % (ratio * total_grade)
             paper_datail['type'] = paper.exampaper_create_type
+            paper_datail['task_state'] = paper.task_state
         except Exception as ex:
             paper_datail['task_name'] = ''
             paper_datail['passing_grade'] = '0.00'
             paper_datail['type'] = ''
+            paper_datail['task_state']
         num_of_people.update(**paper_datail)
         return num_of_people
 
