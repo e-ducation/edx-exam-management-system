@@ -87,7 +87,7 @@ class ExamPaperListSerializer(serializers.ModelSerializer, ExamPaperMixin):
 
     class Meta:
         model = ExamPaper
-        fields = ('id', 'name', 'create_type', 'total_problem_num',
+        fields = ('id', 'name', 'create_type', 'total_problem_num', 'description',
                   'total_grade', 'passing_grade', 'creator', 'problem_statistic')
 
 
