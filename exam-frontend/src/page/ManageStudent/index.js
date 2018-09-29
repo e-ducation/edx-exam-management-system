@@ -1,5 +1,5 @@
 import React from 'react';
-import { Icon, Tooltip, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal, Tabs } from 'antd';
+import { Icon, Table, Input, Breadcrumb, Button, Pagination, Select, message, Modal, Tabs } from 'antd';
 import Footer from '../../components/Footer';
 import HeaderStudent from '../../components/HeaderStudent';
 import axios from 'axios';
@@ -76,7 +76,7 @@ class ManageStudentContainer extends React.Component {
       }).then((response) => {
         const res = response.data;
 
-        if (res.status === 0){
+        if (res.status === 0) {
           this.setState({
             list: res.data.results,
             started: res.data.started,
@@ -99,11 +99,11 @@ class ManageStudentContainer extends React.Component {
           message.error('请求失败')
         }
       })
-      .catch((error) => {
-        that.setState({
-          loading: false,
-        })
-      });
+        .catch((error) => {
+          that.setState({
+            loading: false,
+          })
+        });
     })
   }
 
@@ -181,12 +181,12 @@ class ManageStudentContainer extends React.Component {
   }
 
   // 开始考试
-  startExam = () =>{
-    axios.post('/api/my_exam/my_exam/', {'participant_id' : this.state.record.id})
+  startExam = () => {
+    axios.post('/api/my_exam/my_exam/', { 'participant_id': this.state.record.id })
       .then((response) => {
         const res = response.data;
-        if (res.status === 0){
-         window.location.href = '/#/exam/' + this.state.record.id;
+        if (res.status === 0) {
+          window.location.href = '/#/exam/' + this.state.record.id;
         } else {
           message.error('请求失败')
         }
@@ -212,7 +212,7 @@ class ManageStudentContainer extends React.Component {
             {
               record.task_state === 'pending' ?
                 <span className="text-link" onClick={this.showModal.bind(this, record)}> {text}</span>
-              :
+                :
                 <span className="text-link" onClick={this.goToPaper.bind(this, record.id)}>{text}</span>
 
             }
@@ -234,7 +234,7 @@ class ManageStudentContainer extends React.Component {
         dataIndex: 'exam_task.exam_time_limit',
         width: '6.8%',
         render: (text) => {
-          return <span>{ text }分钟</span>
+          return <span>{text}分钟</span>
         }
       }, {
         title: '总分',
@@ -249,7 +249,7 @@ class ManageStudentContainer extends React.Component {
         dataIndex: 'total_grade',
         width: '6.8%',
         render: (text, record) => {
-          return <span>{ record.task_state === 'finished' ? text : '--'}</span>
+          return <span>{record.task_state === 'finished' ? text : '--'}</span>
         }
       }
     ];
@@ -351,17 +351,17 @@ class ManageStudentContainer extends React.Component {
           }
         >
           <div className="student-modal">
-            <h1>{ exam_task.name }</h1>
+            <h1>{exam_task.name}</h1>
             <p>
-              <span>共{ exam_task.exampaper_total_problem_num }题</span>
-              <span>试卷总分: { exam_task.exampaper_total_grade }分</span>
-              <span>及格分: { exam_task.exampaper_passing_ratio }分</span>
+              <span>共{exam_task.exampaper_total_problem_num}题</span>
+              <span>试卷总分: {exam_task.exampaper_total_grade}分</span>
+              <span>及格分: {exam_task.exampaper_passing_ratio}分</span>
             </p>
             <p>
-              <span>考试期限: { exam_task.period_start } ~ { exam_task.period_end }</span>
-              <span>答卷时间: { exam_task.exam_time_limit }分钟</span>
+              <span>考试期限: {exam_task.period_start} ~ {exam_task.period_end}</span>
+              <span>答卷时间: {exam_task.exam_time_limit}分钟</span>
             </p>
-            <p className="description">试卷说明：{ exam_task.exampaper_description }</p>
+            <p className="description">试卷说明：{exam_task.exampaper_description}</p>
             <div style={{ padding: '30px 0 20px' }}>
               {
                 (() => {

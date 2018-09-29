@@ -89,6 +89,7 @@ class EditContainerReducer extends React.Component {
     let fixPaper = this.props.fixHasNumArr;
 
     //是否有分值
+    // eslint-disable-next-line
     fixPaper.map(item => {
       if (item.grade === undefined) {
         this.warningGrade();
@@ -197,7 +198,7 @@ class EditContainerReducer extends React.Component {
           let data = res.data.data
 
           const fetchData = {}
-
+          // eslint-disable-next-line
           data.problems.map((item, index) => {
             const { problem_id, problem_type, content } = item;
             fetchData[problem_id] = {
@@ -441,7 +442,7 @@ const mapStateToProps = (state) => {
 
   let sum = 0;
 
-
+  // eslint-disable-next-line
   fixHasNumArr.map(item => {
 
     sum += parseFloat(item.grade);
