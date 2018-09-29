@@ -150,7 +150,6 @@ export default class TextTask extends React.Component {
         axios.delete('/api/examtasks/' + id + '/')
           .then((response) => {
 
-            const res = response.data;
             message.success('删除成功');
             this.getList();
 
@@ -243,27 +242,51 @@ export default class TextTask extends React.Component {
         render: (text, record, index) => (
           <span>
             {
-              record.task_state == "started" ?
-                <span className="diaplayIcon">
-                  <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
+              (() => {
+                if (record.task_state === "started") {
+                  return (
+                    <span className="diaplayIcon">
+                      <Icon disabled type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px', cursor: 'not-allowed' }} />
 
-                  <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }}>&#xe642;</i>
+                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }}>&#xe642;</i>
 
-                  <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
-                </span>
-                :
-                <span className="textIconGroup">
-                  <Tooltip title="编辑">
-                    <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
-                  </Tooltip>
-                  <Tooltip title="统计">
-                    <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
-                  </Tooltip>
-                  <Tooltip title="删除">
-                    <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
-                  </Tooltip>
-                </span>
+                      <Icon disabled type="delete" className="icon-red" style={{ fontSize: '16px', cursor: 'not-allowed' }} />
+                    </span>
+                  )
+                }
+
+                if (record.task_state === "pending") {
+                  return (
+                    <span className="pendingIconGroup">
+                      <Tooltip title="编辑">
+                        <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
+                      </Tooltip>
+
+                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'not-allowed' }} >&#xe642;</i>
+
+                      <Tooltip title="删除">
+                        <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+                      </Tooltip>
+                    </span>
+                  )
+                }
+
+                if (record.task_state === "finished") {
+                  <span className="textIconGroup">
+                    <Tooltip title="编辑">
+                      <Icon type="edit" className="icon-blue" style={{ fontSize: '16px', marginRight: '16px' }} onClick={this.editPaper.bind(this, record.id)} />
+                    </Tooltip>
+                    <Tooltip title="统计">
+                      <i className="iconfont" style={{ fontSize: '16px', marginRight: '14px', cursor: 'pointer' }} onClick={this.statisticsPaper.bind(this, record.id)}>&#xe642;</i>
+                    </Tooltip>
+                    <Tooltip title="删除">
+                      <Icon type="delete" className="icon-red" style={{ fontSize: '16px' }} onClick={this.deletePaper.bind(this, record.id)} />
+                    </Tooltip>
+                  </span>
+                }
+              })()
             }
+
           </span>
 
         )
@@ -291,7 +314,6 @@ export default class TextTask extends React.Component {
                   prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
                   placeholder="输入考试任务名称搜索"
                   style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
-                  onChange={this.onChangeSearch}
                 />
                 :
                 <Input
@@ -317,7 +339,7 @@ export default class TextTask extends React.Component {
             </Breadcrumb.Item>
             <Breadcrumb.Item>
               <i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>
-              <span>考试管理</span>
+              <span>考试任务</span>
             </Breadcrumb.Item>
           </Breadcrumb>
           <h1 style={{ margin: '25px 0 20px', fontSize: '16px' }}>考试任务</h1>

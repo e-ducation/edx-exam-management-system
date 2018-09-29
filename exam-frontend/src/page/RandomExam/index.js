@@ -63,7 +63,7 @@ class RandomExamContainerReducer extends React.Component {
           })
 
           let sectionID = [];
-
+          // eslint-disable-next-line
           data.subject.map(item => {
             sectionID.push(item.id);
           })
@@ -73,8 +73,8 @@ class RandomExamContainerReducer extends React.Component {
             section_ids: sectionID
           })
             .then(res => {
-              console.log(res.data.data);
 
+              // eslint-disable-next-line
               data.subject.map((item, index) => {
                 item["choiceresponse"] = res.data.data[index].choiceresponse;
                 item["multiplechoiceresponse"] = res.data.data[index].multiplechoiceresponse;
@@ -122,7 +122,7 @@ class RandomExamContainerReducer extends React.Component {
       e = 1;
     }
     this.setState({
-      paperpass: parseInt(this.formatterInteger(e, 100, 0))
+      paperpass: parseInt(this.formatterInteger(e, 100, 0), 10)
     })
   }
   //keyup事件
@@ -145,7 +145,7 @@ class RandomExamContainerReducer extends React.Component {
   //整数
   formatterInteger = (value, max, min) => {
     value = value.toString().replace(/\$\s?|([^\d]*)/g, '');
-    if (parseInt(value) > max || parseInt(value) < min) {
+    if (parseInt(value, 10) > max || parseInt(value, 10) < min) {
       value = value.substring(0, value.length - 1);
     }
     return value;
@@ -156,15 +156,16 @@ class RandomExamContainerReducer extends React.Component {
     if (e === "") {
       e = 0;
     }
+    // eslint-disable-next-line
     this.props.randomTable.map(item => {
       if (item.id === id && type === 'multiplechoiceresponse') {
-        item.multiplechoiceresponseNumber = parseInt(this.formatterInteger(e, max, 0));
+        item.multiplechoiceresponseNumber = parseInt(this.formatterInteger(e, max, 0), 10);
       }
       if (item.id === id && type === 'choiceresponse') {
-        item.choiceresponseNumber = parseInt(this.formatterInteger(e, max, 0));
+        item.choiceresponseNumber = parseInt(this.formatterInteger(e, max, 0), 10);
       }
       if (item.id === id && type === 'stringresponse') {
-        item.stringresponseNumber = parseInt(this.formatterInteger(e, max, 0));
+        item.stringresponseNumber = parseInt(this.formatterInteger(e, max, 0), 10);
       }
     })
 
@@ -174,7 +175,7 @@ class RandomExamContainerReducer extends React.Component {
 
   //抽取分数
   onChangeGrade = (e, id, type) => {
-
+    // eslint-disable-next-line
     this.props.randomTable.map(item => {
       if (item.id === id && type === 'multiplechoiceresponse') {
         item.multiplechoiceresponseGrade = e
@@ -194,6 +195,7 @@ class RandomExamContainerReducer extends React.Component {
   }
 
   onBlurGrade = (e, id, type) => {
+    // eslint-disable-next-line
     this.props.randomTable.map(item => {
       if (item.id === id && type === 'multiplechoiceresponse') {
         if (item.multiplechoiceresponseGrade === undefined) {
@@ -282,6 +284,7 @@ class RandomExamContainerReducer extends React.Component {
 
     if (this.state.value === 1) {
 
+      // eslint-disable-next-line
       this.props.randomTable.map(item => {
 
         item.multiplechoiceresponseGrade = this.state.allGrade
@@ -297,6 +300,7 @@ class RandomExamContainerReducer extends React.Component {
     }
 
     else {
+      // eslint-disable-next-line
       this.props.randomTable.map(item => {
 
         item.multiplechoiceresponseGrade = this.state.multiplechoiceresponseGrade
@@ -336,6 +340,7 @@ class RandomExamContainerReducer extends React.Component {
       cancelText: '取消',
       iconType: 'exclamation-circle exclamation-red',
       onOk: () => {
+        // eslint-disable-next-line
         this.props.randomTable.map((item, index) => {
 
           if (item.id === id) {
@@ -411,7 +416,7 @@ class RandomExamContainerReducer extends React.Component {
         this.warning();
       }
       else {
-        console.log(this.props.randomTable);
+
         axios.put('/api/exampapers/random/' + this.props.id + '/', {
           name: this.state.paperName,
           description: this.state.paperIns,
@@ -471,7 +476,7 @@ class RandomExamContainerReducer extends React.Component {
   checkData = (type) => {
     console.log(this.props.fixedTable);
     if (type === "首页") {
-      if (this.state.paperName == "" && this.state.paperIns == "" && this.props.randomTable.length === 0) {
+      if (this.state.paperName === "" && this.state.paperIns === "" && this.props.randomTable.length === 0) {
         window.location.href = "/#/";
       }
       else {
@@ -480,7 +485,7 @@ class RandomExamContainerReducer extends React.Component {
     }
 
     else {
-      if (this.state.paperName == "" && this.state.paperIns == "" && this.props.randomTable.length === 0) {
+      if (this.state.paperName === "" && this.state.paperIns === "" && this.props.randomTable.length === 0) {
         window.location.href = "/#/manage";
       }
       else {
@@ -683,7 +688,7 @@ class RandomExamContainerReducer extends React.Component {
                                       <span style={{ marginRight: '30px' }}>抽题数目</span>
 
                                       {
-                                        item.choiceresponse == 0 ?
+                                        item.choiceresponse === 0 ?
                                           <InputNumber disabled />
                                           :
                                           <InputNumber min={0} max={item.choiceresponse} step={1} value={item.choiceresponseNumber} onChange={(event) => this.onChangeNumber(event, item.id, 'choiceresponse')} />
@@ -741,7 +746,7 @@ class RandomExamContainerReducer extends React.Component {
                       </div>
                       :
                       <div className="examnodata">
-                        <img src={none} style={{ display: 'block', width: '167px', height: 'auto', margin: '42px auto 10px auto' }} />
+                        <img src={none} alt="暂无数据" style={{ display: 'block', width: '167px', height: 'auto', margin: '42px auto 10px auto' }} />
                         <p style={{ textAlign: 'center' }}>暂无数据</p>
                       </div>
 
@@ -780,7 +785,7 @@ class RandomExamContainerReducer extends React.Component {
                 </div>
 
                 {
-                  this.state.paperName == "" ?
+                  this.state.paperName === "" ?
                     <div className="editbtn" style={{ width: '64px' }}>
                       <Button type="primary" disabled>保存</Button>
                     </div>
@@ -817,7 +822,7 @@ const mapStateToProps = (state) => {
     multiplechoiceresponseGrade = 0,
     choiceresponseGrade = 0,
     stringresponseGrade = 0;
-
+  // eslint-disable-next-line
   randomTable.map(item => {
     if (item.multiplechoiceresponseNumber === "") {
       item.multiplechoiceresponseNumber = 0;
@@ -828,15 +833,15 @@ const mapStateToProps = (state) => {
     if (item.stringresponseNumber === "") {
       item.stringresponseNumber = 0;
     }
-    multiplechoiceresponseNumber += parseInt(item.multiplechoiceresponseNumber);
-    choiceresponseNumber += parseInt(item.choiceresponseNumber);
-    stringresponseNumber += parseInt(item.stringresponseNumber);
+    multiplechoiceresponseNumber += parseInt(item.multiplechoiceresponseNumber, 10);
+    choiceresponseNumber += parseInt(item.choiceresponseNumber, 10);
+    stringresponseNumber += parseInt(item.stringresponseNumber, 10);
     multiplechoiceresponseGrade += item.multiplechoiceresponseNumber * item.multiplechoiceresponseGrade;
     choiceresponseGrade += item.choiceresponseNumber * item.choiceresponseGrade;
     stringresponseGrade += item.stringresponseNumber * item.stringresponseGrade;
   })
 
-  let sumAll = parseInt(multiplechoiceresponseNumber) + parseInt(choiceresponseNumber) + parseInt(stringresponseNumber);
+  let sumAll = parseInt(multiplechoiceresponseNumber, 10) + parseInt(choiceresponseNumber, 10) + parseInt(stringresponseNumber, 10);
   let sumGrade = multiplechoiceresponseGrade + choiceresponseGrade + stringresponseGrade;
   console.log(sumAll);
 

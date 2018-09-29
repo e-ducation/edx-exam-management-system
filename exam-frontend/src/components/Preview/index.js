@@ -1,8 +1,7 @@
 import React from 'react';
-import { Icon, Radio, Checkbox, Input, Button, message, Spin, Tooltip } from 'antd';
+import { Icon, Radio, Checkbox, Input, Button, message, Spin, } from 'antd';
 import axios from 'axios';
 import $ from "jquery";
-import none from "../../assets/images/none.png";
 
 export default class PreviewContainer extends React.Component {
 
@@ -103,7 +102,7 @@ export default class PreviewContainer extends React.Component {
           if (response.exampaper_create_type === "fixed") {
             this.setState({
               name: response.name,
-              passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade)) * 0.01,
+              passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade, 10)) * 0.01,
               problems: response.problems,
               total_grade: response.exampaper_total_grade,
               total_problem_num: response.exampaper_total_problem_num,
@@ -118,7 +117,7 @@ export default class PreviewContainer extends React.Component {
 
 
             let sectionID = [];
-
+            // eslint-disable-next-line
             response.subject.map(item => {
               sectionID.push(item.id);
             })
@@ -129,6 +128,7 @@ export default class PreviewContainer extends React.Component {
               .then(res => {
 
                 let response2 = [];
+                // eslint-disable-next-line
                 response.subject.map((item, index) => {
 
                   response2.push(Object.assign({}, item,
@@ -143,7 +143,7 @@ export default class PreviewContainer extends React.Component {
 
                 this.setState({
                   name: response.name,
-                  passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade)) * 0.01,
+                  passing_grade: (response.exampaper_passing_ratio * parseInt(response.exampaper_total_grade, 10)) * 0.01,
                   problems: response2,
                   total_grade: response.exampaper_total_grade,
                   total_problem_num: response.exampaper_total_problem_num,
@@ -248,9 +248,9 @@ export default class PreviewContainer extends React.Component {
       border: this.state.answerShow ? '1px solid #95cd5b' : '1px solid #E6E9ED'
     }
 
-    const color = {
-      color: this.state.pass ? '#95cd5b' : '#f5222d'
-    }
+    // const color = {
+    //   color: this.state.pass ? '#95cd5b' : '#f5222d'
+    // }
 
     return (
       <div style={{ width: '100%', wordBreak: 'break-word' }}>
@@ -524,6 +524,7 @@ export default class PreviewContainer extends React.Component {
                   :
                   <div>
                     {
+                      // eslint-disable-next-line
                       problems.map((item, index) => {
                         //统计页面
                         if (this.state.isStatistics === true && this.state.isEdit === false && this.state.isStudent === false) {
@@ -707,7 +708,7 @@ export default class PreviewContainer extends React.Component {
                                     <p>正确答案：
                                     {
                                         item.content.answers.map(item => {
-                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item))}</span>)
+                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item, 10))}</span>)
                                         })
                                       }
                                     </p>
@@ -820,7 +821,7 @@ export default class PreviewContainer extends React.Component {
                                     <p>正确答案：
                                     {
                                         item.content.answers.map(item => {
-                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item))}</span>)
+                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item, 10))}</span>)
                                         })
                                       }
                                     </p>
@@ -918,7 +919,7 @@ export default class PreviewContainer extends React.Component {
                                     <p>正确答案：
                                     {
                                         item.content.answers.map(item => {
-                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item))}</span>)
+                                          return (<span style={{ marginRight: '4px' }}>{String.fromCharCode(65 + parseInt(item, 10))}</span>)
                                         })
                                       }
                                     </p>

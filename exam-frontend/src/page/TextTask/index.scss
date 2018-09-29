@@ -37,3 +37,11 @@ $blue_active: #1da6f3;
     }
   }
 }
+
+.pendingIconGroup{
+  .iconfont{
+    &:hover{
+      color:$font !important;
+    }
+  }
+}
