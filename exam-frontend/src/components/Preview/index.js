@@ -21,13 +21,16 @@ export default class PreviewContainer extends React.Component {
     choiceresponse_count: 0,
     stringresponse_count: 0,
     passing_ratio: 60,
+    userGrade: 0,
+    result: 0,
+    username: '',
     loading: true,
     isStatistics: false,
     isEdit: false,
     answerShow: false,
     pass: true,
     isStudent: false,
-    isRandom: false
+    isRandom: false,
   }
 
   componentDidMount() {
@@ -78,10 +81,19 @@ export default class PreviewContainer extends React.Component {
     if (id.split('/')[0] === "statistics") {
 
       //获取数据
-      axios.get('/api/' + id + '/')
+      axios.get('/api/my_exam/exam_task/exam_answers/' + id + '/')
         .then((res) => {
+          let response = res.data.data;
+
           this.setState({
             isStatistics: true,
+            name: response.exam_task.name,
+            description: response.exam_task.exampaper_description,
+            total_problem_num: response.exam_task.exampaper_total_problem_num,
+            total_grade: response.exam_task.exampaper_total_grade,
+            userGrade: response.total_grade,
+            username: response.user_name,
+            result: response.exam_result,
           })
         })
         .catch((error) => {
@@ -139,7 +151,6 @@ export default class PreviewContainer extends React.Component {
                     }))
                 })
 
-                console.log(response2);
 
                 this.setState({
                   name: response.name,
@@ -170,13 +181,6 @@ export default class PreviewContainer extends React.Component {
         })
       return false;
     }
-
-    // 3.
-
-
-
-
-
 
     axios.get('/api/exampapers/' + id + '/')
       .then(function (response) {
@@ -255,8 +259,6 @@ export default class PreviewContainer extends React.Component {
     return (
       <div style={{ width: '100%', wordBreak: 'break-word' }}>
 
-
-
         {
           loading ?
             <div style={{ textAlign: 'center', marginTop: '40px' }}>
@@ -327,9 +329,9 @@ export default class PreviewContainer extends React.Component {
               {
                 this.state.isStatistics ?
                   <div className="base-message">
-                    <p className="student-name">考生： 王铭业</p>
+                    <p className="student-name">考生： {this.state.username}</p>
                     {
-                      this.state.pass ?
+                      this.state.result === "pass" ?
                         <p className="paper-message" style={{ color: '#95cd5b' }}>该考生及格了</p>
                         :
                         <p className="paper-message" style={{ color: '#f5222d' }}>该考生未及格</p>
@@ -369,16 +371,16 @@ export default class PreviewContainer extends React.Component {
                     (
                       () => {
                         if (this.state.isStatistics) {
-                          if (this.state.pass) {
+                          if (this.state.result === "pass") {
                             return (
                               <span style={{ margin: '0 10px' }}>您的得分：
-                                <span style={{ color: '#95cd5b' }}>88</span>
+                                <span style={{ color: '#95cd5b' }}>{this.state.userGrade}</span>
                               </span>)
                           }
                           else {
                             return (
                               <span style={{ margin: '0 10px' }}>您的得分：
-                                <span style={{ color: '#f5222d' }}>59</span>
+                                <span style={{ color: '#f5222d' }}>{this.state.userGrade}</span>
                               </span>
                             )
                           }
