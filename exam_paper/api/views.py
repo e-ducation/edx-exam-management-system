@@ -870,7 +870,6 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
             'pending': state_queryset.filter(task_state='pending').count(),
             'started': state_queryset.filter(task_state='started').count(),
             'finished': state_queryset.filter(task_state='finished').count(),
-            'unavailable': state_queryset.filter(task_state='unavailable').count(),
         }
 
         page = self.paginate_queryset(queryset)
