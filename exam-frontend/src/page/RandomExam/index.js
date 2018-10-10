@@ -37,10 +37,6 @@ class RandomExamContainerReducer extends React.Component {
     value02True: true,
   }
 
-  constructor(props) {
-    super(props);
-  }
-
   componentWillUnmount() {
     this.props.randomTable.length = 0;
     this.props.setRandomTable(this.props.randomTable);
@@ -888,7 +884,6 @@ export default class RandomExam extends React.Component {
       that.setState({ height })
     })
 
-    console.log(this.props.id);
   }
 
   setShow = (isShow) => {

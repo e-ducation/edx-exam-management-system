@@ -315,21 +315,12 @@ export default class TextTask extends React.Component {
           <div>
             <Button type="primary" href="/#/createTask"><i className="iconfont" style={{ fontSize: '12px', marginRight: '8px' }}>&#xe66b;</i>新建考试任务</Button>
 
-            {
-              this.state.list.length < 1 ?
-                <Input
-                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="输入考试任务名称搜索"
-                  style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
-                />
-                :
-                <Input
-                  prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
-                  placeholder="输入考试任务名称搜索"
-                  style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
-                  onChange={this.onChangeSearch}
-                />
-            }
+            <Input
+              prefix={<Icon type="search" style={{ color: 'rgba(0,0,0,.25)' }} />}
+              placeholder="输入考试任务名称搜索"
+              style={{ width: '200px', marginLeft: '20px', position: 'relative', top: '1px' }}
+              onChange={this.onChangeSearch}
+            />
           </div>
         }
         locale={{ emptyText: <div style={{ marginBottom: '100px' }}><img src={none} style={{ width: '125px', margin: '60px 0 20px' }} alt="" /><div>暂无试卷</div></div> }}
