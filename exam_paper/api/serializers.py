@@ -292,29 +292,30 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                 user = find_or_create_user(participant)
                 ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
-            exam_paper = validated_data['exampaper']
-            exam_task.problems.all().delete()
-            exam_task.rules.all().delete()
-            if exam_paper.create_type == 'fixed':
-                for problem in exam_paper.problems.all():
-                    ExamPaperProblemsSnapShot.objects.create(
-                        exam_task=exam_task,
-                        sequence=problem.sequence,
-                        problem_block_id=problem.problem_id,
-                        problem_type=problem.problem_type,
-                        grade=problem.grade,
-                        content=problem.content
-                    )
-            if exam_paper.create_type == 'random':
-                for rule in exam_paper.rules.all():
-                    ExamPaperCreateRuleSnapShot.objects.create(
-                        exam_task=exam_task,
-                        problem_section_id=rule.problem_section_id,
-                        section_name=rule.section_name,
-                        problem_type=rule.problem_type,
-                        problem_num=rule.problem_num,
-                        grade=rule.grade,
-                    )
+            if 'exampaper' in validated_data:
+                exam_paper = validated_data['exampaper']
+                exam_task.problems.all().delete()
+                exam_task.rules.all().delete()
+                if exam_paper.create_type == 'fixed':
+                    for problem in exam_paper.problems.all():
+                        ExamPaperProblemsSnapShot.objects.create(
+                            exam_task=exam_task,
+                            sequence=problem.sequence,
+                            problem_block_id=problem.problem_id,
+                            problem_type=problem.problem_type,
+                            grade=problem.grade,
+                            content=problem.content
+                        )
+                if exam_paper.create_type == 'random':
+                    for rule in exam_paper.rules.all():
+                        ExamPaperCreateRuleSnapShot.objects.create(
+                            exam_task=exam_task,
+                            problem_section_id=rule.problem_section_id,
+                            section_name=rule.section_name,
+                            problem_type=rule.problem_type,
+                            problem_num=rule.problem_num,
+                            grade=rule.grade,
+                        )
 
         return exam_task
 

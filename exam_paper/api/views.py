@@ -2,6 +2,8 @@
 from __future__ import unicode_literals
 
 import random
+from datetime import timedelta
+
 import requests
 from itertools import groupby
 
@@ -28,6 +30,7 @@ from rest_framework.mixins import (
     UpdateModelMixin
 )
 
+from exam_paper import tasks
 from exam_paper.api.serializers import (
     ExamPaperSerializer,
     ExamPaperListSerializer,
@@ -40,6 +43,7 @@ from exam_paper.api.serializers import (
     ExamPaperCreateRuleSerializer, ExamPaperProblemsSnapShotSerializer)
 from exam_paper.filters import MyCustomOrdering
 from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
+from exam_paper.tasks import start_exam_task
 from exam_paper.utils import response_format
 
 DUPLICATE_SUFFIX = '(copy)'
@@ -853,6 +857,9 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
+
+        tasks.start_exam_task.apply_async([serializer.data.get('id')], eta=serializer.data.get('period_start'))
+
         return Response(response_format(serializer.data), status=status.HTTP_201_CREATED, headers=headers)
 
     def retrieve(self, request, *args, **kwargs):
@@ -892,7 +899,6 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
         request.data['creator'] = request.user.id
 
         partial = kwargs.pop('partial', False)
-        instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -902,6 +908,7 @@ class ExamTaskViewSet(CreateModelMixin, RetrieveModelMixin, ListModelMixin,
             # forcibly invalidate the prefetch cache on the instance.
             instance._prefetched_objects_cache = {}
 
+        tasks.start_exam_task.apply_async([instance.id], eta=instance.period_start)
         return Response(response_format(serializer.data))
 
     def partial_update(self, request, *args, **kwargs):
