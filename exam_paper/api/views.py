@@ -16,6 +16,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -42,7 +43,7 @@ from exam_paper.api.serializers import (
     ExamTaskPaperPreviewSerializer,
     ExamPaperCreateRuleSerializer, ExamPaperProblemsSnapShotSerializer)
 from exam_paper.filters import MyCustomOrdering
-from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant
+from exam_paper.models import ExamPaper, PAPER_CREATE_TYPE, ExamTask, TASK_STATE, ExamParticipant, MAX_PAPER_NAME_LENGTH
 from exam_paper.tasks import start_exam_task
 from exam_paper.utils import response_format
 
@@ -204,18 +205,21 @@ class ExamPaperListViewSet(RetrieveModelMixin, ListModelMixin,
     @action(methods=['POST'], detail=True)
     def duplicate(self, request, pk, *args, **kwargs):
         exam_paper = self.get_object()
+
         name = exam_paper.name
-        problems = exam_paper.problems.all()
-        rules = exam_paper.rules.all()
+        new_name = name + DUPLICATE_SUFFIX
+        if len(new_name) > MAX_PAPER_NAME_LENGTH:
+            raise ValidationError(detail='Ensure this field has no more than %d characters.' % MAX_PAPER_NAME_LENGTH)
 
         exam_paper.pk = None
-        exam_paper.name = name + DUPLICATE_SUFFIX
+        exam_paper.name = new_name
         exam_paper.created = timezone.now()
         exam_paper.modified = timezone.now()
         exam_paper.creator = self.request.user
-
         exam_paper.save()
 
+        problems = exam_paper.problems.all()
+        rules = exam_paper.rules.all()
         with transaction.atomic():
             for problem in problems:
                 problem.pk = None

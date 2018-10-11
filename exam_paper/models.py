@@ -34,9 +34,11 @@ EXAM_RESULT = (
     ('pending', 'pending'),
 )
 
+MAX_PAPER_NAME_LENGTH = 50
+
 
 class ExamPaper(TimeStampedModel):
-    name = models.CharField(max_length=50, help_text='试卷名称')
+    name = models.CharField(max_length=MAX_PAPER_NAME_LENGTH, help_text='试卷名称')
     description = models.CharField(max_length=500, blank=True, help_text='试卷描述')
     create_type = models.CharField(max_length=16, choices=PAPER_CREATE_TYPE, default='fixed', help_text='试卷类型')
     passing_ratio = models.IntegerField(default=60,
