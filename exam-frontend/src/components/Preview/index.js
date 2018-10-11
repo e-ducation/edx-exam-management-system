@@ -81,7 +81,7 @@ export default class PreviewContainer extends React.Component {
     if (id.split('/')[0] === "statistics") {
 
       //获取数据
-      axios.get('/api/my_exam/exam_task/exam_answers/' + id + '/')
+      axios.get('/api/my_exam/exam_task/exam_answers/' + id.split('/')[1] + '/')
         .then((res) => {
           let response = res.data.data;
 
