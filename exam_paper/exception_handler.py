@@ -37,7 +37,7 @@ def custom_exception_handler(exc, context):
             headers['Retry-After'] = '%d' % exc.wait
 
         set_rollback()
-        return Response(response_format(status=-1, msg=exc.detail), status=exc.status_code, headers=headers)
+        return Response(response_format(status=-1, msg=exc.detail), status=status.HTTP_200_OK, headers=headers)
 
     elif isinstance(exc, Http404):
 
