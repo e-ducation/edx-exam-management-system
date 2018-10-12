@@ -211,3 +211,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'EXCEPTION_HANDLER': 'exam_paper.exception_handler.custom_exception_handler'
 }
+
+
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//'

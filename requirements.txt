@@ -1,5 +1,8 @@
+amqp==2.3.2
 astroid==1.6.5
 backports.functools-lru-cache==1.5
+billiard==3.5.0.4
+celery==4.2.1
 certifi==2018.4.16
 chardet==3.0.4
 click==6.7
@@ -20,6 +23,7 @@ flex==6.13.2
 functools32==3.2.3.post2
 future==0.16.0
 futures==3.2.0
+icalendar==4.0.2
 idna==2.7
 inflection==0.3.1
 isort==4.3.4
@@ -28,9 +32,11 @@ Jinja2==2.10
 jsonfield==2.0.2
 jsonpointer==1.14
 jsonschema==2.6.0
+kombu==4.2.1
 lazy-object-proxy==1.3.1
 MarkupSafe==1.0
 mccabe==0.6.1
+mock==2.0.0
 oauthlib==2.1.0
 openapi-codec==1.3.2
 pluggy==0.7.1
@@ -42,6 +48,7 @@ pyjwkest==1.4.0
 PyJWT==1.6.4
 pylint==1.9.3
 pypinyin==0.33.0
+python-dateutil==2.7.3
 python-openid==2.2.5
 pytz==2018.5
 PyYAML==3.13
@@ -61,5 +68,6 @@ tox==3.2.1
 uritemplate==3.0.0
 urllib3==1.23
 validate-email==1.3
+vine==1.1.4
 virtualenv==16.0.0
 wrapt==1.10.11

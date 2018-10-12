@@ -212,7 +212,7 @@ class ExamTaskListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExamTask
-        fields = ('id', 'name', 'creator',
+        fields = ('id', 'name', 'creator', 'exampaper_description',
                   'task_state', 'period_start', 'period_end',
                   'participant_num')
 
@@ -225,6 +225,7 @@ class ExamTaskListSerializer(serializers.ModelSerializer):
 
 class ExamTaskSerializer(serializers.ModelSerializer):
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+    creator_name = serializers.SerializerMethodField()
     exampaper = serializers.PrimaryKeyRelatedField(queryset=ExamPaper.objects.all())
     task_state = serializers.CharField(read_only=True)
     participants = ExamParticipantSerializer(many=True, required=False)
@@ -236,9 +237,12 @@ class ExamTaskSerializer(serializers.ModelSerializer):
         model = ExamTask
         fields = ('id', 'name', 'exampaper', 'exampaper_name', 'exampaper_description',
                   'exampaper_create_type', 'exampaper_passing_ratio', 'exampaper_total_problem_num',
-                  'exampaper_total_grade', 'creator', 'modified',
+                  'exampaper_total_grade', 'creator', 'modified', 'creator_name',
                   'task_state', 'period_start', 'period_end', 'exam_time_limit',
                   'problem_disorder', 'show_answer', 'participants', 'problem_statistic')
+
+    def get_creator_name(self, exam_task):
+        return exam_task.creator.username
 
     def create(self, validated_data):
         if 'participants' in validated_data:
@@ -292,29 +296,30 @@ class ExamTaskSerializer(serializers.ModelSerializer):
                 user = find_or_create_user(participant)
                 ExamParticipant.objects.create(exam_task=exam_task, participant=user)
 
-            exam_paper = validated_data['exampaper']
-            exam_task.problems.all().delete()
-            exam_task.rules.all().delete()
-            if exam_paper.create_type == 'fixed':
-                for problem in exam_paper.problems.all():
-                    ExamPaperProblemsSnapShot.objects.create(
-                        exam_task=exam_task,
-                        sequence=problem.sequence,
-                        problem_block_id=problem.problem_id,
-                        problem_type=problem.problem_type,
-                        grade=problem.grade,
-                        content=problem.content
-                    )
-            if exam_paper.create_type == 'random':
-                for rule in exam_paper.rules.all():
-                    ExamPaperCreateRuleSnapShot.objects.create(
-                        exam_task=exam_task,
-                        problem_section_id=rule.problem_section_id,
-                        section_name=rule.section_name,
-                        problem_type=rule.problem_type,
-                        problem_num=rule.problem_num,
-                        grade=rule.grade,
-                    )
+            if 'exampaper' in validated_data:
+                exam_paper = validated_data['exampaper']
+                exam_task.problems.all().delete()
+                exam_task.rules.all().delete()
+                if exam_paper.create_type == 'fixed':
+                    for problem in exam_paper.problems.all():
+                        ExamPaperProblemsSnapShot.objects.create(
+                            exam_task=exam_task,
+                            sequence=problem.sequence,
+                            problem_block_id=problem.problem_id,
+                            problem_type=problem.problem_type,
+                            grade=problem.grade,
+                            content=problem.content
+                        )
+                if exam_paper.create_type == 'random':
+                    for rule in exam_paper.rules.all():
+                        ExamPaperCreateRuleSnapShot.objects.create(
+                            exam_task=exam_task,
+                            problem_section_id=rule.problem_section_id,
+                            section_name=rule.section_name,
+                            problem_type=rule.problem_type,
+                            problem_num=rule.problem_num,
+                            grade=rule.grade,
+                        )
 
         return exam_task
 

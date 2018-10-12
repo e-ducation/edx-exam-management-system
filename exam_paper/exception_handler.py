@@ -13,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, status
 from rest_framework.response import Response
 
-# from openelite.djangoapps.enterprise_network_disk.util import code
 from rest_framework.views import set_rollback
 
 from exam_paper.utils import response_format
@@ -37,14 +36,8 @@ def custom_exception_handler(exc, context):
         if getattr(exc, 'wait', None):
             headers['Retry-After'] = '%d' % exc.wait
 
-        if isinstance(exc.detail, (list, dict)):
-            data = exc.detail
-        else:
-            data = {'detail': exc.detail}
-
         set_rollback()
-        print 'something happen'
-        return Response(response_format(status=-1, msg=exc.detail), status=exc.status_code, headers=headers)
+        return Response(response_format(status=-1, msg=exc.detail), status=status.HTTP_200_OK, headers=headers)
 
     elif isinstance(exc, Http404):
 
