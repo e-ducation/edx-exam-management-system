@@ -3,6 +3,12 @@
 
 
 这个项目是允许使用Open edX进行授课的老师从所授的几门课程中，指定题目或根据条件抽取习题形成试卷，安排学生账号进行考试，查看考试成绩。
+此项目目前已经暂停维护，在你使用之前建议先阅读以下链接再决定是否使用此项目 :sweat_smile:  
+
+
+- <https://edx.readthedocs.io/projects/open-edx-building-and-running-a-course/en/open-release-hawthorn.master/exercises_tools/randomized_content_blocks.html#randomized-content-blocks>
+- <https://edx.readthedocs.io/projects/open-edx-building-and-running-a-course/en/open-release-hawthorn.master/course_components/create_problem.html#problem-randomization>
+- <https://edx.readthedocs.io/projects/open-edx-building-and-running-a-course/en/open-release-hawthorn.master/course_components/create_problem.html#randomization>
 
 ## Getting Start
 
